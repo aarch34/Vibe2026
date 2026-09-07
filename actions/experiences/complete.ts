@@ -65,3 +65,36 @@ export async function completeExperienceAction(rawInput: CompleteExperienceInput
     };
   }
 }
+
+// Zone Discovery Action (+50 VIBE Coins, +100 XP, Passport Stamp)
+export async function discoverZoneAction(zoneId: string) {
+  try {
+    const session = await getCurrentUserSession();
+    return mockDb.discoverZone(session.eventId, session.profile.id, zoneId);
+  } catch (err: any) {
+    return {
+      success: false,
+      code: "EXECUTION_ERROR",
+      message: err.message || "Failed to discover zone",
+    };
+  }
+}
+
+// Staff Manual Verification for Physical Challenges
+export async function approveChallengeStaffAction(attendeeProfileId: string, experienceId: string) {
+  try {
+    const session = await getCurrentUserSession();
+    return mockDb.approvePhysicalChallenge(
+      session.eventId,
+      session.profile.id,
+      attendeeProfileId,
+      experienceId
+    );
+  } catch (err: any) {
+    return {
+      success: false,
+      code: "EXECUTION_ERROR",
+      message: err.message || "Failed to verify challenge",
+    };
+  }
+}

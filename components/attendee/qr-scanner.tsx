@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   QrCode,
@@ -107,13 +108,14 @@ export function QRScannerClient({
     }
   }
 
-  // Preset sample event QR codes for instant test convenience
+  // Preset sample event QR codes for instant test convenience (matching 5 pricing tiers)
   const sampleQRs = [
-    { label: "VR Cyber Flight", code: "vibe-arcade-vr-2026", cost: 50, xp: 120 },
-    { label: "Laser Tag Showdown", code: "vibe-arena-laser-2026", cost: 80, xp: 250 },
-    { label: "DJ Drop Face-off", code: "vibe-stage-dj-2026", cost: 0, xp: 80 },
-    { label: "Mocktail Lab", code: "vibe-lounge-mocktail-2026", cost: 30, xp: 70 },
-    { label: "Secret Vault Cipher", code: "vibe-vault-cipher-2026", cost: 100, xp: 500 },
+    { label: "Quick Sip (25🪙)", code: "vibe-lounge-mocktail-2026", cost: 25, xp: 40 },
+    { label: "Taco Blitz (50🪙)", code: "vibe-bazaar-taco-2026", cost: 50, xp: 75 },
+    { label: "DJ Drop (75🪙)", code: "vibe-stage-dj-2026", cost: 75, xp: 125 },
+    { label: "VR Simulator (100🪙)", code: "vibe-arcade-vr-2026", cost: 100, xp: 175 },
+    { label: "Laser Tag (150🪙)", code: "vibe-arena-laser-2026", cost: 150, xp: 250 },
+    { label: "Secret Vault (100🪙)", code: "vibe-vault-cipher-2026", cost: 100, xp: 500 },
   ];
 
   return (
@@ -260,14 +262,31 @@ export function QRScannerClient({
             </span>
           </div>
 
-          {/* Action CTA */}
+          {/* Action CTA / Point 19 Friendly Insufficient Balance UX */}
           {userBalance < verificationResult.coinCost ? (
-            <div className="text-center p-2.5 rounded-xl bg-amber-950/40 border border-amber-500/40 text-amber-300 text-xs font-semibold">
-              Insufficient Coins ({formatCoins(userBalance)} available, need{" "}
-              {verificationResult.coinCost})
+            <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 text-left space-y-2.5 shadow-md">
+              <div className="flex items-center space-x-2 text-amber-400 font-bold text-xs uppercase tracking-wider">
+                <Coins className="w-4 h-4 animate-bounce" />
+                <span>Not enough VIBE Coins</span>
+              </div>
+              <p className="text-xs text-amber-100/90 leading-relaxed">
+                You need <strong className="text-white font-mono">{verificationResult.coinCost} VIBE</strong> to unlock this experience.
+                <br />
+                Your balance: <span className="font-mono text-amber-300 font-bold">{formatCoins(userBalance)} VIBE</span>
+              </p>
+              <div className="text-[11px] text-amber-300/80 flex items-center space-x-1.5 pt-1.5 border-t border-amber-500/20 font-medium">
+                <span>💡</span>
+                <span>Discover new zones (+50🪙) or complete free challenges to earn more coins.</span>
+              </div>
+              <Link
+                href="/app/map"
+                className="block text-center py-2 px-3 rounded-lg bg-amber-500 hover:bg-amber-400 active:scale-98 text-slate-950 font-extrabold text-xs uppercase tracking-wider transition-all"
+              >
+                Find Another Experience
+              </Link>
             </div>
           ) : !verificationResult.canAttempt ? (
-            <div className="text-center p-2.5 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 text-xs font-semibold">
+            <div className="text-center p-3 rounded-xl bg-slate-800/90 border border-slate-700 text-slate-400 text-xs font-semibold">
               Maximum attempts already completed for this mission.
             </div>
           ) : (

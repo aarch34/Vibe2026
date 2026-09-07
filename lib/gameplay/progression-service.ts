@@ -115,13 +115,16 @@ export async function getUserPassport(
       return exp && exp.zone_id === zone.id;
     });
 
-    const isUnlocked = completedInZone.length > 0;
+    const hasStamp = mockDb.passportStamps.get(profileId)?.has(zone.id);
+    const isUnlocked = Boolean(hasStamp) || completedInZone.length > 0;
     const firstCompletedAt = isUnlocked
-      ? completedInZone.sort(
-          (a, b) =>
-            new Date(a.completed_at).getTime() -
-            new Date(b.completed_at).getTime()
-        )[0].completed_at
+      ? completedInZone.length > 0
+        ? completedInZone.sort(
+            (a, b) =>
+              new Date(a.completed_at).getTime() -
+              new Date(b.completed_at).getTime()
+          )[0].completed_at
+        : new Date().toISOString()
       : null;
 
     return {

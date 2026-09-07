@@ -9,6 +9,7 @@ import {
   MapPin,
 } from "lucide-react";
 import { formatCoins } from "@/lib/utils";
+import { EventFreezeControl } from "@/components/admin/event-freeze-control";
 
 export default function AdminDashboardPage() {
   const attendeesCount = mockDb.profiles.size;
@@ -48,6 +49,9 @@ export default function AdminDashboardPage() {
           Real-time metrics for Rotaract District 3192 Freshers Party
         </p>
       </div>
+
+      {/* Point 39 Event Concluded / Freeze Control */}
+      <EventFreezeControl initialIsFrozen={mockDb.isEventFrozen} />
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-3 gap-4">

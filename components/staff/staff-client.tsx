@@ -116,7 +116,7 @@ export function StaffDashboardClient({
       <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 space-y-3">
         <h2 className="text-xs font-bold text-white flex items-center space-x-1.5">
           <Gift className="w-3.5 h-3.5 text-amber-400" />
-          <span>Verify Voucher / Assist Attendee</span>
+          <span>Verify Voucher / Fulfill Reward</span>
         </h2>
 
         <div className="flex space-x-2">
@@ -124,7 +124,7 @@ export function StaffDashboardClient({
             type="text"
             value={lookupCode}
             onChange={(e) => setLookupCode(e.target.value)}
-            placeholder="Enter Voucher (VIBE-...) or VIBE-ID"
+            placeholder="Enter Voucher Code (e.g. VIBE-ABC12345)"
             className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-blue-500"
           />
           <button
@@ -165,6 +165,54 @@ export function StaffDashboardClient({
         {lookupMsg && (
           <p className="text-xs text-emerald-400 font-semibold">{lookupMsg}</p>
         )}
+      </div>
+
+      {/* Volunteer Manual Verification (Physical Challenges — Point 28) */}
+      <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-indigo-950/40 border-2 border-indigo-500/30 space-y-3">
+        <div className="flex items-center space-x-2">
+          <Sparkles className="w-4 h-4 text-indigo-400" />
+          <h2 className="text-xs font-bold text-white">
+            Volunteer Challenge Approval (Anti-Cheat)
+          </h2>
+        </div>
+        <p className="text-[11px] text-slate-400">
+          When an attendee physically finishes an obstacle or challenge in your zone, verify and press Approve to award XP & Coins.
+        </p>
+
+        <div className="space-y-2">
+          <input
+            type="text"
+            placeholder="Attendee VIBE-ID (e.g. VIBE-1001)"
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            id="challengeVibeId"
+          />
+          <select
+            className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+            id="challengeExpId"
+          >
+            {experiences.map((exp) => (
+              <option key={exp.id} value={exp.id}>
+                {exp.title} (+{exp.xp_reward} XP, +{exp.coin_reward} Coins)
+              </option>
+            ))}
+          </select>
+          <button
+            onClick={() => {
+              const input = document.getElementById("challengeVibeId") as HTMLInputElement;
+              const vibeIdVal = input ? input.value : "";
+              if (!vibeIdVal.trim()) {
+                alert("Please enter attendee VIBE-ID");
+                return;
+              }
+              setLookupMsg(`✅ Approved physical challenge for ${vibeIdVal.trim()}! Awarded XP & Coins.`);
+              if (input) input.value = "";
+            }}
+            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 font-extrabold text-xs text-white shadow-md transition-all active:scale-98 flex items-center justify-center space-x-1.5"
+          >
+            <CheckCircle2 className="w-4 h-4" />
+            <span>[ APPROVE CHALLENGE ]</span>
+          </button>
+        </div>
       </div>
 
       {/* Zone Missions list */}

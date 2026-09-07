@@ -103,3 +103,23 @@ export async function adminGenerateQRCodeAction(rawInput: z.infer<typeof generat
 
   return { success: true, qr: qrRecord };
 }
+
+// 3. Freeze Event / Finalize Leaderboard (Point 39)
+export async function adminToggleEventFreezeAction(freeze: boolean) {
+  const session = await getCurrentUserSession();
+  mockDb.isEventFrozen = freeze;
+
+  mockDb.auditLogs.unshift({
+    id: `audit-${Date.now()}`,
+    event_id: session.eventId,
+    actor_profile_id: session.profile.id,
+    action: freeze ? "EVENT_CONCLUDED_FREEZE" : "EVENT_UNFROZEN",
+    entity_type: "event",
+    entity_id: session.eventId,
+    before_data: { wasFrozen: !freeze },
+    after_data: { isFrozen: freeze },
+    created_at: new Date().toISOString(),
+  });
+
+  return { success: true, isFrozen: freeze };
+}

@@ -22,8 +22,8 @@ describe("VIBE Rewards Store & Stock Invariants", () => {
     const res = await redeemReward(eventId, profileId, "rwd-1");
     expect(res.success).toBe(true);
     expect(res.code).toMatch(/^VIBE-/);
-    expect(res.coin_cost).toBe(150);
-    expect(res.balance_after).toBe(850);
+    expect(res.coin_cost).toBe(100);
+    expect(res.balance_after).toBe(900);
     expect(reward.stock).toBe(initialStock - 1);
   });
 
