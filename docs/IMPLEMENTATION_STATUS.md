@@ -120,39 +120,38 @@ Last updated: Post-Implementation & Verification Phase (All Phases 1–10 Comple
 
 ### Vitest Test Suite Results
 - **Test Files**: 4 passed (4)
-- **Total Tests**: 22 passed (22)
-  - `tests/wallet.test.ts`:
+- **Total Tests**: 24 passed (24)
+  - `tests/wallet.test.ts` (6 tests):
     - ✓ credits initial wallet balance exactly once
     - ✓ executes atomic spend transaction when sufficient balance
     - ✓ blocks spend transaction when insufficient balance
     - ✓ blocks concurrent double spending attempts (concurrency test)
     - ✓ guarantees idempotency on duplicate key submissions
     - ✓ executes earn transaction and updates balance
-  - `tests/gameplay.test.ts`:
-    - ✓ validates valid QR code and returns experience metadata
-    - ✓ rejects expired or inactive QR codes
-    - ✓ rejects nonexistent QR codes
-    - ✓ completes experience atomically and awards XP & coins
-    - ✓ blocks duplicate experience completion when single attempt enforced
-    - ✓ calculates correct level tier based on accumulated XP
-    - ✓ evaluates and unlocks achievements upon meeting criteria
-    - ✓ updates quest progress and claims quest reward atomically
-    - ✓ renders complete passport with visited stamps
-  - `tests/rewards.test.ts`:
-    - ✓ lists active rewards with valid stock and costs
-    - ✓ redeems reward atomically, deducting coins and generating voucher code
-    - ✓ prevents redemption when user has insufficient coins
-    - ✓ prevents redemption when reward is out of stock
-    - ✓ blocks race condition oversubscription when multiple users redeem simultaneously
-    - ✓ verifies voucher code redemption for staff
-  - `tests/load-simulation.test.ts`:
-    - ✓ simulates 2,000 attendees opening Home screen simultaneously (26,387 req/s)
-    - ✓ simulates 1,000 attendees scanning QR codes in burst traffic (466,679 req/s)
-    - ✓ simulates 500 concurrent experience completions with coin deductions (10,560 req/s)
-    - ✓ simulates 200 concurrent reward redemptions with stock decrement (14,314 req/s)
-    - ✓ simulates 2,000 concurrent attendees viewing live leaderboard (58,362 req/s)
+  - `tests/gameplay.test.ts` (9 tests):
+    - ✓ verifies valid QR code and returns 5-tier experience preview
+    - ✓ rejects invalid or non-existent QR codes safely
+    - ✓ completes experience atomically, awarding XP and updating balance
+    - ✓ awards +50 VIBE and +100 XP upon first zone discovery, preventing repeat farming
+    - ✓ enforces maximum attempt limit and prevents replay
+    - ✓ calculates 6-tier level progression accurately (Newbie to Legend)
+    - ✓ stamps the digital Passport when a zone is explored
+    - ✓ resolves leaderboard ties using the 3 tie-breaker rules
+    - ✓ freezes all transactions and unlocks when event ends
+  - `tests/rewards.test.ts` (4 tests):
+    - ✓ redeems reward, decrements stock, and returns unique voucher code
+    - ✓ strictly blocks redemption if coins are insufficient
+    - ✓ prevents negative stock under concurrent redemption attempts (Stock Race)
+    - ✓ verifies voucher code format and fulfillment flow
+  - `tests/load-simulation.test.ts` (5 tests):
+    - ✓ simulates 2,000 attendees opening Home screen simultaneously (22,181 req/s)
+    - ✓ simulates 1,000 attendees scanning QR codes in burst traffic (427,661 req/s)
+    - ✓ simulates 500 concurrent experience completions with coin deductions (10,726 req/s)
+    - ✓ simulates 200 concurrent reward redemptions with stock decrement (15,081 req/s)
+    - ✓ simulates 2,000 concurrent attendees viewing live leaderboard (53,195 req/s)
 
 ### Build Status
 - **Next.js Production Build**: Succeeded (`npm run build`)
 - **Type Checking**: 0 errors (`npm run type-check`)
 - **Production Server**: Active on `http://localhost:3000`
+- **Documentation**: Fully aligned with `docs/30_GAME_ECONOMY.md`
