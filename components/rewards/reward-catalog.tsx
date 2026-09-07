@@ -81,27 +81,29 @@ export function RewardCatalogClient({
   return (
     <div className="space-y-4">
       {/* Tab Switcher */}
-      <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-900 border border-slate-800">
-        <button
-          onClick={() => setActiveTab("store")}
-          className={`py-2 rounded-lg text-xs font-bold transition-all ${
-            activeTab === "store"
-              ? "bg-blue-600 text-white shadow"
-              : "text-slate-400 hover:text-white"
-          }`}
-        >
-          Reward Store ({rewards.length})
-        </button>
-        <button
-          onClick={() => setActiveTab("vouchers")}
-          className={`py-2 rounded-lg text-xs font-bold transition-all ${
-            activeTab === "vouchers"
-              ? "bg-blue-600 text-white shadow"
-              : "text-slate-400 hover:text-white"
-          }`}
-        >
-          My Vouchers ({userRedemptions.length})
-        </button>
+      <div className="flex justify-center sm:justify-start">
+        <div className="grid grid-cols-2 p-1 rounded-xl bg-slate-900 border border-slate-800 w-full sm:w-80">
+          <button
+            onClick={() => setActiveTab("store")}
+            className={`py-2 rounded-lg text-xs font-bold transition-all ${
+              activeTab === "store"
+                ? "bg-blue-600 text-white shadow"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            Reward Store ({rewards.length})
+          </button>
+          <button
+            onClick={() => setActiveTab("vouchers")}
+            className={`py-2 rounded-lg text-xs font-bold transition-all ${
+              activeTab === "vouchers"
+                ? "bg-blue-600 text-white shadow"
+                : "text-slate-400 hover:text-white"
+            }`}
+          >
+            My Vouchers ({userRedemptions.length})
+          </button>
+        </div>
       </div>
 
       {errorMsg && (
@@ -113,7 +115,7 @@ export function RewardCatalogClient({
 
       {/* Tab 1: Reward Store */}
       {activeTab === "store" && (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {rewards.map((reward) => {
             const hasEnoughCoins = userBalance >= reward.coin_cost;
             const isOutOfStock = reward.stock <= 0;
@@ -122,37 +124,35 @@ export function RewardCatalogClient({
             return (
               <div
                 key={reward.id}
-                className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/90 hover:border-slate-700 transition-all space-y-3 shadow-sm"
+                className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800/90 hover:border-slate-700 transition-all flex flex-col justify-between shadow-sm space-y-3"
               >
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1 flex-1 pr-3">
-                    <div className="flex items-center space-x-2">
-                      <h3 className="text-sm font-bold text-white tracking-tight">
-                        {reward.name}
-                      </h3>
-                    </div>
-                    {reward.sponsorName && (
-                      <span className="inline-block text-[10px] font-bold text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/20">
-                        Presented by {reward.sponsorName}
+                <div className="space-y-2">
+                  <div className="flex items-start justify-between">
+                    <h3 className="text-sm font-bold text-white tracking-tight leading-snug">
+                      {reward.name}
+                    </h3>
+                    <div className="text-right shrink-0 ml-2">
+                      <span className="flex items-center justify-end space-x-1 text-sm font-black font-mono text-amber-400">
+                        <Coins className="w-4 h-4 text-amber-400" />
+                        <span>{formatCoins(reward.coin_cost)}</span>
                       </span>
-                    )}
-                    <p className="text-xs text-slate-400">{reward.description}</p>
+                    </div>
                   </div>
 
-                  <div className="text-right shrink-0">
-                    <span className="flex items-center justify-end space-x-1 text-sm font-black font-mono text-amber-400">
-                      <Coins className="w-4 h-4 text-amber-400" />
-                      <span>{formatCoins(reward.coin_cost)}</span>
+                  {reward.sponsorName && (
+                    <span className="inline-block text-[10px] font-bold text-amber-300 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/20">
+                      Presented by {reward.sponsorName}
                     </span>
-                    <span className="text-[10px] text-slate-400 block font-mono mt-0.5">
-                      Stock: {reward.stock} left
-                    </span>
-                  </div>
+                  )}
+                  <p className="text-xs text-slate-400 leading-relaxed">{reward.description}</p>
+                  <span className="text-[10px] text-slate-400 block font-mono">
+                    Stock remaining: <strong className="text-slate-200">{reward.stock}</strong>
+                  </span>
                 </div>
 
-                <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                  <span className="text-[11px] text-slate-400">
-                    Redemptions: {reward.userRedemptionsCount}
+                <div className="pt-3 border-t border-slate-800 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    Claimed: {reward.userRedemptionsCount}
                     {reward.redemption_limit && ` / ${reward.redemption_limit}`}
                   </span>
 
@@ -188,7 +188,7 @@ export function RewardCatalogClient({
                       ) : (
                         <span>
                           {hasEnoughCoins
-                            ? `Redeem for ${reward.coin_cost} Coins`
+                            ? `Redeem (${reward.coin_cost} 🪙)`
                             : "Need More Coins"}
                         </span>
                       )}
@@ -203,22 +203,23 @@ export function RewardCatalogClient({
 
       {/* Tab 2: My Vouchers */}
       {activeTab === "vouchers" && (
-        <div className="space-y-3">
+        <div>
           {userRedemptions.length === 0 ? (
-            <div className="text-center p-8 rounded-2xl bg-slate-900/40 border border-slate-800 space-y-2">
+            <div className="text-center p-8 rounded-2xl bg-slate-900/40 border border-slate-800 space-y-2 max-w-md mx-auto">
               <Gift className="w-10 h-10 text-slate-500 mx-auto" />
               <h3 className="text-sm font-bold text-white">No Vouchers Yet</h3>
-              <p className="text-xs text-slate-400 max-w-xs mx-auto">
+              <p className="text-xs text-slate-400">
                 Spend your earned VIBE Coins in the store to claim exclusive event
                 merchandise and sponsor perks!
               </p>
             </div>
           ) : (
-            userRedemptions.map((voucher) => (
-              <div
-                key={voucher.id}
-                className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-amber-500/30 space-y-3 shadow-md"
-              >
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {userRedemptions.map((voucher) => (
+                <div
+                  key={voucher.id}
+                  className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-950 border border-amber-500/30 space-y-3 shadow-md"
+                >
                 <div className="flex items-start justify-between">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
@@ -266,7 +267,8 @@ export function RewardCatalogClient({
                   </button>
                 </div>
               </div>
-            ))
+            ))}
+            </div>
           )}
         </div>
       )}

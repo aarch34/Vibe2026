@@ -61,7 +61,7 @@ export default async function StaffDashboardPage() {
       .in("experience_id", expIds.length > 0 ? expIds : ["00000000-0000-0000-0000-000000000000"]);
 
     return (
-      <div className="min-h-screen bg-[#070B14] text-slate-100 p-4 max-w-lg mx-auto">
+      <div className="min-h-screen bg-[#070B14] text-slate-100 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
         <StaffDashboardClient
           assignedZone={assignedZone}
           experiences={zoneExperiences}
@@ -101,7 +101,7 @@ export default async function StaffDashboardPage() {
     });
 
   return (
-    <div className="min-h-screen bg-[#070B14] text-slate-100 p-4 max-w-lg mx-auto">
+    <div className="min-h-screen bg-[#070B14] text-slate-100 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       <StaffDashboardClient
         assignedZone={assignedZone}
         experiences={zoneExperiences}

@@ -18,22 +18,20 @@ export default async function AttendeeLayout({
   const progression = await getUserProgression(session.eventId, session.profile.id);
 
   return (
-    <div className="min-h-screen bg-[#070B14] flex flex-col items-center">
-      <div className="w-full max-w-md min-h-screen flex flex-col bg-[#070B14] border-x border-slate-900/80 shadow-2xl relative">
-        <TestSwitcher
-          currentVibeId={session.profile.vibe_id}
-          currentDisplayName={session.profile.display_name}
-        />
-        <TopHeader
-          vibeId={session.profile.vibe_id}
-          coins={walletSummary.wallet.balance}
-          levelName={progression.currentLevel.name}
-        />
-        <main className="flex-1 pb-24 px-4 pt-3 overflow-y-auto">
-          {children}
-        </main>
-        <AttendeeBottomNav />
-      </div>
+    <div className="min-h-screen bg-[#070B14] text-slate-100 flex flex-col selection:bg-blue-600">
+      <TestSwitcher
+        currentVibeId={session.profile.vibe_id}
+        currentDisplayName={session.profile.display_name}
+      />
+      <TopHeader
+        vibeId={session.profile.vibe_id}
+        coins={walletSummary.wallet.balance}
+        levelName={progression.currentLevel.name}
+      />
+      <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 pb-24 md:pb-12 overflow-y-auto">
+        {children}
+      </main>
+      <AttendeeBottomNav />
     </div>
   );
 }

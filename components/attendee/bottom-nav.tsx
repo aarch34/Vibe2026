@@ -18,7 +18,7 @@ export function AttendeeBottomNav() {
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-3 pb-safe pt-2 bg-[#070B14]/90 backdrop-blur-xl border-t border-slate-800/80">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-3 pb-safe pt-2 bg-[#070B14]/90 backdrop-blur-xl border-t border-slate-800/80">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href;

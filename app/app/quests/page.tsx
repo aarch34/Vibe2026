@@ -36,7 +36,7 @@ export default async function QuestsPage() {
       </div>
 
       {/* Quests List */}
-      <div className="space-y-2.5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {quests.map(({ quest, progress, isCompleted, percent }) => (
           <div
             key={quest.id}

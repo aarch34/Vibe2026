@@ -30,9 +30,47 @@ export default function AdminLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-[#070B14] text-slate-100 flex">
-      {/* Sidebar */}
-      <aside className="w-64 border-r border-slate-800 bg-[#0B1120] flex flex-col shrink-0">
+    <div className="min-h-screen bg-[#070B14] text-slate-100 flex flex-col md:flex-row">
+      {/* Mobile Admin Header */}
+      <header className="md:hidden border-b border-slate-800 bg-[#0B1120] p-4 space-y-3 shrink-0">
+        <div className="flex items-center justify-between">
+          <div>
+            <span className="text-lg font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+              VIBE ADMIN
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono block">
+              District 3192
+            </span>
+          </div>
+          <Link
+            href="/app"
+            className="text-xs text-blue-400 hover:text-blue-300 flex items-center space-x-1 bg-blue-950/60 border border-blue-500/30 px-2.5 py-1 rounded-lg"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Attendee App</span>
+          </Link>
+        </div>
+
+        {/* Scrollable Horizontal Tabs for Mobile */}
+        <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-slate-300 hover:text-white bg-slate-900 border border-slate-800 shrink-0 font-medium"
+              >
+                <Icon className="w-3.5 h-3.5 text-blue-400" />
+                <span>{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </header>
+
+      {/* Desktop Sidebar */}
+      <aside className="hidden md:flex w-64 border-r border-slate-800 bg-[#0B1120] flex-col shrink-0 min-h-screen">
         <div className="p-5 border-b border-slate-800 flex items-center justify-between">
           <div>
             <span className="text-xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
@@ -72,7 +110,7 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto p-8 max-w-6xl">
+      <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 max-w-7xl">
         {children}
       </main>
     </div>
