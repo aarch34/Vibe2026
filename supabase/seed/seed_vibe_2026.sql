@@ -3,20 +3,23 @@
 -- Philosophy: "Coins measure your choices. XP measures your journey."
 
 -- 1. Initial Event
-insert into events (id, name, slug, description, start_time, end_time, status, config)
+insert into events (id, slug, name, description, status, starts_at, ends_at, timezone, starting_coins)
 values (
   'a0000000-0000-0000-0000-000000000001',
-  'VIBE 2026 — Rotaract District 3192 Freshers Party',
   'vibe-2026',
+  'VIBE 2026 — Rotaract District 3192 Freshers Party',
   'The flagship mobile-first gamified freshers party transforming the physical venue into an interactive digital universe.',
+  'live',
   '2026-09-07 10:00:00+00',
   '2026-09-07 22:00:00+00',
-  'live',
-  '{"starting_coins": 500, "allow_redemptions": true, "leaderboard_public": true, "zone_discovery_coins": 50, "zone_discovery_xp": 100}'::jsonb
+  'Asia/Kolkata',
+  500
 )
 on conflict (slug) do update set 
   name = excluded.name,
-  status = 'live';
+  status = 'live',
+  starts_at = excluded.starts_at,
+  ends_at = excluded.ends_at;
 
 -- 2. 6 Levels Progression
 insert into levels (id, event_id, name, min_xp, max_xp, sort_order)
@@ -27,7 +30,7 @@ values
   ('b0000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001', '⚡ VIBE Rider', 1000, 1499, 4),
   ('b0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001', '💫 VIBE Addict', 1500, 2499, 5),
   ('b0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000001', '👑 VIBE Legend', 2500, null, 6)
-on conflict do nothing;
+on conflict (id) do nothing;
 
 -- 3. Sponsors
 insert into sponsors (id, event_id, name, description)
@@ -35,7 +38,7 @@ values
   ('c0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'Red Bull', 'Gives you wings for high energy party zones!'),
   ('c0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'Spotify India', 'Official Sound & DJ Experience Partner'),
   ('c0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 'OnePlus', 'Never Settle Experience Hub')
-on conflict do nothing;
+on conflict (id) do nothing;
 
 -- 4. 7 Event Zones
 insert into zones (id, event_id, name, slug, description, sort_order, map_data)
@@ -87,7 +90,7 @@ values
   ('10000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'Social Butterfly', 'Complete experiences at 5 different stalls across the venue.', 'experiences_completed', '{"target": 5}'::jsonb, 250, 200),
   ('10000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 'Challenge Accepted', 'Complete 5 event challenges.', 'experiences_completed', '{"target": 5}'::jsonb, 300, 150),
   ('10000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001', 'VIBE Master (Grand Tour)', 'Visit and conquer all 7 venue zones.', 'all_zones_completed', '{"target": 7}'::jsonb, 500, 500)
-on conflict do nothing;
+on conflict (id) do nothing;
 
 -- 8. Achievements
 insert into achievements (id, event_id, name, description, condition_type, condition_config)
@@ -97,7 +100,7 @@ values
   ('20000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 'Challenger', 'Complete 5 event experiences successfully.', 'experiences_completed', '{"target": 5}'::jsonb),
   ('20000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001', 'VIBE Legend', 'Ascend to Level 6: 👑 VIBE Legend status.', 'reach_level', '{"level": 6}'::jsonb),
   ('20000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001', 'Secret Cipher Cracker', 'Conquer the Cipher of District 3192.', 'specific_experience', '{"experience_id": "e0000000-0000-0000-0000-000000000007"}'::jsonb)
-on conflict do nothing;
+on conflict (id) do nothing;
 
 -- 9. Reward Store (Tiers: 100, 150, 250, 300, 500, 750)
 insert into rewards (id, event_id, sponsor_id, name, description, coin_cost, stock, redemption_limit)
@@ -108,4 +111,4 @@ values
   ('30000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000002', 'Mystery Festival Gift Box', 'Curated box containing headphones, wristbands and surprise swag.', 300, 50, 1),
   ('30000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001', null, 'Limited-Edition VIBE T-Shirt', 'Official festival streetwear heavyweight tee with neon screenprint.', 500, 30, 1),
   ('30000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000003', 'VIP All-Access & After-Party Pass', 'Backstage artist lounge access + premium after-party entry.', 750, 10, 1)
-on conflict do nothing;
+on conflict (id) do nothing;
