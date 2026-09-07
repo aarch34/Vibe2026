@@ -24,43 +24,64 @@ export async function getUserProgression(
   eventId: string,
   profileId: string
 ): Promise<UserProgression> {
-  const levels = mockDb.levels.sort((a, b) => a.sort_order - b.sort_order);
-  const totalZones = mockDb.zones.size;
-
+  let levels: Level[] = [];
+  let totalZones = 7;
   let totalXP = 0;
   let completionsCount = 0;
-  let visitedZoneIds = new Set<string>();
+  const visitedZoneIds = new Set<string>();
 
   if (isUsingLiveSupabase() && supabaseAdmin) {
-    const { data: comps } = await supabaseAdmin
-      .from("experience_completions")
-      .select("xp_earned, experiences(zone_id)")
-      .eq("event_id", eventId)
-      .eq("profile_id", profileId);
+    const [levelsRes, zonesRes, compsRes] = await Promise.all([
+      supabaseAdmin.from("levels").select("*").order("sort_order", { ascending: true }),
+      supabaseAdmin.from("zones").select("id", { count: "exact", head: true }),
+      supabaseAdmin
+        .from("experience_completions")
+        .select("xp_earned, experiences(zone_id)")
+        .eq("event_id", eventId)
+        .eq("profile_id", profileId),
+    ]);
 
-    if (comps) {
-      completionsCount = comps.length;
-      comps.forEach((c: any) => {
+    levels = levelsRes.data || [];
+    totalZones = zonesRes.count || 7;
+
+    if (compsRes.data) {
+      completionsCount = compsRes.data.length;
+      compsRes.data.forEach((c: any) => {
         totalXP += c.xp_earned || 0;
         if (c.experiences?.zone_id) {
           visitedZoneIds.add(c.experiences.zone_id);
         }
       });
     }
-  } else {
-    const comps = mockDb.completions.filter(
-      (c) => c.event_id === eventId && c.profile_id === profileId
-    );
-    completionsCount = comps.length;
-    comps.forEach((c) => {
-      totalXP += c.xp_earned;
-      const exp = mockDb.experiences.get(c.experience_id);
-      if (exp) visitedZoneIds.add(exp.zone_id);
-    });
+  }
+
+  // Fallback if no levels in db
+  if (levels.length === 0) {
+    levels = mockDb.levels.sort((a, b) => a.sort_order - b.sort_order);
+    totalZones = mockDb.zones.size;
+    if (!isUsingLiveSupabase() || !supabaseAdmin) {
+      const comps = mockDb.completions.filter(
+        (c) => c.event_id === eventId && c.profile_id === profileId
+      );
+      completionsCount = comps.length;
+      comps.forEach((c) => {
+        totalXP += c.xp_earned;
+        const exp = mockDb.experiences.get(c.experience_id);
+        if (exp) visitedZoneIds.add(exp.zone_id);
+      });
+    }
   }
 
   // Find level
-  let currentLevel = levels[0];
+  let currentLevel = levels[0] || {
+    id: "lvl-1",
+    event_id: eventId,
+    name: "🌱 VIBE Newbie",
+    min_xp: 0,
+    max_xp: 249,
+    badge_media_id: null,
+    sort_order: 1,
+  };
   let nextLevel: Level | null = levels[1] || null;
 
   for (let i = 0; i < levels.length; i++) {
@@ -97,10 +118,55 @@ export async function getUserPassport(
   eventId: string,
   profileId: string
 ): Promise<PassportZoneItem[]> {
-  const zones = Array.from(mockDb.zones.values()).sort(
-    (a, b) => a.sort_order - b.sort_order
-  );
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const [zonesRes, expsRes, compsRes] = await Promise.all([
+      supabaseAdmin
+        .from("zones")
+        .select("*")
+        .eq("event_id", eventId)
+        .order("sort_order", { ascending: true }),
+      supabaseAdmin
+        .from("experiences")
+        .select("*")
+        .eq("event_id", eventId)
+        .eq("is_active", true),
+      supabaseAdmin
+        .from("experience_completions")
+        .select("*, experiences(zone_id)")
+        .eq("event_id", eventId)
+        .eq("profile_id", profileId),
+    ]);
 
+    const zones: Zone[] = zonesRes.data || [];
+    const experiences = expsRes.data || [];
+    const comps = compsRes.data || [];
+
+    return zones.map((zone) => {
+      const zoneExps = experiences.filter((e) => e.zone_id === zone.id);
+      const zoneComps = comps.filter(
+        (c: any) => c.experiences?.zone_id === zone.id || c.experience_id === zone.id
+      );
+
+      const isUnlocked = zoneComps.length > 0;
+      const firstCompletedAt = isUnlocked
+        ? zoneComps.sort(
+            (a: any, b: any) =>
+              new Date(a.completed_at).getTime() - new Date(b.completed_at).getTime()
+          )[0].completed_at
+        : null;
+
+      return {
+        zone,
+        isUnlocked,
+        experiencesCount: zoneExps.length,
+        completedExperiencesCount: zoneComps.length,
+        firstCompletedAt,
+      };
+    });
+  }
+
+  // Memory fallback
+  const zones = Array.from(mockDb.zones.values()).sort((a, b) => a.sort_order - b.sort_order);
   const userComps = mockDb.completions.filter(
     (c) => c.event_id === eventId && c.profile_id === profileId
   );
@@ -109,37 +175,66 @@ export async function getUserPassport(
     const zoneExperiences = Array.from(mockDb.experiences.values()).filter(
       (e) => e.zone_id === zone.id && e.is_active
     );
-
     const completedInZone = userComps.filter((c) => {
       const exp = mockDb.experiences.get(c.experience_id);
       return exp && exp.zone_id === zone.id;
     });
-
     const hasStamp = mockDb.passportStamps.get(profileId)?.has(zone.id);
     const isUnlocked = Boolean(hasStamp) || completedInZone.length > 0;
-    const firstCompletedAt = isUnlocked
-      ? completedInZone.length > 0
-        ? completedInZone.sort(
-            (a, b) =>
-              new Date(a.completed_at).getTime() -
-              new Date(b.completed_at).getTime()
-          )[0].completed_at
-        : new Date().toISOString()
-      : null;
 
     return {
       zone,
       isUnlocked,
       experiencesCount: zoneExperiences.length,
       completedExperiencesCount: completedInZone.length,
-      firstCompletedAt,
+      firstCompletedAt: isUnlocked ? new Date().toISOString() : null,
     };
   });
 }
 
 export async function getUserQuests(eventId: string, profileId: string) {
-  mockDb.evaluateQuestsForProfile(eventId, profileId);
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const [questsRes, progRes] = await Promise.all([
+      supabaseAdmin
+        .from("quests")
+        .select("*")
+        .eq("event_id", eventId)
+        .eq("is_active", true),
+      supabaseAdmin
+        .from("quest_progress")
+        .select("*")
+        .eq("event_id", eventId)
+        .eq("profile_id", profileId),
+    ]);
 
+    const quests = questsRes.data || [];
+    const progMap = new Map((progRes.data || []).map((p: any) => [p.quest_id, p]));
+
+    return quests.map((quest) => {
+      const qp = progMap.get(quest.id) || {
+        id: "",
+        event_id: eventId,
+        profile_id: profileId,
+        quest_id: quest.id,
+        progress_value: 0,
+        target_value: (quest.condition_config as any)?.target || 1,
+        completed_at: null,
+      };
+
+      const target = qp.target_value || 1;
+      const isCompleted = Boolean(qp.completed_at) || qp.progress_value >= target;
+
+      return {
+        quest,
+        progress: qp,
+        isCompleted,
+        percent: Math.min(100, Math.round((qp.progress_value / target) * 100)),
+      };
+    });
+  }
+
+  // Memory fallback
+  mockDb.evaluateQuestsForProfile(eventId, profileId);
   return mockDb.quests.map((quest) => {
     const qp = mockDb.questProgress.get(`${profileId}:${quest.id}`) || {
       id: "",
@@ -151,28 +246,49 @@ export async function getUserQuests(eventId: string, profileId: string) {
       completed_at: null,
       updated_at: new Date().toISOString(),
     };
-
     return {
       quest,
       progress: qp,
       isCompleted: Boolean(qp.completed_at),
-      percent: Math.min(
-        100,
-        Math.round((qp.progress_value / qp.target_value) * 100)
-      ),
+      percent: Math.min(100, Math.round((qp.progress_value / qp.target_value) * 100)),
     };
   });
 }
 
 export async function getUserAchievements(eventId: string, profileId: string) {
-  mockDb.evaluateAchievementsForProfile(eventId, profileId);
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const [achRes, userAchRes] = await Promise.all([
+      supabaseAdmin
+        .from("achievements")
+        .select("*")
+        .eq("event_id", eventId)
+        .eq("is_active", true),
+      supabaseAdmin
+        .from("user_achievements")
+        .select("*")
+        .eq("event_id", eventId)
+        .eq("profile_id", profileId),
+    ]);
 
+    const achievements = achRes.data || [];
+    const unlockedMap = new Map(
+      (userAchRes.data || []).map((ua: any) => [ua.achievement_id, ua.unlocked_at])
+    );
+
+    return achievements.map((ach) => ({
+      achievement: ach,
+      isUnlocked: unlockedMap.has(ach.id),
+      unlockedAt: unlockedMap.get(ach.id) || null,
+    }));
+  }
+
+  // Memory fallback
+  mockDb.evaluateAchievementsForProfile(eventId, profileId);
   const unlockedMap = new Map(
     mockDb.userAchievements
       .filter((ua) => ua.profile_id === profileId)
       .map((ua) => [ua.achievement_id, ua.unlocked_at])
   );
-
   return mockDb.achievements.map((ach) => ({
     achievement: ach,
     isUnlocked: unlockedMap.has(ach.id),

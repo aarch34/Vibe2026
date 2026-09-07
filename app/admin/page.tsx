@@ -1,4 +1,4 @@
-import { mockDb } from "@/lib/db/supabase";
+import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import {
   Users,
   CheckCircle2,
@@ -11,20 +11,106 @@ import {
 import { formatCoins } from "@/lib/utils";
 import { EventFreezeControl } from "@/components/admin/event-freeze-control";
 
-export default function AdminDashboardPage() {
-  const attendeesCount = mockDb.profiles.size;
-  const completionsCount = mockDb.completions.length;
-  const qrCodesCount = mockDb.qrCodes.size;
-  const zonesCount = mockDb.zones.size;
-  const redemptionsCount = mockDb.rewardRedemptions.length;
+export const dynamic = "force-dynamic";
 
-  const totalCoinsInCirculation = Array.from(mockDb.wallets.values()).reduce(
-    (sum, w) => sum + w.balance,
-    0
-  );
-  const totalCoinsSpent = mockDb.walletTransactions
-    .filter((t) => t.type === "spend" || t.type === "reward_redemption")
-    .reduce((sum, t) => sum + t.amount, 0);
+export default async function AdminDashboardPage() {
+  const eventId = "a0000000-0000-0000-0000-000000000001";
+
+  let attendeesCount = 0;
+  let completionsCount = 0;
+  let qrCodesCount = 0;
+  let zonesCount = 0;
+  let redemptionsCount = 0;
+  let totalCoinsInCirculation = 0;
+  let totalCoinsSpent = 0;
+  let isEventFrozen = false;
+  let zonesWithStats: any[] = [];
+
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const [
+      profilesRes,
+      compsRes,
+      qrsRes,
+      zonesRes,
+      redsRes,
+      walletsRes,
+      txsRes,
+      eventRes,
+    ] = await Promise.all([
+      supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("experience_completions").select("id, experiences(zone_id)"),
+      supabaseAdmin.from("qr_codes").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("zones").select("*, experiences(*)").eq("event_id", eventId).order("sort_order", { ascending: true }),
+      supabaseAdmin.from("reward_redemptions").select("*", { count: "exact", head: true }),
+      supabaseAdmin.from("wallets").select("balance").eq("event_id", eventId),
+      supabaseAdmin.from("wallet_transactions").select("amount, type").eq("event_id", eventId),
+      supabaseAdmin.from("events").select("status").eq("id", eventId).single(),
+    ]);
+
+    attendeesCount = profilesRes.count || 0;
+    const comps = compsRes.data || [];
+    completionsCount = comps.length;
+    qrCodesCount = qrsRes.count || 0;
+    const rawZones = zonesRes.data || [];
+    zonesCount = rawZones.length;
+    redemptionsCount = redsRes.count || 0;
+
+    totalCoinsInCirculation = (walletsRes.data || []).reduce((sum, w) => sum + (w.balance || 0), 0);
+    totalCoinsSpent = (txsRes.data || [])
+      .filter((t) => t.type === "spend" || t.type === "reward_redemption")
+      .reduce((sum, t) => sum + (t.amount || 0), 0);
+
+    isEventFrozen = eventRes.data?.status === "frozen" || eventRes.data?.status === "concluded";
+
+    // Compute zone completions
+    zonesWithStats = rawZones.map((z: any) => {
+      const zoneCompletions = comps.filter((c: any) => c.experiences?.zone_id === z.id).length;
+      return {
+        id: z.id,
+        name: z.name,
+        slug: z.slug,
+        experiencesCount: z.experiences?.length || 0,
+        completionsCount: zoneCompletions,
+      };
+    });
+  } else {
+    attendeesCount = mockDb.profiles.size;
+    completionsCount = mockDb.completions.length;
+    qrCodesCount = mockDb.qrCodes.size;
+    zonesCount = mockDb.zones.size;
+    redemptionsCount = mockDb.rewardRedemptions.length;
+    isEventFrozen = mockDb.isEventFrozen;
+
+    totalCoinsInCirculation = Array.from(mockDb.wallets.values()).reduce(
+      (sum, w) => sum + w.balance,
+      0
+    );
+    totalCoinsSpent = mockDb.walletTransactions
+      .filter((t) => t.type === "spend" || t.type === "reward_redemption")
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const zones = Array.from(mockDb.zones.values()).sort(
+      (a, b) => a.sort_order - b.sort_order
+    );
+
+    zonesWithStats = zones.map((zone) => {
+      const zoneExps = Array.from(mockDb.experiences.values()).filter(
+        (e) => e.zone_id === zone.id
+      );
+      const completions = mockDb.completions.filter((c) => {
+        const exp = mockDb.experiences.get(c.experience_id);
+        return exp && exp.zone_id === zone.id;
+      }).length;
+
+      return {
+        id: zone.id,
+        name: zone.name,
+        slug: zone.slug,
+        experiencesCount: zoneExps.length,
+        completionsCount: completions,
+      };
+    });
+  }
 
   const kpis = [
     { label: "Registered Attendees", value: attendeesCount, icon: Users, color: "text-blue-400" },
@@ -34,10 +120,6 @@ export default function AdminDashboardPage() {
     { label: "Total Coins Spent", value: formatCoins(totalCoinsSpent), icon: TrendingUp, color: "text-purple-400" },
     { label: "Rewards Claimed", value: redemptionsCount, icon: Gift, color: "text-rose-400" },
   ];
-
-  const zones = Array.from(mockDb.zones.values()).sort(
-    (a, b) => a.sort_order - b.sort_order
-  );
 
   return (
     <div className="space-y-6">
@@ -51,7 +133,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Point 39 Event Concluded / Freeze Control */}
-      <EventFreezeControl initialIsFrozen={mockDb.isEventFrozen} />
+      <EventFreezeControl initialIsFrozen={isEventFrozen} />
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-3 gap-4">
@@ -102,31 +184,21 @@ export default function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
-              {zones.map((zone) => {
-                const zoneExps = Array.from(mockDb.experiences.values()).filter(
-                  (e) => e.zone_id === zone.id
-                );
-                const completions = mockDb.completions.filter((c) => {
-                  const exp = mockDb.experiences.get(c.experience_id);
-                  return exp && exp.zone_id === zone.id;
-                }).length;
-
-                return (
-                  <tr key={zone.id} className="hover:bg-slate-800/30">
-                    <td className="py-3 text-white font-bold">{zone.name}</td>
-                    <td className="py-3 font-mono text-slate-400">{zone.slug}</td>
-                    <td className="py-3 text-slate-300">{zoneExps.length}</td>
-                    <td className="py-3 font-mono text-cyan-400 font-bold">
-                      {completions}
-                    </td>
-                    <td className="py-3">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
-                        ACTIVE
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+              {zonesWithStats.map((zone) => (
+                <tr key={zone.id} className="hover:bg-slate-800/30">
+                  <td className="py-3 text-white font-bold">{zone.name}</td>
+                  <td className="py-3 font-mono text-slate-400">{zone.slug}</td>
+                  <td className="py-3 text-slate-300">{zone.experiencesCount}</td>
+                  <td className="py-3 font-mono text-cyan-400 font-bold">
+                    {zone.completionsCount}
+                  </td>
+                  <td className="py-3">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+                      ACTIVE
+                    </span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

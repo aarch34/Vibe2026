@@ -21,7 +21,7 @@ import {
   getUserAchievements,
 } from "@/lib/gameplay/progression-service";
 import { getUserLeaderboardRank } from "@/lib/leaderboard/leaderboard-service";
-import { mockDb } from "@/lib/db/supabase";
+import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { formatCoins, formatXP } from "@/lib/utils";
 
 export default async function AttendeeHomePage() {
@@ -33,12 +33,28 @@ export default async function AttendeeHomePage() {
   const userRank = await getUserLeaderboardRank(session.eventId, session.profile.id);
 
   const unlockedBadgesCount = achievements.filter((a) => a.isUnlocked).length;
-  const userStampsCount = mockDb.passportStamps.get(session.profile.id)?.size || progression.zonesVisitedCount;
+  const userStampsCount = progression.zonesVisitedCount;
 
-  // 3 Featured Experiences
-  const featuredExperiences = Array.from(mockDb.experiences.values())
-    .filter((e) => e.is_active)
-    .slice(0, 3);
+  // 3 Featured Experiences from Supabase or fallback
+  let featuredExperiences: any[] = [];
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const { data: exps } = await supabaseAdmin
+      .from("experiences")
+      .select("*, zones(name), sponsors(name)")
+      .eq("event_id", session.eventId)
+      .eq("is_active", true)
+      .limit(3);
+    featuredExperiences = exps || [];
+  } else {
+    featuredExperiences = Array.from(mockDb.experiences.values())
+      .filter((e) => e.is_active)
+      .slice(0, 3)
+      .map((e) => ({
+        ...e,
+        zones: { name: mockDb.zones.get(e.zone_id)?.name },
+        sponsors: e.sponsor_id ? { name: mockDb.sponsors.get(e.sponsor_id)?.name } : null,
+      }));
+  }
 
   const isNewRegistration = walletSummary.transactions.length <= 1;
 
@@ -276,9 +292,9 @@ export default async function AttendeeHomePage() {
         </div>
 
         <div className="space-y-2">
-          {featuredExperiences.map((exp) => {
-            const zone = mockDb.zones.get(exp.zone_id);
-            const sponsor = exp.sponsor_id ? mockDb.sponsors.get(exp.sponsor_id) : null;
+          {featuredExperiences.map((exp: any) => {
+            const zoneName = exp.zones?.name || "Event Zone";
+            const sponsorName = exp.sponsors?.name;
 
             return (
               <div
@@ -288,11 +304,11 @@ export default async function AttendeeHomePage() {
                 <div className="space-y-1 flex-1 pr-3">
                   <div className="flex items-center space-x-2">
                     <span className="text-[10px] font-bold text-blue-400 bg-blue-950/60 px-1.5 py-0.5 rounded border border-blue-500/20">
-                      {zone?.name || "Event Zone"}
+                      {zoneName}
                     </span>
-                    {sponsor && (
+                    {sponsorName && (
                       <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 px-1.5 py-0.5 rounded border border-amber-500/20">
-                        {sponsor.name}
+                        {sponsorName}
                       </span>
                     )}
                   </div>

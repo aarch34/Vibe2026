@@ -4,6 +4,7 @@ import { getWalletSummary } from "@/lib/wallet/wallet-service";
 import { getUserProgression } from "@/lib/gameplay/progression-service";
 import { TopHeader } from "@/components/attendee/top-header";
 import { AttendeeBottomNav } from "@/components/attendee/bottom-nav";
+import { TestSwitcher } from "@/components/attendee/test-switcher";
 
 export const dynamic = "force-dynamic";
 
@@ -19,6 +20,10 @@ export default async function AttendeeLayout({
   return (
     <div className="min-h-screen bg-[#070B14] flex flex-col items-center">
       <div className="w-full max-w-md min-h-screen flex flex-col bg-[#070B14] border-x border-slate-900/80 shadow-2xl relative">
+        <TestSwitcher
+          currentVibeId={session.profile.vibe_id}
+          currentDisplayName={session.profile.display_name}
+        />
         <TopHeader
           vibeId={session.profile.vibe_id}
           coins={walletSummary.wallet.balance}

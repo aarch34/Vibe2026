@@ -39,7 +39,20 @@ export async function getCurrentUserSession(
     }
   }
 
-  // Fallback to demo attendee for local development when Clerk is not configured
+  // Check for test user cookie when Clerk is not configured or in development testing
+  if (!clerkUserId) {
+    try {
+      const { cookies } = await import("next/headers");
+      const cookieUserId = cookies().get("vibe_user_id")?.value;
+      if (cookieUserId) {
+        clerkUserId = cookieUserId;
+      }
+    } catch {
+      // Cookies not available in static or non-request context
+    }
+  }
+
+  // Fallback default attendee for initial run
   if (!clerkUserId) {
     clerkUserId = "usr-demo-1";
     displayName = "Aarav Sharma";

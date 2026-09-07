@@ -1,10 +1,25 @@
-import { mockDb } from "@/lib/db/supabase";
+import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { MapPin } from "lucide-react";
+import { Zone } from "@/types/database";
 
-export default function AdminZonesPage() {
-  const zones = Array.from(mockDb.zones.values()).sort(
-    (a, b) => a.sort_order - b.sort_order
-  );
+export const dynamic = "force-dynamic";
+
+export default async function AdminZonesPage() {
+  const eventId = "a0000000-0000-0000-0000-000000000001";
+  let zones: Zone[] = [];
+
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const { data } = await supabaseAdmin
+      .from("zones")
+      .select("*")
+      .eq("event_id", eventId)
+      .order("sort_order", { ascending: true });
+    zones = data || [];
+  } else {
+    zones = Array.from(mockDb.zones.values()).sort(
+      (a, b) => a.sort_order - b.sort_order
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -41,7 +56,7 @@ export default function AdminZonesPage() {
                   <td className="py-3 font-bold text-white">{zone.name}</td>
                   <td className="py-3 font-mono text-blue-400">{zone.slug}</td>
                   <td className="py-3 font-mono text-slate-300">
-                    ({zone.map_data?.x}, {zone.map_data?.y})
+                    ({zone.map_data?.x ?? 0}, {zone.map_data?.y ?? 0})
                   </td>
                   <td className="py-3 text-slate-400 max-w-xs truncate">
                     {zone.description}

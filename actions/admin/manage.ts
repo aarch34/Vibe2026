@@ -20,7 +20,67 @@ export async function adminAdjustBalanceAction(rawInput: z.infer<typeof adjustBa
   const { targetProfileId, amount, reason } = parsed.data;
   const session = await getCurrentUserSession();
 
-  // Audit record
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    // 1. Get current wallet
+    const { data: wallet, error: wErr } = await supabaseAdmin
+      .from("wallets")
+      .select("*")
+      .eq("event_id", session.eventId)
+      .eq("profile_id", targetProfileId)
+      .single();
+
+    if (wErr || !wallet) {
+      return { success: false, message: "Target wallet not found" };
+    }
+
+    const balBefore = wallet.balance;
+    const newBal = balBefore + amount;
+    if (newBal < 0) {
+      return { success: false, message: "Resulting balance cannot be negative" };
+    }
+
+    // 2. Update wallet
+    const { error: upErr } = await supabaseAdmin
+      .from("wallets")
+      .update({
+        balance: newBal,
+        version: wallet.version + 1,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", wallet.id);
+
+    if (upErr) return { success: false, message: upErr.message };
+
+    // 3. Record transaction
+    await supabaseAdmin.from("wallet_transactions").insert({
+      wallet_id: wallet.id,
+      event_id: session.eventId,
+      profile_id: targetProfileId,
+      type: "admin_adjustment",
+      amount: Math.abs(amount),
+      balance_before: balBefore,
+      balance_after: newBal,
+      source_type: "admin_action",
+      source_id: session.profile.id,
+      idempotency_key: `adj_${Date.now()}_${targetProfileId}`,
+      metadata: { reason, adjustedBy: session.profile.display_name },
+    });
+
+    // 4. Record audit log
+    await supabaseAdmin.from("audit_logs").insert({
+      event_id: session.eventId,
+      actor_profile_id: session.profile.id,
+      action: "ADMIN_WALLET_ADJUSTMENT",
+      entity_type: "wallet",
+      entity_id: targetProfileId,
+      before_data: { balance: balBefore },
+      after_data: { balance: newBal, adjustment: amount, reason },
+    });
+
+    return { success: true, newBalance: newBal };
+  }
+
+  // Memory fallback
   const auditId = `audit-${Date.now()}`;
   mockDb.auditLogs.unshift({
     id: auditId,
@@ -82,6 +142,36 @@ export async function adminGenerateQRCodeAction(rawInput: z.infer<typeof generat
 
   const { experienceId, customCode } = parsed.data;
   const session = await getCurrentUserSession();
+
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const { data: exp } = await supabaseAdmin
+      .from("experiences")
+      .select("*")
+      .eq("id", experienceId)
+      .single();
+
+    if (!exp) return { success: false, message: "Experience not found" };
+
+    const code = customCode || `vibe-${exp.slug}-${Math.random().toString(36).substring(2, 6)}`;
+
+    const { data: qr, error: qrErr } = await supabaseAdmin
+      .from("qr_codes")
+      .upsert({
+        event_id: session.eventId,
+        experience_id: experienceId,
+        code,
+        version: 1,
+        is_active: true,
+      }, { onConflict: "code" })
+      .select()
+      .single();
+
+    if (qrErr) return { success: false, message: qrErr.message };
+
+    return { success: true, qr };
+  }
+
+  // Memory fallback
   const exp = mockDb.experiences.get(experienceId);
   if (!exp) return { success: false, message: "Experience not found" };
 
@@ -107,6 +197,30 @@ export async function adminGenerateQRCodeAction(rawInput: z.infer<typeof generat
 // 3. Freeze Event / Finalize Leaderboard (Point 39)
 export async function adminToggleEventFreezeAction(freeze: boolean) {
   const session = await getCurrentUserSession();
+
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const status = freeze ? "frozen" : "live";
+
+    await supabaseAdmin
+      .from("events")
+      .update({ status })
+      .eq("id", session.eventId);
+
+    await supabaseAdmin.from("audit_logs").insert({
+      event_id: session.eventId,
+      actor_profile_id: session.profile.id,
+      action: freeze ? "EVENT_CONCLUDED_FREEZE" : "EVENT_UNFROZEN",
+      entity_type: "events",
+      entity_id: session.eventId,
+      before_data: { wasFrozen: !freeze },
+      after_data: { isFrozen: freeze, status },
+    });
+
+    mockDb.isEventFrozen = freeze;
+    return { success: true, isFrozen: freeze };
+  }
+
+  // Memory fallback
   mockDb.isEventFrozen = freeze;
 
   mockDb.auditLogs.unshift({

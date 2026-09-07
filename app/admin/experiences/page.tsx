@@ -1,8 +1,31 @@
-import { mockDb } from "@/lib/db/supabase";
+import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { Sparkles } from "lucide-react";
 
-export default function AdminExperiencesPage() {
-  const experiences = Array.from(mockDb.experiences.values());
+export const dynamic = "force-dynamic";
+
+export default async function AdminExperiencesPage() {
+  const eventId = "a0000000-0000-0000-0000-000000000001";
+  let experiences: any[] = [];
+
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const { data } = await supabaseAdmin
+      .from("experiences")
+      .select("*, zones(name), sponsors(name)")
+      .eq("event_id", eventId)
+      .order("coin_cost", { ascending: true });
+
+    experiences = (data || []).map((exp: any) => ({
+      ...exp,
+      zoneName: exp.zones?.name || "Zone",
+      sponsorName: exp.sponsors?.name || "—",
+    }));
+  } else {
+    experiences = Array.from(mockDb.experiences.values()).map((exp) => ({
+      ...exp,
+      zoneName: mockDb.zones.get(exp.zone_id)?.name || "Zone",
+      sponsorName: exp.sponsor_id ? mockDb.sponsors.get(exp.sponsor_id)?.name : "—",
+    }));
+  }
 
   return (
     <div className="space-y-6">
@@ -33,43 +56,36 @@ export default function AdminExperiencesPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 font-medium">
-              {experiences.map((exp) => {
-                const zone = mockDb.zones.get(exp.zone_id);
-                const sponsor = exp.sponsor_id
-                  ? mockDb.sponsors.get(exp.sponsor_id)
-                  : null;
-
-                return (
-                  <tr key={exp.id} className="hover:bg-slate-800/30">
-                    <td className="py-3 text-white font-bold">{exp.title}</td>
-                    <td className="py-3 font-semibold text-blue-400">
-                      {zone?.name || "Zone"}
-                    </td>
-                    <td className="py-3 text-slate-300">
-                      {sponsor?.name || "—"}
-                    </td>
-                    <td className="py-3 font-mono font-bold text-amber-400">
-                      {exp.coin_cost > 0 ? `${exp.coin_cost} Coins` : "Free"}
-                    </td>
-                    <td className="py-3 font-mono font-bold text-purple-400">
-                      +{exp.xp_reward} XP
-                    </td>
-                    <td className="py-3 font-mono text-slate-300">
-                      {exp.max_attempts}
-                    </td>
-                    <td className="py-3 font-mono text-slate-400">
-                      {exp.cooldown_seconds > 0
-                        ? `${exp.cooldown_seconds}s`
-                        : "None"}
-                    </td>
-                    <td className="py-3">
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
-                        ACTIVE
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+              {experiences.map((exp) => (
+                <tr key={exp.id} className="hover:bg-slate-800/30">
+                  <td className="py-3 text-white font-bold">{exp.title}</td>
+                  <td className="py-3 font-semibold text-blue-400">
+                    {exp.zoneName}
+                  </td>
+                  <td className="py-3 text-slate-300">
+                    {exp.sponsorName}
+                  </td>
+                  <td className="py-3 font-mono font-bold text-amber-400">
+                    {exp.coin_cost > 0 ? `${exp.coin_cost} Coins` : "Free"}
+                  </td>
+                  <td className="py-3 font-mono font-bold text-purple-400">
+                    +{exp.xp_reward} XP
+                  </td>
+                  <td className="py-3 font-mono text-slate-300">
+                    {exp.max_attempts}
+                  </td>
+                  <td className="py-3 font-mono text-slate-400">
+                    {exp.cooldown_seconds > 0
+                      ? `${exp.cooldown_seconds}s`
+                      : "None"}
+                  </td>
+                  <td className="py-3">
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+                      ACTIVE
+                    </span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

@@ -1,8 +1,23 @@
-import { mockDb } from "@/lib/db/supabase";
+import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { FileText, ShieldAlert } from "lucide-react";
 
-export default function AdminAuditLogsPage() {
-  const auditLogs = mockDb.auditLogs;
+export const dynamic = "force-dynamic";
+
+export default async function AdminAuditLogsPage() {
+  const eventId = "a0000000-0000-0000-0000-000000000001";
+  let auditLogs: any[] = [];
+
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const { data } = await supabaseAdmin
+      .from("audit_logs")
+      .select("*")
+      .eq("event_id", eventId)
+      .order("created_at", { ascending: false })
+      .limit(50);
+    auditLogs = data || [];
+  } else {
+    auditLogs = mockDb.auditLogs;
+  }
 
   return (
     <div className="space-y-6">

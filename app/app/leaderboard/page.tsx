@@ -3,9 +3,11 @@ import {
   getLeaderboard,
   getUserLeaderboardRank,
 } from "@/lib/leaderboard/leaderboard-service";
-import { mockDb } from "@/lib/db/supabase";
+import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { Trophy, Medal, Crown, Sparkles, User, Info, CheckCircle2 } from "lucide-react";
 import { formatXP } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 export default async function LeaderboardPage() {
   const session = await getCurrentUserSession();
@@ -19,7 +21,18 @@ export default async function LeaderboardPage() {
     session.profile.id
   );
 
-  const isFrozen = mockDb.isEventFrozen;
+  let isFrozen = mockDb.isEventFrozen;
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const { data: ev } = await supabaseAdmin
+      .from("events")
+      .select("status")
+      .eq("id", session.eventId)
+      .single();
+    if (ev) {
+      isFrozen = ev.status === "frozen" || ev.status === "concluded";
+    }
+  }
+
   const top3 = entries.slice(0, 3);
   const others = entries.slice(3);
 
