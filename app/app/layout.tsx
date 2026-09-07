@@ -5,6 +5,8 @@ import { getUserProgression } from "@/lib/gameplay/progression-service";
 import { TopHeader } from "@/components/attendee/top-header";
 import { AttendeeBottomNav } from "@/components/attendee/bottom-nav";
 
+export const dynamic = "force-dynamic";
+
 export default async function AttendeeLayout({
   children,
 }: {

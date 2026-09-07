@@ -54,22 +54,38 @@ export async function getCurrentUserSession(
       .from("profiles")
       .select("*")
       .eq("clerk_user_id", clerkUserId)
-      .single();
+      .maybeSingle();
 
     if (!profile) {
       const vibeId = `VIBE-${Math.floor(1000 + Math.random() * 9000)}`;
       const { data: newProfile, error } = await supabaseAdmin
         .from("profiles")
-        .insert({
-          clerk_user_id: clerkUserId,
-          vibe_id: vibeId,
-          display_name: displayName,
-          college: "Rotaract District 3192",
-        })
+        .upsert(
+          {
+            clerk_user_id: clerkUserId,
+            vibe_id: vibeId,
+            display_name: displayName,
+            college: "Rotaract District 3192",
+          },
+          { onConflict: "clerk_user_id" }
+        )
         .select()
         .single();
-      if (error) throw error;
-      profile = newProfile;
+      if (error) {
+        // If race condition occurred, re-query profile
+        const { data: existingProfile } = await supabaseAdmin
+          .from("profiles")
+          .select("*")
+          .eq("clerk_user_id", clerkUserId)
+          .maybeSingle();
+        profile = existingProfile;
+      } else {
+        profile = newProfile;
+      }
+    }
+
+    if (!profile) {
+      throw new Error(`Failed to resolve user profile for ${clerkUserId}`);
     }
 
     // 2. Resolve Event Member
@@ -78,35 +94,52 @@ export async function getCurrentUserSession(
       .select("*")
       .eq("event_id", eventId)
       .eq("profile_id", profile.id)
-      .single();
+      .maybeSingle();
 
     if (!member) {
       const { data: newMember } = await supabaseAdmin
         .from("event_members")
-        .insert({
-          event_id: eventId,
-          profile_id: profile.id,
-          role: "attendee",
-          status: "active",
-        })
+        .upsert(
+          {
+            event_id: eventId,
+            profile_id: profile.id,
+            role: "attendee",
+            status: "active",
+          },
+          { onConflict: "event_id,profile_id" }
+        )
         .select()
         .single();
       member = newMember;
     }
 
-    // 3. Ensure Initial Wallet Credit
-    await supabaseAdmin.rpc("fn_credit_initial_wallet", {
-      p_event_id: eventId,
-      p_profile_id: profile.id,
-      p_initial_amount: 500,
-    });
+    // Default member if somehow null
+    const memberRole: MemberRole = member?.role || "attendee";
+
+    // 3. Ensure Initial Wallet Credit (if procedure exists)
+    try {
+      await supabaseAdmin.rpc("fn_credit_initial_wallet", {
+        p_event_id: eventId,
+        p_profile_id: profile.id,
+        p_initial_amount: 500,
+      });
+    } catch {
+      // Ignore if procedures not yet applied
+    }
 
     return {
       clerkUserId,
       profile,
-      member,
+      member: member || {
+        id: `em-${profile.id}`,
+        event_id: eventId,
+        profile_id: profile.id,
+        role: memberRole,
+        status: "active",
+        joined_at: new Date().toISOString(),
+      },
       eventId,
-      role: member.role,
+      role: memberRole,
     };
   }
 

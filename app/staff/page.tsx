@@ -1,6 +1,8 @@
 import { mockDb } from "@/lib/db/supabase";
 import { StaffDashboardClient } from "@/components/staff/staff-client";
 
+export const dynamic = "force-dynamic";
+
 export default function StaffDashboardPage() {
   const eventId = "a0000000-0000-0000-0000-000000000001";
 
