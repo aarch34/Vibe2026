@@ -12,23 +12,12 @@ export async function getWalletSummary(
   eventId: string,
   profileId: string
 ): Promise<WalletSummary> {
-  if (isUsingLiveSupabase() && supabaseAdmin) {
-    const { data: wallet } = await supabaseAdmin
-      .from("wallets")
-      .select("*")
-      .eq("event_id", eventId)
-      .eq("profile_id", profileId)
-      .single();
-
-    const { data: transactions } = await supabaseAdmin
-      .from("wallet_transactions")
-      .select("*")
-      .eq("event_id", eventId)
-      .eq("profile_id", profileId)
-      .order("created_at", { ascending: false })
-      .limit(50);
-
-    const txs: WalletTransaction[] = transactions || [];
+  const key = `${eventId}:${profileId}`;
+  const memWallet = mockDb.wallets.get(key);
+  if (memWallet) {
+    const txs = mockDb.walletTransactions.filter(
+      (t) => t.event_id === eventId && t.profile_id === profileId
+    );
     const totalEarned = txs
       .filter((t) => t.type === "earn" || t.type === "initial_credit")
       .reduce((sum, t) => sum + t.amount, 0);
@@ -37,23 +26,48 @@ export async function getWalletSummary(
       .reduce((sum, t) => sum + t.amount, 0);
 
     return {
-      wallet: wallet || {
-        id: "",
-        event_id: eventId,
-        profile_id: profileId,
-        balance: 0,
-        version: 0,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      },
+      wallet: memWallet,
       transactions: txs,
       totalEarned,
       totalSpent,
     };
   }
 
-  // In-Memory store
-  const key = `${eventId}:${profileId}`;
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const { data: wallet } = await supabaseAdmin
+      .from("wallets")
+      .select("*")
+      .eq("event_id", eventId)
+      .eq("profile_id", profileId)
+      .single();
+
+    if (wallet) {
+      const { data: transactions } = await supabaseAdmin
+        .from("wallet_transactions")
+        .select("*")
+        .eq("event_id", eventId)
+        .eq("profile_id", profileId)
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      const txs: WalletTransaction[] = transactions || [];
+      const totalEarned = txs
+        .filter((t) => t.type === "earn" || t.type === "initial_credit")
+        .reduce((sum, t) => sum + t.amount, 0);
+      const totalSpent = txs
+        .filter((t) => t.type === "spend" || t.type === "reward_redemption")
+        .reduce((sum, t) => sum + t.amount, 0);
+
+      return {
+        wallet,
+        transactions: txs,
+        totalEarned,
+        totalSpent,
+      };
+    }
+  }
+
+  // In-Memory store fallback
   let wallet = mockDb.wallets.get(key);
   if (!wallet) {
     mockDb.creditInitialWallet(eventId, profileId, 500);

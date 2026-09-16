@@ -28,7 +28,9 @@ export default async function StallsPage() {
 
     stalls = stallsRes.data || [];
     userSubmissions = subsRes.data || [];
-  } else {
+  }
+
+  if (!stalls || stalls.length === 0) {
     stalls = Array.from(mockDb.stalls.values()).filter((s) => s.is_active);
     userSubmissions = mockDb.stallPhotoSubmissions.filter(
       (p) => p.profile_id === session.profile.id && p.event_id === session.eventId

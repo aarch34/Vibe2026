@@ -33,50 +33,57 @@ export async function POST(req: NextRequest) {
       ? assignedZoneId
       : zoneKeys[Math.floor(Math.random() * zoneKeys.length)];
 
-    let profile;
+    let profile: any = null;
 
     if (isUsingLiveSupabase() && supabaseAdmin) {
-      const { data: newProfile, error } = await supabaseAdmin
-        .from("profiles")
-        .upsert(
+      try {
+        const { data: newProfile, error } = await supabaseAdmin
+          .from("profiles")
+          .upsert(
+            {
+              clerk_user_id: newUserId,
+              vibe_id: vibeId,
+              display_name: name.trim(),
+              college: club || "Rotaract District 3192",
+              club: club || "Rotaract Member",
+              phone: phone || null,
+              email: email || null,
+              instagram_id: cleanInsta,
+              registration_id: registrationId || `REG-${Date.now().toString().slice(-6)}`,
+              assigned_zone_id: chosenZone,
+            },
+            { onConflict: "clerk_user_id" }
+          )
+          .select()
+          .single();
+
+        if (error) {
+          throw new Error(error.message);
+        }
+        profile = newProfile;
+
+        await supabaseAdmin.from("event_members").upsert(
           {
-            clerk_user_id: newUserId,
-            vibe_id: vibeId,
-            display_name: name.trim(),
-            college: club || "Rotaract District 3192",
-            club: club || "Rotaract Member",
-            phone: phone || null,
-            email: email || null,
-            instagram_id: cleanInsta,
-            registration_id: registrationId || `REG-${Date.now().toString().slice(-6)}`,
-            assigned_zone_id: chosenZone,
+            event_id: eventId,
+            profile_id: profile.id,
+            role: "attendee",
+            status: "active",
           },
-          { onConflict: "clerk_user_id" }
-        )
-        .select()
-        .single();
+          { onConflict: "event_id,profile_id" }
+        );
 
-      if (error) {
-        throw new Error(error.message);
+        await supabaseAdmin.rpc("fn_credit_initial_wallet", {
+          p_event_id: eventId,
+          p_profile_id: profile.id,
+          p_initial_amount: 500,
+        });
+      } catch (dbErr) {
+        console.warn("Live Supabase registration failed, falling back to mockDb:", dbErr);
+        profile = null;
       }
-      profile = newProfile;
+    }
 
-      await supabaseAdmin.from("event_members").upsert(
-        {
-          event_id: eventId,
-          profile_id: profile.id,
-          role: "attendee",
-          status: "active",
-        },
-        { onConflict: "event_id,profile_id" }
-      );
-
-      await supabaseAdmin.rpc("fn_credit_initial_wallet", {
-        p_event_id: eventId,
-        p_profile_id: profile.id,
-        p_initial_amount: 500,
-      });
-    } else {
+    if (!profile) {
       // In-memory mock store
       profile = mockDb.createAttendeeProfile(
         newUserId,

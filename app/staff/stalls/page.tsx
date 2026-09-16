@@ -19,7 +19,9 @@ export default async function StaffStallsPage() {
       attendeeName: s.profiles?.display_name || "Attendee",
       stallName: s.stalls?.name || "Stall",
     }));
-  } else {
+  }
+
+  if (!submissions || submissions.length === 0) {
     submissions = mockDb.stallPhotoSubmissions.map((s) => ({
       ...s,
       attendeeName: mockDb.profiles.get(s.profile_id)?.display_name || "Attendee",

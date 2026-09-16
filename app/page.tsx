@@ -99,7 +99,7 @@ export default function LandingPage() {
             <Compass className="w-5 h-5 text-cyan-400" />
             <h3 className="text-xs font-bold text-white">6 Official Zones</h3>
             <p className="text-[11px] text-slate-400">
-              Arnava, Taranaga, Sagara & more
+              Arnava, Taranaga, Sagara, Pravaha, Samudhra, Varuna
             </p>
           </div>
 

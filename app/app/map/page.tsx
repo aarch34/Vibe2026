@@ -35,8 +35,20 @@ export default async function VenueMapPage() {
     zones = zonesRes.data || [];
     experiences = expsRes.data || [];
     userCompletions = compsRes.data || [];
-  } else {
-    zones = Array.from(mockDb.zones.values()).sort((a, b) => a.sort_order - b.sort_order);
+  }
+
+  if (
+    !zones ||
+    zones.length < 6 ||
+    !zones.some((z) => z.slug === "arnava" || z.name === "Arnava")
+  ) {
+    zones = Array.from(mockDb.zones.values())
+      .filter((z) =>
+        ["arnava", "taranaga", "sagara", "pravaha", "samudhra", "varuna"].includes(
+          z.slug
+        )
+      )
+      .sort((a, b) => a.sort_order - b.sort_order);
     experiences = Array.from(mockDb.experiences.values()).filter((e) => e.is_active);
     userCompletions = mockDb.completions.filter(
       (c) => c.profile_id === session.profile.id && c.event_id === session.eventId

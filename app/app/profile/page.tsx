@@ -43,16 +43,18 @@ export default async function ProfilePage() {
   // Resolve assigned zone name
   let assignedZoneName = "Arnava";
   if (session.profile.assigned_zone_id) {
-    if (isUsingLiveSupabase() && supabaseAdmin) {
-      const { data: z } = await supabaseAdmin
-        .from("zones")
-        .select("name")
-        .eq("id", session.profile.assigned_zone_id)
-        .maybeSingle();
-      if (z) assignedZoneName = z.name;
-    } else {
-      const z = mockDb.zones.get(session.profile.assigned_zone_id);
-      if (z) assignedZoneName = z.name;
+    const memZone = mockDb.zones.get(session.profile.assigned_zone_id);
+    if (memZone) {
+      assignedZoneName = memZone.name;
+    } else if (isUsingLiveSupabase() && supabaseAdmin) {
+      try {
+        const { data: z } = await supabaseAdmin
+          .from("zones")
+          .select("name")
+          .eq("id", session.profile.assigned_zone_id)
+          .maybeSingle();
+        if (z) assignedZoneName = z.name;
+      } catch {}
     }
   }
 

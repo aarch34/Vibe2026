@@ -60,6 +60,32 @@ export async function getCurrentUserSession(
 
   const eventId = "a0000000-0000-0000-0000-000000000001";
 
+  // Check if profile exists in memory store first (e.g. newly registered attendee or demo attendee)
+  const memProfile = Array.from(mockDb.profiles.values()).find(
+    (p) => p.clerk_user_id === clerkUserId
+  );
+  if (memProfile && (clerkUserId.startsWith("usr-reg-") || clerkUserId.startsWith("usr-demo-") || !isUsingLiveSupabase())) {
+    let member = mockDb.eventMembers.get(`${eventId}:${memProfile.id}`);
+    if (!member) {
+      member = {
+        id: `em-${memProfile.id}`,
+        event_id: eventId,
+        profile_id: memProfile.id,
+        role: "attendee",
+        status: "active",
+        joined_at: new Date().toISOString(),
+      };
+      mockDb.eventMembers.set(`${eventId}:${memProfile.id}`, member);
+    }
+    return {
+      clerkUserId,
+      profile: memProfile,
+      member,
+      eventId,
+      role: member.role || "attendee",
+    };
+  }
+
   // If using live Supabase with service role
   if (isUsingLiveSupabase() && supabaseAdmin) {
     // 1. Resolve Profile

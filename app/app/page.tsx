@@ -43,16 +43,18 @@ export default async function AttendeeHomePage() {
   // Resolve assigned zone name
   let assignedZoneName = "Arnava";
   if (session.profile.assigned_zone_id) {
-    if (isUsingLiveSupabase() && supabaseAdmin) {
-      const { data: z } = await supabaseAdmin
-        .from("zones")
-        .select("name")
-        .eq("id", session.profile.assigned_zone_id)
-        .maybeSingle();
-      if (z) assignedZoneName = z.name;
-    } else {
-      const z = mockDb.zones.get(session.profile.assigned_zone_id);
-      if (z) assignedZoneName = z.name;
+    const memZone = mockDb.zones.get(session.profile.assigned_zone_id);
+    if (memZone) {
+      assignedZoneName = memZone.name;
+    } else if (isUsingLiveSupabase() && supabaseAdmin) {
+      try {
+        const { data: z } = await supabaseAdmin
+          .from("zones")
+          .select("name")
+          .eq("id", session.profile.assigned_zone_id)
+          .maybeSingle();
+        if (z) assignedZoneName = z.name;
+      } catch {}
     }
   }
 
@@ -69,9 +71,23 @@ export default async function AttendeeHomePage() {
       .eq("is_active", true)
       .limit(4);
     featuredExperiences = exps || [];
-  } else {
+  }
+
+  if (
+    !featuredExperiences ||
+    featuredExperiences.length === 0 ||
+    !featuredExperiences.some(
+      (e) => e.slug?.includes("arnava") || e.slug?.includes("taranaga")
+    )
+  ) {
     featuredExperiences = Array.from(mockDb.experiences.values())
-      .filter((e) => e.is_active)
+      .filter(
+        (e) =>
+          e.is_active &&
+          e.zone_id.startsWith("z-") &&
+          e.zone_id !== "z-arcade" &&
+          e.zone_id !== "z-stage"
+      )
       .slice(0, 4)
       .map((e) => ({
         ...e,
