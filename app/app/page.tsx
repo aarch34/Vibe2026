@@ -13,6 +13,9 @@ import {
   Award,
   Info,
   Gift,
+  Gamepad2,
+  Camera,
+  Waves,
 } from "lucide-react";
 import { getCurrentUserSession } from "@/lib/auth/session";
 import { getWalletSummary } from "@/lib/wallet/wallet-service";
@@ -20,10 +23,13 @@ import {
   getUserProgression,
   getUserQuests,
   getUserAchievements,
+  getUserPlayerStats,
 } from "@/lib/gameplay/progression-service";
 import { getUserLeaderboardRank } from "@/lib/leaderboard/leaderboard-service";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { formatCoins, formatXP } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 export default async function AttendeeHomePage() {
   const session = await getCurrentUserSession();
@@ -32,11 +38,28 @@ export default async function AttendeeHomePage() {
   const quests = await getUserQuests(session.eventId, session.profile.id);
   const achievements = await getUserAchievements(session.eventId, session.profile.id);
   const userRank = await getUserLeaderboardRank(session.eventId, session.profile.id);
+  const playerStats = await getUserPlayerStats(session.profile.id);
+
+  // Resolve assigned zone name
+  let assignedZoneName = "Arnava";
+  if (session.profile.assigned_zone_id) {
+    if (isUsingLiveSupabase() && supabaseAdmin) {
+      const { data: z } = await supabaseAdmin
+        .from("zones")
+        .select("name")
+        .eq("id", session.profile.assigned_zone_id)
+        .maybeSingle();
+      if (z) assignedZoneName = z.name;
+    } else {
+      const z = mockDb.zones.get(session.profile.assigned_zone_id);
+      if (z) assignedZoneName = z.name;
+    }
+  }
 
   const unlockedBadgesCount = achievements.filter((a) => a.isUnlocked).length;
   const userStampsCount = progression.zonesVisitedCount;
 
-  // 4 Featured Experiences from Supabase or fallback
+  // 4 Featured Experiences from the 6 official zones
   let featuredExperiences: any[] = [];
   if (isUsingLiveSupabase() && supabaseAdmin) {
     const { data: exps } = await supabaseAdmin
@@ -71,7 +94,7 @@ export default async function AttendeeHomePage() {
                 Welcome to VIBE, {session.profile.display_name}!
               </h2>
               <p className="text-xs sm:text-sm text-blue-200/90 leading-relaxed">
-                Your VIBE Wallet has been loaded with <span className="font-bold text-amber-300">500 VIBE Coins</span>. Explore zones, complete challenges, and conquer the district leaderboard!
+                Your VIBE Wallet has been loaded with <span className="font-bold text-amber-300">500 VIBE Coins</span>. You are part of <strong className="text-cyan-300">🌊 {assignedZoneName.toUpperCase()}</strong>. Explore zones, play games, and conquer the festival leaderboard!
               </p>
               <div className="pt-1 flex items-center space-x-2 text-[10px] sm:text-xs text-cyan-300 font-medium tracking-wide">
                 <span>Explore</span> • <span>Experience</span> • <span>Earn</span> • <span>Spend</span> • <span>Repeat</span>
@@ -83,24 +106,28 @@ export default async function AttendeeHomePage() {
 
       {/* Main Responsive Grid: 2 Columns on Desktop */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Attendee Identity & 4 Core Game Metrics */}
+        {/* Left Column: Attendee Identity & Core Metrics */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Attendee Profile Hero Card */}
+          {/* Attendee Profile Hero Card (Fulfilling Section 4 Header Specs) */}
           <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-slate-900 via-blue-950/60 to-slate-900 border border-blue-500/20 shadow-xl shadow-blue-950/30">
             <div className="absolute -top-12 -right-12 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
             <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
 
-            <div className="relative z-10">
+            <div className="relative z-10 space-y-4">
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs font-semibold text-blue-400 tracking-wide uppercase">
-                    Attendee Profile
+                    HEY {session.profile.display_name.toUpperCase()} 👋
                   </p>
-                  <h1 className="text-xl sm:text-2xl font-extrabold text-white tracking-tight mt-0.5">
-                    {session.profile.display_name}
-                  </h1>
-                  <p className="text-xs sm:text-sm text-slate-400 font-medium">
-                    {session.profile.college || "Rotaract District 3192"}
+                  <div className="flex items-center space-x-2 mt-1">
+                    <span className="inline-flex items-center space-x-1 text-xs font-black text-cyan-300 bg-cyan-950/80 border border-cyan-400/40 px-2.5 py-0.5 rounded-full shadow-sm">
+                      <span>🌊</span>
+                      <span>{assignedZoneName.toUpperCase()}</span>
+                      <span className="text-[9px] text-cyan-400 font-normal ml-0.5">(YOUR ZONE)</span>
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 font-medium mt-1">
+                    {session.profile.club || session.profile.college || "Rotaract District 3192"}
                   </p>
                 </div>
 
@@ -115,12 +142,12 @@ export default async function AttendeeHomePage() {
               </div>
 
               {/* XP & Level Progression Bar */}
-              <div className="mt-4 pt-3 border-t border-slate-800/80">
+              <div className="pt-3 border-t border-slate-800/80">
                 <div className="flex items-center justify-between text-xs mb-1.5">
                   <div className="flex items-center space-x-1.5">
                     <Sparkles className="w-3.5 h-3.5 text-purple-400" />
                     <span className="font-bold text-purple-300">
-                      {progression.currentLevel.name}
+                      LEVEL {progression.currentLevel.sort_order} — {progression.currentLevel.name.toUpperCase()}
                     </span>
                   </div>
                   <span className="font-mono text-slate-300 font-semibold">
@@ -153,7 +180,62 @@ export default async function AttendeeHomePage() {
             </div>
           </div>
 
-          {/* THE FOUR CORE METRICS (Section 2 of Game Economy) */}
+          {/* Section 4: 4 PROGRESS COUNTERS */}
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center space-x-3 shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-sm shrink-0">
+                🗺️
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">Zone Progress</span>
+                <span className="text-sm sm:text-base font-black font-mono text-white">
+                  {playerStats.zonesVisitedCount} / 6
+                </span>
+                <span className="text-[9px] text-slate-400 block">explored</span>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center space-x-3 shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-sm shrink-0">
+                ⚡
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">Experiences</span>
+                <span className="text-sm sm:text-base font-black font-mono text-white">
+                  {playerStats.experiencesCompletedCount}
+                </span>
+                <span className="text-[9px] text-slate-400 block">completed</span>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center space-x-3 shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 text-sm shrink-0">
+                📸
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">Stalls</span>
+                <span className="text-sm sm:text-base font-black font-mono text-white">
+                  {playerStats.stallsVisitedCount}
+                </span>
+                <span className="text-[9px] text-slate-400 block">visited</span>
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center space-x-3 shadow-sm">
+              <div className="w-9 h-9 rounded-lg bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400 text-sm shrink-0">
+                🎮
+              </div>
+              <div className="min-w-0">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">Games</span>
+                <span className="text-sm sm:text-base font-black font-mono text-white">
+                  {playerStats.gamesPlayedCount}
+                </span>
+                <span className="text-[9px] text-slate-400 block">played</span>
+              </div>
+            </div>
+          </div>
+
+          {/* THE TWO CORE WALLET & XP PILLARS */}
           <div className="grid grid-cols-2 gap-3">
             {/* Metric 1: Spendable Coins */}
             <Link
@@ -196,115 +278,99 @@ export default async function AttendeeHomePage() {
                 </p>
               </div>
             </Link>
-
-            {/* Metric 3: Passport Progress */}
-            <Link
-              href="/app/map"
-              className="p-3.5 sm:p-4 rounded-xl bg-slate-900/90 border border-cyan-500/20 hover:border-cyan-400/50 hover:bg-slate-900 transition-all flex flex-col justify-between shadow-sm group"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-                  🗺️ VIBE Passport
-                </span>
-                <Compass className="w-4 h-4 text-cyan-400 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="mt-3">
-                <span className="text-2xl sm:text-3xl font-black font-mono text-white">
-                  {userStampsCount} / 7
-                </span>
-                <p className="text-[10px] text-cyan-400/90 font-medium mt-0.5">
-                  Zones Discovered (+50🪙/ea)
-                </p>
-              </div>
-            </Link>
-
-            {/* Metric 4: Achievements & Badges */}
-            <Link
-              href="/app/profile"
-              className="p-3.5 sm:p-4 rounded-xl bg-slate-900/90 border border-emerald-500/20 hover:border-emerald-400/50 hover:bg-slate-900 transition-all flex flex-col justify-between shadow-sm group"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
-                  🏆 Badges
-                </span>
-                <Award className="w-4 h-4 text-emerald-400 group-hover:scale-110 transition-transform" />
-              </div>
-              <div className="mt-3">
-                <span className="text-2xl sm:text-3xl font-black font-mono text-white">
-                  {unlockedBadgesCount} / {achievements.length}
-                </span>
-                <p className="text-[10px] text-emerald-400/90 font-medium mt-0.5">
-                  Unlocked Achievements
-                </p>
-              </div>
-            </Link>
           </div>
 
-          {/* Core Game Economy Principle Callout */}
+          {/* Strategic Principle Callout */}
           <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800 flex items-start space-x-2.5">
             <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
             <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed font-medium">
-              <strong className="text-white">Coins measure choices. XP measures your journey.</strong>{" "}
-              Spending coins to enter experiences or claim gifts will <span className="text-blue-300 underline font-semibold">never</span> reduce your accumulated XP or leaderboard position.
+              <strong className="text-white">Zone Battle Rule:</strong> Any VIBE Coins you spend on activities belonging to a zone are transferred to that zone's collected total for the championship!
             </p>
           </div>
         </div>
 
-        {/* Right Column: Fast Actions & Featured Zone Missions */}
+        {/* Right Column: 4 Primary Action Buttons & Featured Missions */}
         <div className="lg:col-span-7 space-y-5">
-          {/* Primary Action Buttons (2x2 on mobile, 4-col on desktop) */}
+          {/* Section 4: THE FOUR PRIMARY ACTION BUTTONS */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <Link
-              href="/app/scan"
-              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-blue-900/40 to-slate-900 border border-blue-500/30 hover:border-blue-400/60 active:scale-95 transition-all group shadow-sm"
+              href="/app/map"
+              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-blue-900/40 via-slate-900 to-slate-900 border border-blue-500/30 hover:border-blue-400/60 active:scale-95 transition-all group shadow-sm"
             >
               <div className="w-9 h-9 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                <QrCode className="w-4 h-4 text-blue-400" />
+                <Compass className="w-4 h-4 text-blue-400" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-bold text-white leading-tight truncate">Scan QR</h2>
-                <p className="text-[10px] text-slate-400 truncate">Check-in</p>
+                <h2 className="text-xs font-extrabold text-white leading-tight truncate">Explore Zones</h2>
+                <p className="text-[10px] text-slate-400 truncate">6 Official Zones</p>
               </div>
             </Link>
 
             <Link
-              href="/app/map"
-              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-900/80 border border-cyan-500/20 hover:border-cyan-400/50 active:scale-95 transition-all group shadow-sm"
-            >
-              <div className="w-9 h-9 rounded-lg bg-cyan-600/20 border border-cyan-500/40 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                <Compass className="w-4 h-4 text-cyan-400" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-xs font-bold text-white leading-tight truncate">Venue Map</h2>
-                <p className="text-[10px] text-slate-400 truncate">7 Zones</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/app/rewards"
-              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-900/80 border border-amber-500/20 hover:border-amber-400/50 active:scale-95 transition-all group shadow-sm"
+              href="/app/games"
+              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-amber-900/30 via-slate-900 to-slate-900 border border-amber-500/30 hover:border-amber-400/60 active:scale-95 transition-all group shadow-sm"
             >
               <div className="w-9 h-9 rounded-lg bg-amber-600/20 border border-amber-500/40 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                <Gift className="w-4 h-4 text-amber-400" />
+                <Gamepad2 className="w-4 h-4 text-amber-400" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-bold text-white leading-tight truncate">Store</h2>
-                <p className="text-[10px] text-slate-400 truncate">Merch</p>
+                <h2 className="text-xs font-extrabold text-white leading-tight truncate">Play Games</h2>
+                <p className="text-[10px] text-slate-400 truncate">4 Mini-Games</p>
               </div>
             </Link>
 
             <Link
-              href="/app/quests"
-              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-slate-900 to-slate-900/80 border border-purple-500/20 hover:border-purple-400/50 active:scale-95 transition-all group shadow-sm"
+              href="/app/scan"
+              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-cyan-900/30 via-slate-900 to-slate-900 border border-cyan-500/30 hover:border-cyan-400/60 active:scale-95 transition-all group shadow-sm"
+            >
+              <div className="w-9 h-9 rounded-lg bg-cyan-600/20 border border-cyan-500/40 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
+                <QrCode className="w-4 h-4 text-cyan-400" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-xs font-extrabold text-white leading-tight truncate">Scan Check-in</h2>
+                <p className="text-[10px] text-slate-400 truncate">QR Scanner</p>
+              </div>
+            </Link>
+
+            <Link
+              href="/app/leaderboard"
+              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-purple-900/30 via-slate-900 to-slate-900 border border-purple-500/30 hover:border-purple-400/60 active:scale-95 transition-all group shadow-sm"
             >
               <div className="w-9 h-9 rounded-lg bg-purple-600/20 border border-purple-500/40 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
                 <Trophy className="w-4 h-4 text-purple-400" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-bold text-white leading-tight truncate">Quests</h2>
-                <p className="text-[10px] text-slate-400 truncate">Milestones</p>
+                <h2 className="text-xs font-extrabold text-white leading-tight truncate">Leaderboard</h2>
+                <p className="text-[10px] text-slate-400 truncate">XP & Zone Battle</p>
               </div>
             </Link>
+          </div>
+
+          {/* Quick Ways to Earn VIBE Coins (Section 9) */}
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950/30 to-slate-900 border border-blue-500/20 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center space-x-1.5">
+                <Coins className="w-3.5 h-3.5 text-amber-400" />
+                <span>Ways to Earn More Coins</span>
+              </span>
+              <Link href="/app/quests" className="text-[11px] text-blue-400 hover:text-cyan-300 font-semibold">
+                View Quests →
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] text-slate-300">
+              <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                <span className="text-amber-400 font-bold block">+50 VIBE</span>
+                <span className="text-[10px] text-slate-400">Discover new zone</span>
+              </div>
+              <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                <span className="text-amber-400 font-bold block">+25 VIBE</span>
+                <span className="text-[10px] text-slate-400">Stall photo approve</span>
+              </div>
+              <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                <span className="text-amber-400 font-bold block">+100-500 VIBE</span>
+                <span className="text-[10px] text-slate-400">Games & Hidden QRs</span>
+              </div>
+            </div>
           </div>
 
           {/* Featured Zone Missions */}
@@ -320,7 +386,7 @@ export default async function AttendeeHomePage() {
                 href="/app/map"
                 className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center space-x-0.5"
               >
-                <span>View All 7 Zones</span>
+                <span>View All 6 Zones</span>
                 <ChevronRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -338,7 +404,7 @@ export default async function AttendeeHomePage() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-[10px] font-bold text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-500/20">
-                          {zoneName}
+                          🌊 {zoneName}
                         </span>
                         {sponsorName && (
                           <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/20">

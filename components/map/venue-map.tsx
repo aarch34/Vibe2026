@@ -23,12 +23,14 @@ interface VenueMapProps {
   zones: Zone[];
   experiences: Experience[];
   userCompletions: { experience_id: string }[];
+  assignedZoneId?: string | null;
 }
 
 export function VenueMap({
   zones,
   experiences,
   userCompletions,
+  assignedZoneId,
 }: VenueMapProps) {
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
 
@@ -129,12 +131,27 @@ export function VenueMap({
                   className="cursor-pointer transition-transform duration-200"
                   onClick={() => setSelectedZone(zone)}
                 >
+                  {/* Outer halo when user's assigned zone */}
+                  {assignedZoneId === zone.id && (
+                    <circle
+                      cx={x}
+                      cy={y}
+                      r="31"
+                      fill="none"
+                      stroke="#F59E0B"
+                      strokeWidth="2"
+                      strokeDasharray="4 2"
+                      className="animate-spin"
+                      style={{ animationDuration: "12s" }}
+                    />
+                  )}
+
                   {/* Outer halo when selected */}
                   {isSelected && (
                     <circle
                       cx={x}
                       cy={y}
-                      r="34"
+                      r="35"
                       fill="none"
                       stroke="#60A5FA"
                       strokeWidth="2.5"
@@ -215,14 +232,34 @@ export function VenueMap({
             </button>
 
             <div>
-              <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">
-                Zone {selectedZone.sort_order} Inspector
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">
+                  Zone {selectedZone.sort_order} Inspector
+                </span>
+                {assignedZoneId === selectedZone.id && (
+                  <span className="text-[10px] font-black text-cyan-300 bg-cyan-950/80 border border-cyan-400/40 px-2 py-0.5 rounded-full">
+                    YOUR ZONE ⭐
+                  </span>
+                )}
+              </div>
               <h3 className="text-lg font-extrabold text-white mt-0.5">
                 {selectedZone.name}
               </h3>
               <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                 {selectedZone.description}
+              </p>
+
+              {/* Zone Championship Score Pill */}
+              <div className="mt-2.5 p-2 rounded-xl bg-slate-950 border border-amber-500/30 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-slate-300 font-semibold">
+                  Zone Battle Standing:
+                </span>
+                <span className="font-mono font-black text-amber-400">
+                  🪙 {(selectedZone.coins_collected || 0).toLocaleString()} VIBE Collected
+                </span>
+              </div>
+              <p className="text-[10px] text-blue-300/80 mt-1">
+                💡 Coins spent on activities in this zone are added directly to its score!
               </p>
             </div>
 
@@ -278,10 +315,10 @@ export function VenueMap({
           <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
             <div>
               <h3 className="text-sm font-bold text-white">
-                Festival Zone Directory
+                Six Official Zones Directory
               </h3>
               <p className="text-xs text-slate-400 mt-0.5">
-                Select any zone on the map or click a zone below to inspect available missions and rewards.
+                Select any zone on the map or click below to inspect available missions and live zone scores.
               </p>
             </div>
 
@@ -289,23 +326,35 @@ export function VenueMap({
               {zones.map((zone) => {
                 const status = getZoneStatus(zone.id);
                 const zoneExps = experiences.filter((e) => e.zone_id === zone.id);
+                const isUserZone = assignedZoneId === zone.id;
 
                 return (
                   <button
                     key={zone.id}
                     onClick={() => setSelectedZone(zone)}
-                    className="w-full text-left p-2.5 rounded-xl bg-slate-950/60 hover:bg-slate-800/80 border border-slate-800 hover:border-slate-700 transition-all flex items-center justify-between group"
+                    className={`w-full text-left p-2.5 rounded-xl transition-all flex items-center justify-between group border ${
+                      isUserZone
+                        ? "bg-blue-950/40 border-blue-500/50 hover:bg-blue-950/60 shadow-sm"
+                        : "bg-slate-950/60 hover:bg-slate-800/80 border-slate-800 hover:border-slate-700"
+                    }`}
                   >
                     <div className="flex items-center space-x-2.5">
                       <span className="w-6 h-6 rounded-md bg-blue-950 border border-blue-500/30 text-blue-400 font-mono text-[10px] font-bold flex items-center justify-center">
                         Z{zone.sort_order}
                       </span>
                       <div>
-                        <span className="text-xs font-bold text-white group-hover:text-blue-300 transition-colors">
-                          {zone.name}
-                        </span>
-                        <span className="text-[10px] text-slate-400 block font-mono">
-                          {zoneExps.length} missions
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-xs font-bold text-white group-hover:text-blue-300 transition-colors">
+                            {zone.name}
+                          </span>
+                          {isUserZone && (
+                            <span className="text-[9px] font-bold text-cyan-300 bg-cyan-950 px-1.5 rounded border border-cyan-500/30">
+                              YOUR ZONE
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-[10px] text-amber-400 block font-mono">
+                          🪙 {(zone.coins_collected || 0).toLocaleString()} VIBE
                         </span>
                       </div>
                     </div>

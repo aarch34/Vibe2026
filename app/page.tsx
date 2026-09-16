@@ -62,28 +62,26 @@ export default function LandingPage() {
             </span>
           </h1>
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl mx-auto font-normal">
-            The physical fresher party venue is now a live game board. Explore 7
-            interactive zones, scan checkpoints, earn VIBE Coins, level up, and
-            claim real festival merchandise!
+            The physical fresher party venue is now a live game board. Compete across 6 official zones, scan checkpoints, play 4 browser mini-games, earn VIBE Coins, and lead your zone to victory!
           </p>
         </div>
 
         {/* Primary CTAs */}
         <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
           <Link
-            href="/app"
+            href="/register"
             className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-sm font-extrabold text-white shadow-xl shadow-blue-500/30 flex items-center justify-center space-x-2 active:scale-95 transition-all"
           >
-            <span>Enter Festival Experience</span>
+            <span>Register / Claim 500 Coins</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
 
           <Link
-            href="/app/scan"
+            href="/app"
             className="w-full sm:w-auto px-6 py-3.5 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-sm font-bold text-slate-300 flex items-center justify-center space-x-2 transition-colors"
           >
-            <QrCode className="w-4 h-4 text-cyan-400" />
-            <span>Scan Checkpoint</span>
+            <Sparkles className="w-4 h-4 text-cyan-400" />
+            <span>Open App</span>
           </Link>
         </div>
 
@@ -99,25 +97,25 @@ export default function LandingPage() {
 
           <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-left space-y-1">
             <Compass className="w-5 h-5 text-cyan-400" />
-            <h3 className="text-xs font-bold text-white">7 Venue Zones</h3>
+            <h3 className="text-xs font-bold text-white">6 Official Zones</h3>
             <p className="text-[11px] text-slate-400">
-              From Cyber Arcade to Secret Vault
+              Arnava, Taranaga, Sagara & more
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-left space-y-1">
             <Trophy className="w-5 h-5 text-purple-400" />
-            <h3 className="text-xs font-bold text-white">District Leaderboard</h3>
+            <h3 className="text-xs font-bold text-white">VIBE Zone Battle</h3>
             <p className="text-[11px] text-slate-400">
-              Compete live for festival supremacy
+              Coins spent power zone championship
             </p>
           </div>
 
           <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 text-left space-y-1">
             <Shield className="w-5 h-5 text-emerald-400" />
-            <h3 className="text-xs font-bold text-white">Digital Passport</h3>
+            <h3 className="text-xs font-bold text-white">4 Playable Games</h3>
             <p className="text-[11px] text-slate-400">
-              Stamp badges and unlock achievements
+              Rotaract Quiz, Minion Run & more
             </p>
           </div>
         </div>

@@ -11,7 +11,9 @@ import {
   Trophy,
   Gift,
   User,
-  ShieldAlert,
+  Gamepad2,
+  Camera,
+  Waves,
 } from "lucide-react";
 import { formatCoins, cn } from "@/lib/utils";
 
@@ -19,26 +21,29 @@ interface TopHeaderProps {
   vibeId: string;
   coins: number;
   levelName: string;
+  assignedZoneName?: string;
 }
 
 const NAV_LINKS = [
   { label: "Home", href: "/app", icon: Home },
-  { label: "Game Map", href: "/app/map", icon: Compass },
+  { label: "6 Zones", href: "/app/map", icon: Compass },
+  { label: "Games", href: "/app/games", icon: Gamepad2 },
+  { label: "Stalls", href: "/app/stalls", icon: Camera },
   { label: "Scan QR", href: "/app/scan", icon: QrCode },
   { label: "Leaderboard", href: "/app/leaderboard", icon: Trophy },
-  { label: "Quests", href: "/app/quests", icon: Trophy },
+  { label: "Quests", href: "/app/quests", icon: Sparkles },
   { label: "Rewards", href: "/app/rewards", icon: Gift },
   { label: "Profile", href: "/app/profile", icon: User },
 ];
 
-export function TopHeader({ vibeId, coins, levelName }: TopHeaderProps) {
+export function TopHeader({ vibeId, coins, levelName, assignedZoneName }: TopHeaderProps) {
   const pathname = usePathname();
 
   return (
     <header className="sticky top-0 z-40 bg-[#070B14]/90 backdrop-blur-xl border-b border-slate-800/80 px-4 sm:px-6 lg:px-8 py-2.5">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Brand Logo & VIBE ID */}
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-2.5">
           <Link href="/app" className="flex items-center space-x-1.5 group">
             <span className="text-xl font-black tracking-wider bg-gradient-to-r from-blue-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
               VIBE
@@ -50,6 +55,12 @@ export function TopHeader({ vibeId, coins, levelName }: TopHeaderProps) {
           <span className="text-xs font-mono text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800">
             {vibeId}
           </span>
+          {assignedZoneName && (
+            <span className="hidden sm:inline-flex items-center space-x-1 text-[11px] font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-full">
+              <span>🌊</span>
+              <span>{assignedZoneName}</span>
+            </span>
+          )}
         </div>
 
         {/* Desktop Navigation Links (Visible on Tablet/Desktop md+) */}

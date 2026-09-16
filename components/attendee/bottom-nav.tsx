@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Compass, QrCode, Trophy, User, Gift } from "lucide-react";
+import { Home, Compass, QrCode, Trophy, User, Gamepad2, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function AttendeeBottomNav() {
@@ -10,10 +10,11 @@ export function AttendeeBottomNav() {
 
   const navItems = [
     { label: "Home", href: "/app", icon: Home },
-    { label: "Map", href: "/app/map", icon: Compass },
+    { label: "Zones", href: "/app/map", icon: Compass },
+    { label: "Games", href: "/app/games", icon: Gamepad2 },
     { label: "Scan", href: "/app/scan", icon: QrCode, isPrimary: true },
-    { label: "Quests", href: "/app/quests", icon: Trophy },
-    { label: "Rewards", href: "/app/rewards", icon: Gift },
+    { label: "Stalls", href: "/app/stalls", icon: Camera },
+    { label: "Ranks", href: "/app/leaderboard", icon: Trophy },
     { label: "Profile", href: "/app/profile", icon: User },
   ];
 

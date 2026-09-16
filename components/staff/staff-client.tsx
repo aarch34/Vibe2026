@@ -82,13 +82,21 @@ export function StaffDashboardClient({
           </div>
         </div>
 
-        <Link
-          href="/app"
-          className="text-xs text-slate-400 hover:text-white flex items-center space-x-1"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Exit</span>
-        </Link>
+        <div className="flex items-center space-x-2">
+          <Link
+            href="/staff/stalls"
+            className="px-3 py-1.5 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/40 text-purple-300 text-xs font-bold flex items-center space-x-1.5 transition-colors"
+          >
+            <span>📸 Photo Queue</span>
+          </Link>
+          <Link
+            href="/app"
+            className="text-xs text-slate-400 hover:text-white flex items-center space-x-1"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Exit</span>
+          </Link>
+        </div>
       </div>
 
       {/* Zone Dashboard Grid: 2 Columns on Desktop */}

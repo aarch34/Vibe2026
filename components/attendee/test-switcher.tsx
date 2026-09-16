@@ -10,10 +10,10 @@ interface TestSwitcherProps {
 }
 
 const TEST_ATTENDEES = [
-  { id: "usr-demo-1", name: "Aarav Sharma", vibeId: "VIBE-2412", role: "Attendee" },
-  { id: "usr-demo-2", name: "Rhea Kapoor", vibeId: "VIBE-5821", role: "Attendee" },
-  { id: "usr-demo-3", name: "Kabir Mehta", vibeId: "VIBE-8934", role: "Attendee" },
-  { id: "usr-demo-4", name: "Ananya Roy", vibeId: "VIBE-1245", role: "Attendee" },
+  { id: "usr-demo-1", name: "Aarcha U", vibeId: "VIBE-2412", role: "Arnava", insta: "@aarcha.u" },
+  { id: "usr-demo-2", name: "Rahul M", vibeId: "VIBE-5821", role: "Taranaga", insta: "@rahul.m" },
+  { id: "usr-demo-3", name: "Kabir Mehta", vibeId: "VIBE-8934", role: "Sagara", insta: "@kabir.m" },
+  { id: "usr-demo-4", name: "Ananya Roy", vibeId: "VIBE-1245", role: "Pravaha", insta: "@ananya.r" },
 ];
 
 export function TestSwitcher({ currentVibeId, currentDisplayName }: TestSwitcherProps) {

@@ -32,6 +32,11 @@ export interface Profile {
   avatar_media_id: string | null;
   college: string | null;
   club: string | null;
+  phone?: string | null;
+  email?: string | null;
+  instagram_id?: string | null;
+  registration_id?: string | null;
+  assigned_zone_id?: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -71,6 +76,7 @@ export interface Zone {
   } | null;
   sort_order: number;
   is_active: boolean;
+  coins_collected?: number;
 }
 
 export interface Experience {
@@ -159,7 +165,15 @@ export interface Quest {
   event_id: string;
   title: string;
   description: string | null;
-  condition_type: "zones_visited" | "experiences_completed" | "specific_experience" | "coins_earned" | "all_zones_completed";
+  condition_type:
+    | "zones_visited"
+    | "experiences_completed"
+    | "specific_experience"
+    | "coins_earned"
+    | "all_zones_completed"
+    | "stalls_visited"
+    | "games_completed"
+    | "vibe_master";
   condition_config: Record<string, any>;
   xp_reward: number;
   coin_reward: number;
@@ -237,11 +251,95 @@ export interface AuditLog {
   created_at: string;
 }
 
+export interface Stall {
+  id: string;
+  event_id: string;
+  name: string;
+  slug: string;
+  category?: string;
+  description: string | null;
+  entry_cost: number;
+  xp_reward: number;
+  coin_reward?: number;
+  is_active: boolean;
+  requires_photo: boolean;
+}
+
+export interface StallPhotoSubmission {
+  id: string;
+  event_id: string;
+  profile_id: string;
+  stall_id: string;
+  photo_url: string;
+  instagram_id: string;
+  status: "pending" | "approved" | "rejected";
+  submitted_at: string;
+  created_at?: string;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+}
+
+export type GameType = "rotaract_game" | "minion_run" | "memory_game" | "vibe_quiz";
+
+export interface GameSession {
+  id: string;
+  event_id: string;
+  profile_id: string;
+  game_type: GameType;
+  score: number;
+  max_score: number;
+  coin_spent: number;
+  coin_earned: number;
+  xp_earned: number;
+  played_at: string;
+}
+
+export interface ZoneLeaderboardEntry {
+  rank: number;
+  zone_id: string;
+  name: string;
+  slug: string;
+  coins_collected: number;
+  participants_count: number;
+  experiences_completed_count: number;
+  stall_interactions_count: number;
+  games_played_count: number;
+  total_xp_generated: number;
+  completion_rate_percent: number;
+}
+
+export interface UserPlayerStats {
+  total_vibe_earned: number;
+  total_vibe_spent: number;
+  total_xp_earned: number;
+  zones_visited_count: number;
+  experiences_completed_count: number;
+  stalls_visited_count: number;
+  games_played_count: number;
+  games_won_count: number;
+  photos_approved_count: number;
+  quests_completed_count: number;
+
+  totalVibeEarned: number;
+  totalVibeSpent: number;
+  xpEarned: number;
+  zonesVisitedCount: number;
+  experiencesCompletedCount: number;
+  stallsVisitedCount: number;
+  gamesPlayedCount: number;
+  gamesWonCount: number;
+  photosApprovedCount: number;
+  questsCompletedCount: number;
+}
+
 export interface LeaderboardEntry {
   rank: number;
   profile_id: string;
   display_name: string;
   vibe_id: string;
+  instagram_id?: string | null;
+  club?: string | null;
+  assigned_zone_name?: string | null;
   total_xp: number;
   level_name: string;
   level_order: number;

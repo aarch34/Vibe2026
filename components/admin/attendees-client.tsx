@@ -10,6 +10,8 @@ interface AttendeeRow {
   displayName: string;
   vibeId: string;
   college: string | null;
+  instagramId?: string | null;
+  zoneName?: string;
   coins: number;
   totalXP: number;
   completionsCount: number;
@@ -109,11 +111,21 @@ export function AttendeesClient({
                     <td className="py-3 font-mono font-bold text-cyan-400">
                       {user.vibeId}
                     </td>
-                    <td className="py-3 text-white font-bold">
-                      {user.displayName}
-                    </td>
-                    <td className="py-3 text-slate-400 max-w-[140px] truncate">
-                      {user.college || "—"}
+                    <td className="py-3">
+                      <div className="font-bold text-white flex items-center space-x-1.5">
+                        <span>{user.displayName}</span>
+                        {user.instagramId && (
+                          <span className="text-[10px] text-pink-400 font-mono">
+                            {user.instagramId}
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[10px] text-slate-400 flex items-center space-x-1.5 mt-0.5">
+                        <span>{user.college || "Rotaract"}</span>
+                        {user.zoneName && (
+                          <span className="text-cyan-400 font-semibold">• 🌊 {user.zoneName}</span>
+                        )}
+                      </div>
                     </td>
                     <td className="py-3 font-mono font-bold text-amber-400">
                       {formatCoins(user.coins)}

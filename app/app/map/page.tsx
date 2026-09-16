@@ -61,6 +61,7 @@ export default async function VenueMapPage() {
         zones={zones}
         experiences={experiences}
         userCompletions={userCompletions}
+        assignedZoneId={session.profile.assigned_zone_id}
       />
     </div>
   );

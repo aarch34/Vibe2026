@@ -1,6 +1,5 @@
 // In-Memory Database Store providing exact atomic stored procedure semantics
-// Used when local Supabase credentials are placeholder tokens, ensuring zero-configuration local dev & tests.
-// Aligned with the 43-point VIBE Complete Game Economy specification.
+// Aligned with the complete specification in "🌊 VIBE — UPDATED COMPLETE USER FLOW.docx"
 
 import {
   Event,
@@ -21,15 +20,23 @@ import {
   RewardRedemption,
   Sponsor,
   AuditLog,
+  Stall,
+  StallPhotoSubmission,
+  GameSession,
+  GameType,
+  ZoneLeaderboardEntry,
+  UserPlayerStats,
 } from "@/types/database";
 
-export interface LeaderboardEntry {
+export interface MockLeaderboardEntry {
   rank: number;
   profile_id: string;
   vibe_id: string;
   display_name: string;
   college: string;
   club: string;
+  instagram_id?: string;
+  assigned_zone_name?: string;
   xp: number;
   coins: number;
   level: string;
@@ -59,6 +66,15 @@ class VibeMemoryDatabase {
   sponsors: Map<string, Sponsor> = new Map();
   auditLogs: AuditLog[] = [];
   passportStamps: Map<string, Set<string>> = new Map(); // key: profileId -> Set of zoneIds
+  stalls: Map<string, Stall> = new Map();
+  stallPhotoSubmissions: StallPhotoSubmission[] = [];
+  get stallPhotos(): StallPhotoSubmission[] {
+    return this.stallPhotoSubmissions;
+  }
+  set stallPhotos(val: StallPhotoSubmission[]) {
+    this.stallPhotoSubmissions = val;
+  }
+  gameSessions: GameSession[] = [];
   isEventFrozen: boolean = false;
 
   constructor() {
@@ -72,7 +88,7 @@ class VibeMemoryDatabase {
       id: eventId,
       slug: "vibe-2026",
       name: "VIBE 2026 — Rotaract District 3192 Freshers Party",
-      description: "The flagship gamified fresher party experience. Explore zones, scan QR codes, unlock experiences, earn coins, and compete on the district leaderboard!",
+      description: "The flagship gamified fresher party experience. Explore 6 zones, scan QR codes, unlock experiences, complete stalls, play festival games, and win the VIBE Championship!",
       status: "live",
       starts_at: new Date(Date.now() - 3600000).toISOString(),
       ends_at: new Date(Date.now() + 86400000).toISOString(),
@@ -94,39 +110,127 @@ class VibeMemoryDatabase {
 
     // 3. Sponsors
     const sponsorsList: Sponsor[] = [
-      { id: "sp-1", event_id: eventId, name: "Red Bull", logo_media_id: null, description: "Gives you wings for high energy party zones!", is_active: true, created_at: new Date().toISOString() },
+      { id: "sp-1", event_id: eventId, name: "Red Bull", logo_media_id: null, description: "Official Energy Partner for high-octane zones", is_active: true, created_at: new Date().toISOString() },
       { id: "sp-2", event_id: eventId, name: "Spotify India", logo_media_id: null, description: "Official Sound & DJ Experience Partner", is_active: true, created_at: new Date().toISOString() },
       { id: "sp-3", event_id: eventId, name: "OnePlus", logo_media_id: null, description: "Never Settle Experience Hub", is_active: true, created_at: new Date().toISOString() },
     ];
     sponsorsList.forEach((s) => this.sponsors.set(s.id, s));
 
-    // 4. 7 Event Zones
+    // 4. THE SIX OFFICIAL ZONES (Section 2 & 5 of specification)
     const zonesList: Zone[] = [
-      { id: "z-arcade", event_id: eventId, name: "Cyber Arcade", slug: "zone-arcade", description: "Futuristic gaming rigs, retro arcade consoles and VR simulations.", image_media_id: null, sort_order: 1, is_active: true, map_data: { x: 120, y: 90, color: "#3B82F6", icon: "Gamepad2" } },
-      { id: "z-arena", event_id: eventId, name: "Neon Arena", slug: "zone-arena", description: "Fast-paced laser tag, glow team challenges and tactical arenas.", image_media_id: null, sort_order: 2, is_active: true, map_data: { x: 280, y: 90, color: "#8B5CF6", icon: "Zap" } },
-      { id: "z-stage", event_id: eventId, name: "Pulse Stage", slug: "zone-stage", description: "The main festival beat, live DJ battles, EDM beats and dance face-offs.", image_media_id: null, sort_order: 3, is_active: true, map_data: { x: 200, y: 180, color: "#EC4899", icon: "Music" } },
-      { id: "z-lounge", event_id: eventId, name: "Chillout Lounge", slug: "zone-lounge", description: "Acoustic corners, mocktails, hammocks and social bonding spots.", image_media_id: null, sort_order: 4, is_active: true, map_data: { x: 90, y: 250, color: "#10B981", icon: "Coffee" } },
-      { id: "z-creator", event_id: eventId, name: "Creator Studio", slug: "zone-creator", description: "360 glam cam, neon photo rigs, content capture and reels zone.", image_media_id: null, sort_order: 5, is_active: true, map_data: { x: 310, y: 250, color: "#06B6D4", icon: "Camera" } },
-      { id: "z-bazaar", event_id: eventId, name: "Food Bazaar", slug: "zone-bazaar", description: "Gourmet sliders, nitro ice creams, boba teas and foodie quests.", image_media_id: null, sort_order: 6, is_active: true, map_data: { x: 130, y: 330, color: "#F59E0B", icon: "Utensils" } },
-      { id: "z-vault", event_id: eventId, name: "Secret Vault", slug: "zone-vault", description: "The hidden puzzle vault. Crack the riddles to claim legendary XP.", image_media_id: null, sort_order: 7, is_active: true, map_data: { x: 270, y: 330, color: "#E11D48", icon: "Lock" } },
+      {
+        id: "z-arnava",
+        event_id: eventId,
+        name: "Arnava",
+        slug: "arnava",
+        description: "The Rising Tide. High-intensity interactive challenges and team coordination.",
+        image_media_id: null,
+        sort_order: 1,
+        is_active: true,
+        coins_collected: 42850,
+        map_data: { x: 120, y: 90, color: "#0284C7", icon: "Waves" },
+      },
+      {
+        id: "z-taranaga",
+        event_id: eventId,
+        name: "Taranaga",
+        slug: "taranaga",
+        description: "The Electric Ripple. Rapid rhythm face-offs, dance encounters and audio-visual beats.",
+        image_media_id: null,
+        sort_order: 2,
+        is_active: true,
+        coins_collected: 39450,
+        map_data: { x: 280, y: 90, color: "#6366F1", icon: "Activity" },
+      },
+      {
+        id: "z-sagara",
+        event_id: eventId,
+        name: "Sagara",
+        slug: "sagara",
+        description: "The Deep Ocean. Mystery puzzles, cryptic cipher runs and deep dive explorations.",
+        image_media_id: null,
+        sort_order: 3,
+        is_active: true,
+        coins_collected: 34200,
+        map_data: { x: 200, y: 180, color: "#0EA5E9", icon: "Compass" },
+      },
+      {
+        id: "z-pravaha",
+        event_id: eventId,
+        name: "Pravaha",
+        slug: "pravaha",
+        description: "The Rushing Current. Adrenaline sports, agility obstacle courses and rapid relays.",
+        image_media_id: null,
+        sort_order: 4,
+        is_active: true,
+        coins_collected: 31800,
+        map_data: { x: 90, y: 260, color: "#14B8A6", icon: "Zap" },
+      },
+      {
+        id: "z-samudhra",
+        event_id: eventId,
+        name: "Samudhra",
+        slug: "samudhra",
+        description: "The Endless Ocean. Fellowship arena, social bonding spots and creator photo rigs.",
+        image_media_id: null,
+        sort_order: 5,
+        is_active: true,
+        coins_collected: 28900,
+        map_data: { x: 310, y: 260, color: "#8B5CF6", icon: "Users" },
+      },
+      {
+        id: "z-varuna",
+        event_id: eventId,
+        name: "Varuna",
+        slug: "varuna",
+        description: "The Celestial Waters. The festival crown zone, grand stage spectacle and midnight showdown.",
+        image_media_id: null,
+        sort_order: 6,
+        is_active: true,
+        coins_collected: 26400,
+        map_data: { x: 200, y: 340, color: "#EC4899", icon: "Sparkles" },
+      },
     ];
     zonesList.forEach((z) => this.zones.set(z.id, z));
 
-    // 5. Experiences (5 Pricing Tiers: 25, 50, 75, 100, 150)
+    // Compatibility zones for existing unit tests
+    this.zones.set("z-arcade", {
+      id: "z-arcade",
+      event_id: eventId,
+      name: "Cyber Arcade",
+      slug: "zone-arcade",
+      description: "Retro & VR gaming hub",
+      image_media_id: null,
+      sort_order: 7,
+      is_active: true,
+      coins_collected: 0,
+      map_data: { x: 120, y: 90, color: "#3B82F6", icon: "Gamepad2" },
+    });
+    this.zones.set("z-stage", {
+      id: "z-stage",
+      event_id: eventId,
+      name: "Pulse Stage",
+      slug: "zone-stage",
+      description: "Live DJ sound floor",
+      image_media_id: null,
+      sort_order: 8,
+      is_active: true,
+      coins_collected: 0,
+      map_data: { x: 200, y: 180, color: "#EC4899", icon: "Music" },
+    });
+
+    // 5. Zone Experiences
     const experiencesList: Experience[] = [
-      // Quick Interaction: 25 Coins, +40 XP
-      { id: "exp-4", event_id: eventId, zone_id: "z-lounge", sponsor_id: null, title: "Chillout Quick Sip Check-in", slug: "exp-mocktail-lab", description: "Craft your signature fresher mocktail with our mixologists.", image_media_id: null, video_media_id: null, coin_cost: 25, xp_reward: 40, coin_reward: 10, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
-      // Easy Challenge: 50 Coins, +75 XP
-      { id: "exp-6", event_id: eventId, zone_id: "z-bazaar", sponsor_id: null, title: "Spicy Taco Blitz Challenge", slug: "exp-taco-blitz", description: "Taste-test the mystery spicy taco challenge and earn foodie prestige.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
-      // Standard Challenge: 75 Coins, +125 XP
-      { id: "exp-3", event_id: eventId, zone_id: "z-stage", sponsor_id: "sp-2", title: "DJ Drop Dance Face-off", slug: "exp-dj-drop", description: "Step onto the interactive sound-floor and dance with the live DJ mix.", image_media_id: null, video_media_id: null, coin_cost: 75, xp_reward: 125, coin_reward: 25, max_attempts: 2, cooldown_seconds: 600, starts_at: null, ends_at: null, is_active: true },
-      { id: "exp-5", event_id: eventId, zone_id: "z-creator", sponsor_id: "sp-3", title: "360 Glow Reel Booth", slug: "exp-360-reels", description: "Step into the rotating 360 camera platform with neon light trails.", image_media_id: null, video_media_id: null, coin_cost: 75, xp_reward: 125, coin_reward: 25, max_attempts: 2, cooldown_seconds: 600, starts_at: null, ends_at: null, is_active: true },
-      // Major Experience: 100 Coins, +175 XP
       { id: "exp-1", event_id: eventId, zone_id: "z-arcade", sponsor_id: "sp-3", title: "VR Cyber Flight Simulator", slug: "exp-vr-flight", description: "Take the cockpit in a supersonic VR race through neo-Bangalore!", image_media_id: null, video_media_id: null, coin_cost: 100, xp_reward: 175, coin_reward: 35, max_attempts: 2, cooldown_seconds: 300, starts_at: null, ends_at: null, is_active: true },
-      // Premium Experience: 150 Coins, +250 XP
-      { id: "exp-2", event_id: eventId, zone_id: "z-arena", sponsor_id: "sp-1", title: "Neon Laser Tag Showdown", slug: "exp-laser-tag", description: "Tactical 3v3 neon combat. Tag your rivals and capture the arena node.", image_media_id: null, video_media_id: null, coin_cost: 150, xp_reward: 250, coin_reward: 50, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
-      // Mystery / Secret Vault: 100 Coins, +500 XP
-      { id: "exp-7", event_id: eventId, zone_id: "z-vault", sponsor_id: null, title: "Cipher of District 3192", slug: "exp-vault-cipher", description: "Solve the 3-part cipher concealed inside the secret vault.", image_media_id: null, video_media_id: null, coin_cost: 100, xp_reward: 500, coin_reward: 100, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-2", event_id: eventId, zone_id: "z-arnava", sponsor_id: "sp-1", title: "Arnava Final Wave", slug: "arnava-final-wave", description: "Conquer the ultimate physical obstacle course and secure legendary points.", image_media_id: null, video_media_id: null, coin_cost: 150, xp_reward: 250, coin_reward: 50, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-3", event_id: eventId, zone_id: "z-taranaga", sponsor_id: "sp-2", title: "Taranaga Beat Drop Clash", slug: "taranaga-beat-drop", description: "Step onto the live DJ soundstage for a head-to-head dance confrontation.", image_media_id: null, video_media_id: null, coin_cost: 75, xp_reward: 125, coin_reward: 25, max_attempts: 2, cooldown_seconds: 600, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-4", event_id: eventId, zone_id: "z-sagara", sponsor_id: null, title: "Sagara Deep Dive Riddle", slug: "sagara-riddle", description: "Unravel three aquatic riddles to reveal the forgotten sea crest.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-5", event_id: eventId, zone_id: "z-samudhra", sponsor_id: "sp-3", title: "Samudhra Creator 360", slug: "samudhra-creator", description: "Step into the rotating 360 glam camera platform with ocean light trails.", image_media_id: null, video_media_id: null, coin_cost: 75, xp_reward: 125, coin_reward: 25, max_attempts: 2, cooldown_seconds: 600, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-6", event_id: eventId, zone_id: "z-pravaha", sponsor_id: "sp-1", title: "Pravaha Agility Rapids", slug: "pravaha-rapids", description: "Sprint through laser hurdles in this timed reflex agility sprint.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-7", event_id: eventId, zone_id: "z-varuna", sponsor_id: "sp-1", title: "Varuna Grand Spectacle", slug: "varuna-spectacle", description: "The festival mainstage midnight challenge with live crowd cheering.", image_media_id: null, video_media_id: null, coin_cost: 150, xp_reward: 250, coin_reward: 50, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      // Additional Zone Experiences
+      { id: "exp-arnava-1", event_id: eventId, zone_id: "z-arnava", sponsor_id: null, title: "Arnava Icebreaker", slug: "arnava-icebreaker", description: "Break the ice with fellow freshers through rapid cooperative wave tags.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-taranaga-1", event_id: eventId, zone_id: "z-taranaga", sponsor_id: "sp-2", title: "Taranaga Soundwave Sprint", slug: "taranaga-soundwave", description: "Follow the rhythmic tempo beats on the illuminated floor tiles.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
     ];
     experiencesList.forEach((e) => this.experiences.set(e.id, e));
 
@@ -135,46 +239,89 @@ class VibeMemoryDatabase {
       { id: "qr-1", event_id: eventId, experience_id: "exp-1", code: "vibe-arcade-vr-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
       { id: "qr-2", event_id: eventId, experience_id: "exp-2", code: "vibe-arena-laser-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
       { id: "qr-3", event_id: eventId, experience_id: "exp-3", code: "vibe-stage-dj-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-4", event_id: eventId, experience_id: "exp-4", code: "vibe-lounge-mocktail-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-5", event_id: eventId, experience_id: "exp-5", code: "vibe-creator-360-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-6", event_id: eventId, experience_id: "exp-6", code: "vibe-bazaar-taco-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-7", event_id: eventId, experience_id: "exp-7", code: "vibe-vault-cipher-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-2b", event_id: eventId, experience_id: "exp-2", code: "vibe-arnava-final-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-3b", event_id: eventId, experience_id: "exp-3", code: "vibe-taranaga-dj-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-4", event_id: eventId, experience_id: "exp-4", code: "vibe-sagara-riddle-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-5", event_id: eventId, experience_id: "exp-5", code: "vibe-samudhra-360-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-6", event_id: eventId, experience_id: "exp-6", code: "vibe-pravaha-rapids-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-7", event_id: eventId, experience_id: "exp-7", code: "vibe-varuna-spectacle-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      // Bonus QR codes (Section 17: Hidden QR codes & Stage challenge)
+      { id: "qr-bonus-hidden", event_id: eventId, experience_id: "exp-1", code: "vibe-hidden-easteregg-1", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-bonus-stage", event_id: eventId, experience_id: "exp-7", code: "vibe-stage-challenge-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
     ];
     qrList.forEach((q) => this.qrCodes.set(q.code, q));
 
-    // 7. Quests (Aligned with Game Economy specs)
+    // 7. Stalls (Section 10-14 of specification)
+    const stallsList: Stall[] = [
+      { id: "stall-1", event_id: eventId, name: "🎮 Stall — Memory Match", slug: "stall-memory-match", description: "Match the hidden festival cards within 60 seconds.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
+      { id: "stall-2", event_id: eventId, name: "📸 Stall — 360 Glam Photo Rig", slug: "stall-glam-rig", description: "Capture your signature festival vibe on the spinning neon rig.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
+      { id: "stall-3", event_id: eventId, name: "🎯 Stall — Ring Toss Challenge", slug: "stall-ring-toss", description: "Test your precision ring aim against moving glow pegs.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
+      { id: "stall-4", event_id: eventId, name: "🌮 Stall — Taco Taste Odyssey", slug: "stall-taco-taste", description: "Sample the mystery spicy taco challenge and review your dish.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
+      { id: "stall-5", event_id: eventId, name: "🎨 Stall — Neon Face Art Studio", slug: "stall-neon-art", description: "Get painted with glowing ultraviolet tribal festival artwork.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
+    ];
+    stallsList.forEach((s) => this.stalls.set(s.id, s));
+
+    // 8. The 5 Official Quests (Section 18 of specification)
     this.quests = [
-      { id: "q-1", event_id: eventId, title: "The Explorer", description: "Visit 3 different event zones.", condition_type: "zones_visited", condition_config: { target: 3 }, xp_reward: 200, coin_reward: 150, starts_at: null, ends_at: null, is_active: true },
-      { id: "q-2", event_id: eventId, title: "Social Butterfly", description: "Complete experiences at 5 different stalls across the venue.", condition_type: "experiences_completed", condition_config: { target: 5 }, xp_reward: 250, coin_reward: 200, starts_at: null, ends_at: null, is_active: true },
-      { id: "q-3", event_id: eventId, title: "Challenge Accepted", description: "Complete 5 event challenges.", condition_type: "experiences_completed", condition_config: { target: 5 }, xp_reward: 300, coin_reward: 150, starts_at: null, ends_at: null, is_active: true },
-      { id: "q-4", event_id: eventId, title: "VIBE Master (Grand Tour)", description: "Visit and conquer all 7 venue zones.", condition_type: "all_zones_completed", condition_config: { target: 7 }, xp_reward: 500, coin_reward: 500, starts_at: null, ends_at: null, is_active: true },
+      { id: "q-1", event_id: eventId, title: "QUEST 1 — THE EXPLORER", description: "Visit 3 zones.", condition_type: "zones_visited", condition_config: { target: 3 }, xp_reward: 100, coin_reward: 100, starts_at: null, ends_at: null, is_active: true },
+      { id: "q-2", event_id: eventId, title: "QUEST 2 — THE WANDERER", description: "Visit all 6 zones.", condition_type: "all_zones_completed", condition_config: { target: 6 }, xp_reward: 300, coin_reward: 300, starts_at: null, ends_at: null, is_active: true },
+      { id: "q-3", event_id: eventId, title: "QUEST 3 — SOCIAL VIBE", description: "Complete 5 stall interactions.", condition_type: "stalls_visited", condition_config: { target: 5 }, xp_reward: 200, coin_reward: 150, starts_at: null, ends_at: null, is_active: true },
+      { id: "q-4", event_id: eventId, title: "QUEST 4 — GAME ON", description: "Complete all 4 games.", condition_type: "games_completed", condition_config: { target: 4 }, xp_reward: 300, coin_reward: 200, starts_at: null, ends_at: null, is_active: true },
+      { id: "q-5", event_id: eventId, title: "QUEST 5 — VIBE MASTER", description: "Complete all 6 zones, 5 stalls, and 4 games.", condition_type: "vibe_master", condition_config: { target: 15 }, xp_reward: 500, coin_reward: 500, starts_at: null, ends_at: null, is_active: true },
     ];
 
-    // 8. Achievements
+    // 9. Achievements
     this.achievements = [
-      { id: "ach-1", event_id: eventId, name: "Explorer", description: "Visit your first 3 venue zones.", condition_type: "zones_visited", condition_config: { target: 3 }, badge_media_id: null, is_active: true },
-      { id: "ach-2", event_id: eventId, name: "VIBE Explorer (Grand Tour)", description: "Unlock all 7 zones in your digital Passport.", condition_type: "all_zones_completed", condition_config: { target: 7 }, badge_media_id: null, is_active: true },
-      { id: "ach-3", event_id: eventId, name: "Challenger", description: "Complete 5 event experiences successfully.", condition_type: "experiences_completed", condition_config: { target: 5 }, badge_media_id: null, is_active: true },
-      { id: "ach-4", event_id: eventId, name: "VIBE Legend", description: "Ascend to Level 6: 👑 VIBE Legend status.", condition_type: "reach_level", condition_config: { level: 6 }, badge_media_id: null, is_active: true },
-      { id: "ach-5", event_id: eventId, name: "Secret Cipher Cracker", description: "Conquer the Cipher of District 3192.", condition_type: "specific_experience", condition_config: { experience_id: "exp-7" }, badge_media_id: null, is_active: true },
+      { id: "ach-1", event_id: eventId, name: "The Explorer", description: "Stamped your first 3 venue zones.", condition_type: "zones_visited", condition_config: { target: 3 }, badge_media_id: null, is_active: true },
+      { id: "ach-2", event_id: eventId, name: "The Wanderer", description: "Conquered all 6 zones in your digital Passport.", condition_type: "all_zones_completed", condition_config: { target: 6 }, badge_media_id: null, is_active: true },
+      { id: "ach-3", event_id: eventId, name: "Social Butterfly", description: "Interacted with 5 stalls across the festival grounds.", condition_type: "stalls_visited", condition_config: { target: 5 }, badge_media_id: null, is_active: true },
+      { id: "ach-4", event_id: eventId, name: "Arcade Champion", description: "Played all 4 official VIBE festival games.", condition_type: "games_completed", condition_config: { target: 4 }, badge_media_id: null, is_active: true },
+      { id: "ach-5", event_id: eventId, name: "VIBE Master", description: "Master of the entire VIBE event world.", condition_type: "vibe_master", condition_config: { target: 15 }, badge_media_id: null, is_active: true },
     ];
 
-    // 9. Rewards (Tiers: 100, 150, 250, 300, 500, 750)
+    // 10. Rewards Store
     const rewardsList: Reward[] = [
-      { id: "rwd-1", event_id: eventId, sponsor_id: null, name: "Official VIBE Sticker Pack", description: "High-gloss holographic vinyl sticker pack for laptop & phone.", image_media_id: null, coin_cost: 100, stock: 200, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
-      { id: "rwd-2", event_id: eventId, sponsor_id: null, name: "Commemorative District 3192 Enamel Pin", description: "Exclusive metal collector badge with rotaract freshers insignia.", image_media_id: null, coin_cost: 150, stock: 150, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
-      { id: "rwd-3", event_id: eventId, sponsor_id: "sp-1", name: "Red Bull VIP Food & Drink Coupon", description: "20% discount coupon redeemable across all festival food bazaar counters.", image_media_id: null, coin_cost: 250, stock: 100, redemption_limit: 2, starts_at: null, ends_at: null, is_active: true },
-      { id: "rwd-4", event_id: eventId, sponsor_id: "sp-2", name: "Mystery Festival Gift Box", description: "Curated box containing headphones, wristbands and surprise swag.", image_media_id: null, coin_cost: 300, stock: 50, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
-      { id: "rwd-5", event_id: eventId, sponsor_id: null, name: "Limited-Edition VIBE T-Shirt", description: "Official festival streetwear heavyweight tee with neon screenprint.", image_media_id: null, coin_cost: 500, stock: 30, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
-      { id: "rwd-6", event_id: eventId, sponsor_id: "sp-3", name: "VIP All-Access & After-Party Pass", description: "Backstage artist lounge access + premium after-party entry.", image_media_id: null, coin_cost: 750, stock: 10, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
+      { id: "rwd-1", event_id: eventId, sponsor_id: null, name: "Official VIBE Holographic Sticker Pack", description: "High-gloss holographic vinyl sticker collection for laptop & phone.", image_media_id: null, coin_cost: 100, stock: 200, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
+      { id: "rwd-2", event_id: eventId, sponsor_id: null, name: "VIBE 2026 Commemorative District Enamel Pin", description: "Exclusive metal collector badge with rotaract freshers insignia.", image_media_id: null, coin_cost: 150, stock: 150, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
+      { id: "rwd-3", event_id: eventId, sponsor_id: "sp-1", name: "Red Bull VIP Energy Drink Voucher", description: "Complimentary Red Bull drink at any festival beverage hub.", image_media_id: null, coin_cost: 200, stock: 100, redemption_limit: 2, starts_at: null, ends_at: null, is_active: true },
+      { id: "rwd-4", event_id: eventId, sponsor_id: "sp-2", name: "Spotify Premium 3-Month Subscription Voucher", description: "Ad-free music voucher provided by official sound partner.", image_media_id: null, coin_cost: 350, stock: 50, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
+      { id: "rwd-5", event_id: eventId, sponsor_id: null, name: "Limited Edition VIBE Streetwear T-Shirt", description: "Heavyweight festival cotton tee with custom fluorescent wave print.", image_media_id: null, coin_cost: 500, stock: 30, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
     ];
     rewardsList.forEach((r) => this.rewards.set(r.id, r));
 
-    // 10. Sample Seed Users for Leaderboard Realism (incorporating tie-breaking fields)
-    this.createAttendeeProfile("usr-demo-1", "Aarav Sharma", "VIBE-1001", "BMS College of Engineering", "Rotaract Club of BMSCE", 2850, 6, 7);
-    this.createAttendeeProfile("usr-demo-2", "Ananya Rao", "VIBE-1002", "PES University", "Rotaract Club of PESU", 3420, 7, 9);
-    this.createAttendeeProfile("usr-demo-3", "Rohan Iyer", "VIBE-1003", "RVCE Bangalore", "Rotaract Club of RVCE", 1950, 4, 5);
-    this.createAttendeeProfile("usr-demo-4", "Sneha Nair", "VIBE-1004", "Christ University", "Rotaract Club of Christ", 1400, 3, 4);
+    // 11. Seed Users matching Section 1 & 28 of specification
+    this.createAttendeeProfile("usr-demo-1", "Aarcha U", "VIBE-2001", "BMS College of Engineering", "Rotaract Club of Bangalore", 3850, 6, 12, "@aarcha.u", "+91 98765 43210", "z-arnava");
+    this.createAttendeeProfile("usr-demo-2", "Rahul M", "VIBE-2002", "PES University", "Rotaract Club of Midtown", 3720, 5, 10, "@rahul.m", "+91 98765 43211", "z-taranaga");
+    this.createAttendeeProfile("usr-demo-3", "Ananya S", "VIBE-2003", "RVCE Bangalore", "Rotaract Club of Sagara Coast", 3550, 5, 9, "@ananya.s", "+91 98765 43212", "z-sagara");
+    this.createAttendeeProfile("usr-demo-4", "Kabir K", "VIBE-2004", "Christ University", "Rotaract Club of Indiranagar", 2900, 4, 7, "@kabir.k", "+91 98765 43213", "z-pravaha");
+
+    // 12. Seed Sample Stall Photo Submissions for Verification Queue
+    this.stallPhotoSubmissions.push(
+      {
+        id: "sub-1",
+        event_id: eventId,
+        profile_id: "prof-usr-demo-2",
+        stall_id: "stall-2",
+        photo_url: "/placeholder-stall-photo.jpg",
+        instagram_id: "@rahul.m",
+        status: "pending",
+        submitted_at: new Date(Date.now() - 300000).toISOString(),
+        reviewed_at: null,
+        reviewed_by: null,
+      },
+      {
+        id: "sub-2",
+        event_id: eventId,
+        profile_id: "prof-usr-demo-3",
+        stall_id: "stall-1",
+        photo_url: "/placeholder-stall-photo.jpg",
+        instagram_id: "@ananya.s",
+        status: "pending",
+        submitted_at: new Date(Date.now() - 600000).toISOString(),
+        reviewed_at: null,
+        reviewed_by: null,
+      }
+    );
   }
 
   createAttendeeProfile(
@@ -185,7 +332,10 @@ class VibeMemoryDatabase {
     club: string,
     initialXP = 0,
     zonesCount = 0,
-    completionsCount = 0
+    completionsCount = 0,
+    instagramId?: string,
+    phone: string = "+91 98765 00000",
+    assignedZoneId: string = "z-arnava"
   ): Profile {
     const profileId = `prof-${clerkId}`;
     const profile: Profile = {
@@ -196,6 +346,10 @@ class VibeMemoryDatabase {
       avatar_media_id: null,
       college,
       club,
+      phone,
+      instagram_id: instagramId || `@${name.toLowerCase().replace(/\s+/g, ".")}`,
+      registration_id: `REG-${Math.floor(10000 + Math.random() * 90000)}`,
+      assigned_zone_id: assignedZoneId,
       created_at: new Date(Date.now() - 3600000).toISOString(),
       updated_at: new Date().toISOString(),
     };
@@ -211,7 +365,7 @@ class VibeMemoryDatabase {
       joined_at: new Date().toISOString(),
     });
 
-    // Initialize wallet with 500 starting coins
+    // Initialize wallet with 500 starting coins (Section 1 & 3 of spec)
     const walletKey = `${eventId}:${profileId}`;
     this.wallets.set(walletKey, {
       id: `wal-${profileId}`,
@@ -239,7 +393,7 @@ class VibeMemoryDatabase {
       created_at: new Date().toISOString(),
     });
 
-    // Seed sample passport stamps
+    // Seed passport stamps for the official zones
     const zoneKeys = Array.from(this.zones.keys());
     const stamps = new Set<string>();
     for (let i = 0; i < Math.min(zonesCount, zoneKeys.length); i++) {
@@ -261,7 +415,7 @@ class VibeMemoryDatabase {
           xp_earned: Math.floor(initialXP / Math.max(1, completionsCount)),
           coin_earned: 20,
           completed_at: new Date(Date.now() - (completionsCount - i) * 60000).toISOString(),
-          metadata: { title: "Seeded Experience" },
+          metadata: { title: "Seeded Experience", zone_id: assignedZoneId },
         });
       }
     }
@@ -279,7 +433,7 @@ class VibeMemoryDatabase {
     );
 
     if (wallet && hasInit) {
-      return { success: true, credited: false, balance: wallet.balance, message: "Initial wallet credit already applied" };
+      return { success: true, credited: false, balance: wallet.balance };
     }
 
     if (!wallet) {
@@ -330,7 +484,7 @@ class VibeMemoryDatabase {
     metadata?: Record<string, any>
   ) {
     if (this.isEventFrozen) {
-      return { success: false, code: "EVENT_FROZEN", message: "VIBE has concluded. Experience unlocks and coin transactions are closed." };
+      return { success: false, code: "EVENT_FROZEN", message: "VIBE has concluded. Transactions are closed." };
     }
 
     if (amount < 0) {
@@ -398,7 +552,7 @@ class VibeMemoryDatabase {
     };
   }
 
-  // --- ZONE DISCOVERY (First Visit: +50 VIBE, +100 XP, Passport Stamp) ---
+  // --- ZONE DISCOVERY (+50 VIBE, +100 XP, Passport Stamp) ---
   discoverZone(eventId: string, profileId: string, zoneId: string) {
     if (this.isEventFrozen) {
       return { success: false, code: "EVENT_FROZEN", message: "VIBE has concluded." };
@@ -457,7 +611,7 @@ class VibeMemoryDatabase {
       created_at: new Date().toISOString(),
     });
 
-    // Record +100 XP in completions record for zone discovery
+    // Record +100 XP
     const xpEarned = 100;
     this.completions.push({
       id: `comp-zd-${Date.now()}`,
@@ -473,9 +627,8 @@ class VibeMemoryDatabase {
       metadata: { title: `${zone.name} Discovery`, zone_id: zoneId, type: "zone_discovery" },
     });
 
-    // Evaluate Quests and Achievements
-    const newAchievements = this.evaluateAchievementsForProfile(eventId, profileId);
-    const updatedQuests = this.evaluateQuestsForProfile(eventId, profileId);
+    this.evaluateAchievementsForProfile(eventId, profileId);
+    this.evaluateQuestsForProfile(eventId, profileId);
 
     return {
       success: true,
@@ -485,12 +638,13 @@ class VibeMemoryDatabase {
       xpEarned,
       newBalance: wallet.balance,
       totalZonesVisited: userStamps.size,
-      newAchievements,
-      updatedQuests,
       message: `🎉 ${zone.name} Discovered! +50 VIBE Coins, +100 XP earned!`,
     };
   }
 
+  // --- ATOMIC COMPLETE EXPERIENCE ---
+  // Key requirement from Section 8 & 22:
+  // Coins spent on an activity belonging to a zone are transferred to that zone's score!
   completeExperienceAtomic(
     eventId: string,
     profileId: string,
@@ -515,7 +669,6 @@ class VibeMemoryDatabase {
       return { success: false, code: "EXPERIENCE_ENDED", message: "Experience has ended" };
     }
 
-    // Check attempts & cooldown
     const userComps = this.completions.filter(
       (c) => c.profile_id === profileId && c.experience_id === experienceId
     );
@@ -554,7 +707,13 @@ class VibeMemoryDatabase {
 
     const attemptNumber = userComps.length + 1;
 
+    // RULE: Coins spent move to the zone's score!
     if (exp.coin_cost > 0) {
+      const targetZone = this.zones.get(exp.zone_id);
+      if (targetZone) {
+        targetZone.coins_collected = (targetZone.coins_collected || 0) + exp.coin_cost;
+      }
+
       this.walletTransactions.unshift({
         id: `tx-sp-${Date.now()}`,
         wallet_id: wallet.id,
@@ -567,7 +726,7 @@ class VibeMemoryDatabase {
         source_type: "experience_unlock",
         source_id: experienceId,
         idempotency_key: idempotencyKey || null,
-        metadata: { title: exp.title, attempt: attemptNumber },
+        metadata: { title: exp.title, attempt: attemptNumber, zone_id: exp.zone_id },
         created_at: new Date().toISOString(),
       });
     }
@@ -601,11 +760,11 @@ class VibeMemoryDatabase {
       xp_earned: exp.xp_reward,
       coin_earned: exp.coin_reward,
       completed_at: new Date().toISOString(),
-      metadata: { experience_title: exp.title, zone_id: exp.zone_id },
+      metadata: { title: exp.title, zone_id: exp.zone_id },
     };
     this.completions.push(completion);
 
-    // Also ensure zone is marked visited in passport
+    // Auto-stamp passport for this zone
     let userStamps = this.passportStamps.get(profileId);
     if (!userStamps) {
       userStamps = new Set();
@@ -613,174 +772,310 @@ class VibeMemoryDatabase {
     }
     userStamps.add(exp.zone_id);
 
-    // Evaluate Quests & Achievements
-    const newAchievements = this.evaluateAchievementsForProfile(eventId, profileId);
-    const updatedQuests = this.evaluateQuestsForProfile(eventId, profileId);
+    this.evaluateAchievementsForProfile(eventId, profileId);
+    this.evaluateQuestsForProfile(eventId, profileId);
 
     return {
       success: true,
       completion_id: completion.id,
       experience_id: exp.id,
       experience_title: exp.title,
+      zone_id: exp.zone_id,
       coin_spent: exp.coin_cost,
       coin_earned: exp.coin_reward,
       xp_earned: exp.xp_reward,
       balance_after: newBal,
       attempt_number: attemptNumber,
-      new_achievements: newAchievements,
-      updated_quests: updatedQuests,
     };
   }
 
-  // --- MANUAL VERIFICATION FOR PHYSICAL CHALLENGES BY STAFF ---
-  approvePhysicalChallenge(
-    eventId: string,
-    staffId: string,
-    attendeeProfileId: string,
-    experienceId: string
-  ) {
-    if (this.isEventFrozen) {
-      return { success: false, code: "EVENT_FROZEN", message: "VIBE has concluded." };
+  // --- STALL PHOTO VERIFICATION SYSTEM (Sections 11-13) ---
+  submitStallPhoto(eventId: string, profileId: string, stallId: string, photoUrl: string, instagramId: string) {
+    const stall = this.stalls.get(stallId);
+    if (!stall || !stall.is_active) {
+      return { success: false, message: "Stall not found or inactive" };
     }
 
-    const exp = this.experiences.get(experienceId);
-    if (!exp || !exp.is_active) {
-      return { success: false, code: "EXPERIENCE_UNAVAILABLE", message: "Experience is invalid" };
-    }
-
-    const profile = this.profiles.get(attendeeProfileId);
-    if (!profile) {
-      return { success: false, code: "PROFILE_NOT_FOUND", message: "Attendee profile not found" };
-    }
-
-    const walletKey = `${eventId}:${attendeeProfileId}`;
-    const wallet = this.wallets.get(walletKey);
-    if (!wallet) {
-      return { success: false, code: "WALLET_NOT_FOUND", message: "Attendee wallet not found" };
-    }
-
-    // Award completion
-    const completion: ExperienceCompletion = {
-      id: `comp-manual-${Date.now()}`,
+    const submission: StallPhotoSubmission = {
+      id: `sub-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
       event_id: eventId,
-      profile_id: attendeeProfileId,
-      experience_id: experienceId,
+      profile_id: profileId,
+      stall_id: stallId,
+      photo_url: photoUrl,
+      instagram_id: instagramId,
+      status: "pending",
+      submitted_at: new Date().toISOString(),
+      reviewed_at: null,
+      reviewed_by: null,
+    };
+    this.stallPhotoSubmissions.unshift(submission);
+
+    return {
+      success: true,
+      submission,
+      message: "Photo submitted to volunteer verification queue!",
+    };
+  }
+
+  approveStallPhoto(submissionId: string, reviewerProfileId: string) {
+    const sub = this.stallPhotoSubmissions.find((s) => s.id === submissionId);
+    if (!sub) return { success: false, message: "Submission not found" };
+    if (sub.status !== "pending") {
+      return { success: false, message: `Submission is already ${sub.status}` };
+    }
+
+    sub.status = "approved";
+    sub.reviewed_at = new Date().toISOString();
+    sub.reviewed_by = reviewerProfileId;
+
+    const stall = this.stalls.get(sub.stall_id);
+    const xpReward = stall ? stall.xp_reward : 100;
+    const coinReward = stall?.coin_reward || 25;
+
+    // Credit +100 XP to user
+    this.completions.push({
+      id: `comp-stall-${Date.now()}`,
+      event_id: sub.event_id,
+      profile_id: sub.profile_id,
+      experience_id: `stall-${sub.stall_id}`,
       qr_code_id: null,
       attempt_number: 1,
       coin_spent: 0,
-      xp_earned: exp.xp_reward,
-      coin_earned: exp.coin_reward,
+      xp_earned: xpReward,
+      coin_earned: coinReward,
       completed_at: new Date().toISOString(),
-      metadata: {
-        verified_by_staff_id: staffId,
-        verification_type: "volunteer_manual_approval",
-        experience_title: exp.title,
-      },
-    };
-    this.completions.push(completion);
+      metadata: { type: "stall_photo", stall_id: sub.stall_id, photo_url: sub.photo_url },
+    });
 
-    if (exp.coin_reward > 0) {
+    // Credit +25 VIBE Coins
+    const walletKey = `${sub.event_id}:${sub.profile_id}`;
+    const wallet = this.wallets.get(walletKey);
+    if (wallet) {
       const balBefore = wallet.balance;
-      wallet.balance += exp.coin_reward;
+      wallet.balance += coinReward;
       wallet.version += 1;
       this.walletTransactions.unshift({
-        id: `tx-staff-${Date.now()}`,
+        id: `tx-stall-${Date.now()}`,
         wallet_id: wallet.id,
-        event_id: eventId,
-        profile_id: attendeeProfileId,
+        event_id: sub.event_id,
+        profile_id: sub.profile_id,
         type: "earn",
-        amount: exp.coin_reward,
+        amount: coinReward,
         balance_before: balBefore,
         balance_after: wallet.balance,
-        source_type: "staff_approval",
-        source_id: experienceId,
+        source_type: "stall_photo_approved",
+        source_id: sub.stall_id,
         idempotency_key: null,
-        metadata: { staff_id: staffId, title: exp.title },
+        metadata: { submission_id: sub.id, stall_id: sub.stall_id },
         created_at: new Date().toISOString(),
       });
     }
 
+    this.evaluateAchievementsForProfile(sub.event_id, sub.profile_id);
+    this.evaluateQuestsForProfile(sub.event_id, sub.profile_id);
+
     return {
       success: true,
-      message: `Challenge verified for ${profile.display_name}! Awarded +${exp.xp_reward} XP and +${exp.coin_reward} Coins.`,
-      xp_awarded: exp.xp_reward,
-      coins_awarded: exp.coin_reward,
+      message: `Approved! Attendee awarded +${xpReward} XP and +${coinReward} VIBE Coins.`,
+      xpEarned: xpReward,
+      coinEarned: coinReward,
     };
   }
 
-  // --- ADMIN WALLET ADJUSTMENTS (Audit Logged, No Direct Balance Tampering) ---
-  adjustWalletBalance(
+  rejectStallPhoto(submissionId: string, reviewerProfileId: string) {
+    const sub = this.stallPhotoSubmissions.find((s) => s.id === submissionId);
+    if (!sub) return { success: false, message: "Submission not found" };
+    sub.status = "rejected";
+    sub.reviewed_at = new Date().toISOString();
+    sub.reviewed_by = reviewerProfileId;
+    return { success: true, message: "Submission rejected." };
+  }
+
+  approvePhysicalChallenge(
     eventId: string,
-    profileId: string,
-    amount: number,
-    reason: string,
-    adminId: string
+    staffProfileId: string,
+    attendeeProfileId: string,
+    experienceId: string
   ) {
-    if (!reason || reason.trim().length === 0) {
-      return { success: false, code: "REASON_REQUIRED", message: "Audit reason is required for any manual adjustment." };
+    const exp = this.experiences.get(experienceId);
+    if (!exp || !exp.is_active) {
+      return { success: false, message: "Experience not found or inactive" };
     }
 
-    if (amount === 0) {
-      return { success: false, code: "ZERO_AMOUNT", message: "Adjustment amount cannot be zero." };
-    }
+    const userComps = this.completions.filter(
+      (c) => c.profile_id === attendeeProfileId && c.experience_id === experienceId
+    );
+    const attemptNumber = userComps.length + 1;
 
-    const key = `${eventId}:${profileId}`;
-    const wallet = this.wallets.get(key);
-    if (!wallet) {
-      return { success: false, code: "WALLET_NOT_FOUND", message: "Wallet not found." };
-    }
-
-    if (wallet.balance + amount < 0) {
-      return {
-        success: false,
-        code: "NEGATIVE_BALANCE_PREVENTED",
-        message: `Adjustment would result in negative balance (${wallet.balance + amount}). Action blocked.`,
-      };
-    }
-
-    const balBefore = wallet.balance;
-    wallet.balance += amount;
-    wallet.version += 1;
-    wallet.updated_at = new Date().toISOString();
-
-    const tx: WalletTransaction = {
-      id: `tx-adj-${Date.now()}`,
-      wallet_id: wallet.id,
+    this.completions.push({
+      id: `comp-staff-${Date.now()}`,
       event_id: eventId,
-      profile_id: profileId,
-      type: "admin_adjustment",
-      amount: Math.abs(amount),
-      balance_before: balBefore,
-      balance_after: wallet.balance,
-      source_type: "admin_action",
-      source_id: adminId,
-      idempotency_key: `adj_${Date.now()}_${adminId}`,
-      metadata: { reason, adjusted_by_admin: adminId, delta: amount },
-      created_at: new Date().toISOString(),
-    };
-    this.walletTransactions.unshift(tx);
+      profile_id: attendeeProfileId,
+      experience_id: experienceId,
+      qr_code_id: null,
+      attempt_number: attemptNumber,
+      coin_spent: 0,
+      xp_earned: exp.xp_reward,
+      coin_earned: exp.coin_reward,
+      completed_at: new Date().toISOString(),
+      metadata: { verifiedByStaffProfileId: staffProfileId },
+    });
+
+    if (exp.coin_reward > 0) {
+      const walletKey = `${eventId}:${attendeeProfileId}`;
+      const wallet = this.wallets.get(walletKey);
+      if (wallet) {
+        const balBefore = wallet.balance;
+        wallet.balance += exp.coin_reward;
+        wallet.version += 1;
+        this.walletTransactions.unshift({
+          id: `tx-ch-earn-${Date.now()}`,
+          wallet_id: wallet.id,
+          event_id: eventId,
+          profile_id: attendeeProfileId,
+          type: "earn",
+          amount: exp.coin_reward,
+          balance_before: balBefore,
+          balance_after: wallet.balance,
+          source_type: "challenge_verified",
+          source_id: experienceId,
+          idempotency_key: null,
+          metadata: { experience_title: exp.title, verified_by: staffProfileId },
+          created_at: new Date().toISOString(),
+        });
+      }
+    }
 
     this.auditLogs.unshift({
       id: `audit-${Date.now()}`,
       event_id: eventId,
-      actor_profile_id: adminId,
-      action: "wallet.manual_adjustment",
-      entity_type: "wallets",
-      entity_id: wallet.id,
-      before_data: { balance: balBefore },
-      after_data: { balance: wallet.balance, delta: amount, reason },
+      actor_profile_id: staffProfileId,
+      action: "STAFF_CHALLENGE_APPROVED",
+      entity_type: "experience_completions",
+      entity_id: experienceId,
+      before_data: null,
+      after_data: { attendeeProfileId, experienceId, xpAwarded: exp.xp_reward },
       created_at: new Date().toISOString(),
     });
 
+    this.evaluateAchievementsForProfile(eventId, attendeeProfileId);
+    this.evaluateQuestsForProfile(eventId, attendeeProfileId);
+
     return {
       success: true,
-      balance_before: balBefore,
-      balance_after: wallet.balance,
-      delta: amount,
-      reason,
+      xpAwarded: exp.xp_reward,
+      message: `Approved! Awarded +${exp.xp_reward} XP to attendee.`,
     };
   }
 
+  // --- GAME SESSION RECORDING (Sections 15-16) ---
+  recordGameSession(
+    eventId: string,
+    profileId: string,
+    gameType: GameType,
+    score: number,
+    maxScore: number,
+    coinCost: number,
+    coinReward: number,
+    xpReward: number
+  ) {
+    if (this.isEventFrozen) {
+      return { success: false, code: "EVENT_FROZEN", message: "Event concluded." };
+    }
+
+    const walletKey = `${eventId}:${profileId}`;
+    const wallet = this.wallets.get(walletKey);
+    if (!wallet) return { success: false, message: "Wallet not found" };
+
+    if (coinCost > 0 && wallet.balance < coinCost) {
+      return { success: false, code: "INSUFFICIENT_COINS", message: `Need ${coinCost} VIBE Coins to play this game.` };
+    }
+
+    const balBefore = wallet.balance;
+    const netCoins = coinReward - coinCost;
+    wallet.balance += netCoins;
+    wallet.version += 1;
+
+    if (coinCost > 0) {
+      this.walletTransactions.unshift({
+        id: `tx-game-spend-${Date.now()}`,
+        wallet_id: wallet.id,
+        event_id: eventId,
+        profile_id: profileId,
+        type: "spend",
+        amount: coinCost,
+        balance_before: balBefore,
+        balance_after: balBefore - coinCost,
+        source_type: "game_entry",
+        source_id: null,
+        idempotency_key: null,
+        metadata: { game_type: gameType },
+        created_at: new Date().toISOString(),
+      });
+    }
+
+    if (coinReward > 0) {
+      this.walletTransactions.unshift({
+        id: `tx-game-earn-${Date.now()}`,
+        wallet_id: wallet.id,
+        event_id: eventId,
+        profile_id: profileId,
+        type: "earn",
+        amount: coinReward,
+        balance_before: balBefore - coinCost,
+        balance_after: wallet.balance,
+        source_type: "game_win",
+        source_id: null,
+        idempotency_key: null,
+        metadata: { game_type: gameType, score },
+        created_at: new Date().toISOString(),
+      });
+    }
+
+    // Award XP
+    if (xpReward > 0) {
+      this.completions.push({
+        id: `comp-game-${Date.now()}`,
+        event_id: eventId,
+        profile_id: profileId,
+        experience_id: `game-${gameType}`,
+        qr_code_id: null,
+        attempt_number: 1,
+        coin_spent: coinCost,
+        xp_earned: xpReward,
+        coin_earned: coinReward,
+        completed_at: new Date().toISOString(),
+        metadata: { type: "game_session", game_type: gameType, score },
+      });
+    }
+
+    const session: GameSession = {
+      id: `gs-${Date.now()}`,
+      event_id: eventId,
+      profile_id: profileId,
+      game_type: gameType,
+      score,
+      max_score: maxScore,
+      coin_spent: coinCost,
+      coin_earned: coinReward,
+      xp_earned: xpReward,
+      played_at: new Date().toISOString(),
+    };
+    this.gameSessions.push(session);
+
+    this.evaluateAchievementsForProfile(eventId, profileId);
+    this.evaluateQuestsForProfile(eventId, profileId);
+
+    return {
+      success: true,
+      balanceAfter: wallet.balance,
+      xpEarned: xpReward,
+      coinsEarned: coinReward,
+      session,
+    };
+  }
+
+  // --- REWARD REDEMPTION ---
   redeemRewardAtomic(eventId: string, profileId: string, rewardId: string, idempotencyKey?: string | null) {
     if (this.isEventFrozen) {
       return { success: false, code: "EVENT_FROZEN", message: "VIBE has concluded. Reward redemptions are closed." };
@@ -814,7 +1109,6 @@ class VibeMemoryDatabase {
       return { success: false, code: "INSUFFICIENT_COINS", message: "Insufficient Coins for redemption" };
     }
 
-    // Atomic deductions
     reward.stock -= 1;
     const balBefore = wallet.balance;
     wallet.balance -= reward.coin_cost;
@@ -863,13 +1157,109 @@ class VibeMemoryDatabase {
     };
   }
 
-  // --- 3-TIER LEADERBOARD TIE-BREAKER ENGINE ---
-  // 1. Highest XP
-  // 2. Most zones completed (passport stamps)
-  // 3. Most experiences completed
-  // 4. Earliest to achieve final XP
-  getLeaderboard(eventId: string, limit = 50): LeaderboardEntry[] {
-    const list: LeaderboardEntry[] = [];
+  // --- 10-METRIC PLAYER STATS (Section 30) ---
+  getUserPlayerStats(profileId: string): UserPlayerStats {
+    const userTxs = this.walletTransactions.filter((tx) => tx.profile_id === profileId);
+    const userComps = this.completions.filter((c) => c.profile_id === profileId);
+    const userStamps = this.passportStamps.get(profileId) || new Set();
+    const userGames = this.gameSessions.filter((g) => g.profile_id === profileId);
+    const userApprovedPhotos = this.stallPhotoSubmissions.filter(
+      (p) => p.profile_id === profileId && p.status === "approved"
+    );
+
+    const totalEarned = userTxs
+      .filter((tx) => tx.type === "earn" || tx.type === "initial_credit")
+      .reduce((sum, tx) => sum + tx.amount, 0);
+
+    const totalSpent = userTxs
+      .filter((tx) => tx.type === "spend" || tx.type === "reward_redemption")
+      .reduce((sum, tx) => sum + tx.amount, 0);
+
+    const totalXP = userComps.reduce((sum, c) => sum + c.xp_earned, 0);
+
+    const distinctStallsVisited = new Set(
+      userComps
+        .map((c) => c.metadata?.stall_id)
+        .filter(Boolean)
+    ).size;
+
+    const completedQuestsCount = Array.from(this.questProgress.values()).filter(
+      (qp) => qp.profile_id === profileId && Boolean(qp.completed_at)
+    ).length;
+
+    return {
+      total_vibe_earned: totalEarned,
+      total_vibe_spent: totalSpent,
+      total_xp_earned: totalXP,
+      zones_visited_count: userStamps.size,
+      experiences_completed_count: userComps.filter((c) => !c.metadata?.type).length,
+      stalls_visited_count: distinctStallsVisited,
+      games_played_count: userGames.length,
+      games_won_count: userGames.filter((g) => g.coin_earned > g.coin_spent).length,
+      photos_approved_count: userApprovedPhotos.length,
+      quests_completed_count: completedQuestsCount,
+
+      totalVibeEarned: totalEarned,
+      totalVibeSpent: totalSpent,
+      xpEarned: totalXP,
+      zonesVisitedCount: userStamps.size,
+      experiencesCompletedCount: userComps.filter((c) => !c.metadata?.type).length,
+      stallsVisitedCount: distinctStallsVisited,
+      gamesPlayedCount: userGames.length,
+      gamesWonCount: userGames.filter((g) => g.coin_earned > g.coin_spent).length,
+      photosApprovedCount: userApprovedPhotos.length,
+      questsCompletedCount: completedQuestsCount,
+    };
+  }
+
+  // --- ZONAL STATS BREAKDOWN (Sections 24-26) ---
+  getZonalStats(eventId: string): ZoneLeaderboardEntry[] {
+    const sixZones = ["z-arnava", "z-taranaga", "z-sagara", "z-pravaha", "z-samudhra", "z-varuna"];
+    const results: ZoneLeaderboardEntry[] = [];
+
+    sixZones.forEach((zId) => {
+      const zone = this.zones.get(zId);
+      if (!zone) return;
+
+      let visitors = 0;
+      this.passportStamps.forEach((stamps) => {
+        if (stamps.has(zId)) visitors++;
+      });
+
+      const zoneComps = this.completions.filter((c) => c.metadata?.zone_id === zId);
+      const totalXPGen = zoneComps.reduce((sum, c) => sum + c.xp_earned, 0);
+
+      const stallInteractions = Math.round(visitors * 1.1) + 20;
+      const gameInteractions = Math.round(visitors * 0.8) + 15;
+      const completionRate = Math.min(100, Math.round((zoneComps.length / Math.max(1, visitors * 3)) * 100));
+
+      results.push({
+        rank: 0,
+        zone_id: zone.id,
+        name: zone.name,
+        slug: zone.slug,
+        coins_collected: zone.coins_collected || 0,
+        participants_count: visitors || 300,
+        experiences_completed_count: zoneComps.length || 850,
+        stall_interactions_count: stallInteractions,
+        games_played_count: gameInteractions,
+        total_xp_generated: totalXPGen || 120000,
+        completion_rate_percent: completionRate || 68,
+      });
+    });
+
+    // Rank strictly by coins_collected descending (Section 27)
+    results.sort((a, b) => b.coins_collected - a.coins_collected);
+    results.forEach((entry, idx) => {
+      entry.rank = idx + 1;
+    });
+
+    return results;
+  }
+
+  // --- INDIVIDUAL LEADERBOARD (Ranked by XP, Section 28) ---
+  getLeaderboard(eventId: string, limit = 50): MockLeaderboardEntry[] {
+    const list: MockLeaderboardEntry[] = [];
 
     this.profiles.forEach((profile) => {
       const userComps = this.completions.filter((c) => c.profile_id === profile.id);
@@ -882,7 +1272,6 @@ class VibeMemoryDatabase {
       const wallet = this.wallets.get(`${eventId}:${profile.id}`);
       const coins = wallet ? wallet.balance : 0;
 
-      // Calculate level based on 6 tiers
       let userLevel = this.levels[0];
       for (const lvl of this.levels) {
         if (totalXP >= lvl.min_xp) {
@@ -892,13 +1281,17 @@ class VibeMemoryDatabase {
         }
       }
 
+      const assignedZone = profile.assigned_zone_id ? this.zones.get(profile.assigned_zone_id)?.name : undefined;
+
       list.push({
         rank: 0,
         profile_id: profile.id,
         vibe_id: profile.vibe_id,
         display_name: profile.display_name,
         college: profile.college || "District 3192",
-        club: profile.club || "General Attendee",
+        club: profile.club || "Rotaract Club",
+        instagram_id: profile.instagram_id || undefined,
+        assigned_zone_name: assignedZone,
         xp: totalXP,
         coins,
         level: userLevel.name,
@@ -909,23 +1302,18 @@ class VibeMemoryDatabase {
       });
     });
 
-    // Sort by 3 tie-breaker rules
+    // Sort by XP descending (Primary), then zones_visited_count, then experiences_completed_count, then earliest
     list.sort((a, b) => {
-      // Primary: XP descending
       if (b.xp !== a.xp) return b.xp - a.xp;
-      // Tie-breaker 1: Most zones completed descending
       if (b.zones_visited_count !== a.zones_visited_count) {
         return b.zones_visited_count - a.zones_visited_count;
       }
-      // Tie-breaker 2: Most experiences completed descending
       if (b.experiences_completed_count !== a.experiences_completed_count) {
         return b.experiences_completed_count - a.experiences_completed_count;
       }
-      // Tie-breaker 3: Earliest timestamp ascending
       return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
     });
 
-    // Assign final ranks
     return list.slice(0, limit).map((entry, index) => ({
       ...entry,
       rank: index + 1,
@@ -949,13 +1337,15 @@ class VibeMemoryDatabase {
       if (ach.condition_type === "zones_visited") {
         qualified = userStamps.size >= (ach.condition_config.target || 3);
       } else if (ach.condition_type === "all_zones_completed") {
-        qualified = userStamps.size >= (ach.condition_config.target || 7);
-      } else if (ach.condition_type === "experiences_completed") {
-        qualified = userComps.length >= (ach.condition_config.target || 5);
-      } else if (ach.condition_type === "reach_level") {
-        qualified = totalXP >= 2500; // Level 6 VIBE Legend
-      } else if (ach.condition_type === "specific_experience") {
-        qualified = userComps.some((c) => c.experience_id === ach.condition_config.experience_id);
+        qualified = userStamps.size >= (ach.condition_config.target || 6);
+      } else if (ach.condition_type === "stalls_visited") {
+        qualified = userComps.filter((c) => c.metadata?.stall_id).length >= (ach.condition_config.target || 5);
+      } else if (ach.condition_type === "games_completed") {
+        const gamesPlayed = new Set(this.gameSessions.filter((g) => g.profile_id === profileId).map((g) => g.game_type)).size;
+        qualified = gamesPlayed >= (ach.condition_config.target || 4);
+      } else if (ach.condition_type === "vibe_master") {
+        const gamesPlayed = new Set(this.gameSessions.filter((g) => g.profile_id === profileId).map((g) => g.game_type)).size;
+        qualified = userStamps.size >= 6 && gamesPlayed >= 4;
       }
 
       if (qualified) {
@@ -976,6 +1366,8 @@ class VibeMemoryDatabase {
   evaluateQuestsForProfile(eventId: string, profileId: string): QuestProgress[] {
     const userComps = this.completions.filter((c) => c.profile_id === profileId);
     const userStamps = this.passportStamps.get(profileId) || new Set();
+    const distinctGames = new Set(this.gameSessions.filter((g) => g.profile_id === profileId).map((g) => g.game_type)).size;
+    const stallCompsCount = userComps.filter((c) => c.metadata?.stall_id || c.metadata?.type === "stall_photo").length;
 
     const updated: QuestProgress[] = [];
 
@@ -1000,20 +1392,19 @@ class VibeMemoryDatabase {
 
       if (quest.condition_type === "zones_visited") {
         qp.progress_value = Math.min(userStamps.size, qp.target_value);
-      } else if (quest.condition_type === "experiences_completed") {
-        qp.progress_value = Math.min(userComps.length, qp.target_value);
-      } else if (quest.condition_type === "specific_experience") {
-        const hasSpecific = userComps.some(
-          (c) => c.experience_id === quest.condition_config.experience_id
-        );
-        qp.progress_value = hasSpecific ? 1 : 0;
       } else if (quest.condition_type === "all_zones_completed") {
         qp.progress_value = Math.min(userStamps.size, qp.target_value);
+      } else if (quest.condition_type === "stalls_visited") {
+        qp.progress_value = Math.min(stallCompsCount, qp.target_value);
+      } else if (quest.condition_type === "games_completed") {
+        qp.progress_value = Math.min(distinctGames, qp.target_value);
+      } else if (quest.condition_type === "vibe_master") {
+        const totalProgress = userStamps.size + stallCompsCount + distinctGames;
+        qp.progress_value = Math.min(totalProgress, qp.target_value);
       }
 
       if (qp.progress_value >= qp.target_value && !qp.completed_at) {
         qp.completed_at = new Date().toISOString();
-        // Award quest rewards
         const wallet = this.wallets.get(`${eventId}:${profileId}`);
         if (wallet && quest.coin_reward > 0) {
           const balBefore = wallet.balance;
@@ -1045,7 +1436,6 @@ class VibeMemoryDatabase {
   }
 }
 
-// Global Singleton for in-process memory database
 const globalForStore = globalThis as unknown as { vibeStore: VibeMemoryDatabase };
 export const mockDb = globalForStore.vibeStore || new VibeMemoryDatabase();
 if (process.env.NODE_ENV !== "production") globalForStore.vibeStore = mockDb;

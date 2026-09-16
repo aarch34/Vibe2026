@@ -56,12 +56,15 @@ export default async function AdminAttendeesPage() {
         (c) => c.event_id === eventId && c.profile_id === p.id
       );
       const totalXP = userComps.reduce((sum, c) => sum + c.xp_earned, 0);
+      const zoneName = p.assigned_zone_id ? (mockDb.zones.get(p.assigned_zone_id)?.name || "Arnava") : "Arnava";
 
       return {
         id: p.id,
         displayName: p.display_name,
         vibeId: p.vibe_id,
-        college: p.college,
+        college: p.club || p.college,
+        instagramId: p.instagram_id,
+        zoneName,
         coins: wallet?.balance || 0,
         totalXP,
         completionsCount: userComps.length,

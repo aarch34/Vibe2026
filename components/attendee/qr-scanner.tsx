@@ -110,14 +110,16 @@ export function QRScannerClient({
     }
   }
 
-  // Preset sample event QR codes for instant test convenience (matching 5 pricing tiers)
+  // Preset sample event QR codes for instant test convenience (matching official zones & bonus checkpoints)
   const sampleQRs = [
-    { label: "Quick Sip (25🪙)", code: "vibe-lounge-mocktail-2026", cost: 25, xp: 40 },
-    { label: "Taco Blitz (50🪙)", code: "vibe-bazaar-taco-2026", cost: 50, xp: 75 },
-    { label: "DJ Drop (75🪙)", code: "vibe-stage-dj-2026", cost: 75, xp: 125 },
+    { label: "Arnava Icebreaker (50🪙)", code: "vibe-icebreaker-arnava", cost: 50, xp: 75 },
+    { label: "Taranaga Mystery (100🪙)", code: "vibe-mystery-taranaga", cost: 100, xp: 150 },
+    { label: "Sagara Final Wave (150🪙)", code: "vibe-final-wave-sagara", cost: 150, xp: 250 },
+    { label: "Pravaha Flow (75🪙)", code: "vibe-flow-pravaha", cost: 75, xp: 125 },
+    { label: "Hidden Tree QR (+150🪙)", code: "vibe-hidden-tree-01", cost: 0, xp: 50 },
+    { label: "Stage DJ Drop (75🪙)", code: "vibe-stage-dj-2026", cost: 75, xp: 125 },
     { label: "VR Simulator (100🪙)", code: "vibe-arcade-vr-2026", cost: 100, xp: 175 },
     { label: "Laser Tag (150🪙)", code: "vibe-arena-laser-2026", cost: 150, xp: 250 },
-    { label: "Secret Vault (100🪙)", code: "vibe-vault-cipher-2026", cost: 100, xp: 500 },
   ];
 
   return (
@@ -269,6 +271,13 @@ export function QRScannerClient({
               </span>
             </div>
 
+            {/* Zone Battle Impact Callout */}
+            {verificationResult.coinCost > 0 && (
+              <div className="p-2.5 rounded-xl bg-blue-950/40 border border-blue-500/30 text-[11px] text-cyan-200 text-left">
+                🌊 <strong>Zone Battle Rule:</strong> {verificationResult.coinCost} VIBE will be transferred to <strong>{verificationResult.zone?.name || "this zone"}</strong>'s championship score!
+              </div>
+            )}
+
             {/* Action CTA / Insufficient Balance UX */}
             {userBalance < verificationResult.coinCost ? (
               <div className="p-4 rounded-xl bg-amber-950/40 border border-amber-500/40 text-left space-y-2.5 shadow-md">
@@ -311,7 +320,7 @@ export function QRScannerClient({
                   <>
                     <Sparkles className="w-4 h-4" />
                     <span>
-                      Confirm & Unlock (
+                      CONFIRM & PLAY (
                       {verificationResult.coinCost > 0
                         ? `${verificationResult.coinCost} Coins`
                         : "Free"}
@@ -342,6 +351,12 @@ export function QRScannerClient({
                 Your completion has been registered on the district ledger!
               </p>
             </div>
+
+            {verificationResult?.coinCost > 0 && (
+              <div className="p-2.5 rounded-xl bg-blue-950/60 border border-blue-500/40 text-xs text-cyan-300 font-semibold">
+                🌊 +{verificationResult.coinCost} VIBE Coins contributed to {verificationResult?.zone?.name || "Zone"}!
+              </div>
+            )}
 
             <div className="grid grid-cols-2 gap-2 p-3.5 rounded-xl bg-slate-950/90 border border-slate-800">
               <div>

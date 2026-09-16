@@ -1,5 +1,12 @@
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
-import { Level, Zone, Quest, QuestProgress, Achievement } from "@/types/database";
+import {
+  Level,
+  Zone,
+  Quest,
+  QuestProgress,
+  Achievement,
+  UserPlayerStats,
+} from "@/types/database";
 
 export interface UserProgression {
   totalXP: number;
@@ -25,7 +32,7 @@ export async function getUserProgression(
   profileId: string
 ): Promise<UserProgression> {
   let levels: Level[] = [];
-  let totalZones = 7;
+  let totalZones = 6;
   let totalXP = 0;
   let completionsCount = 0;
   const visitedZoneIds = new Set<string>();
@@ -36,20 +43,21 @@ export async function getUserProgression(
       supabaseAdmin.from("zones").select("id", { count: "exact", head: true }),
       supabaseAdmin
         .from("experience_completions")
-        .select("xp_earned, experiences(zone_id)")
+        .select("xp_earned, metadata, experiences(zone_id)")
         .eq("event_id", eventId)
         .eq("profile_id", profileId),
     ]);
 
     levels = levelsRes.data || [];
-    totalZones = zonesRes.count || 7;
+    totalZones = zonesRes.count || 6;
 
     if (compsRes.data) {
       completionsCount = compsRes.data.length;
       compsRes.data.forEach((c: any) => {
         totalXP += c.xp_earned || 0;
-        if (c.experiences?.zone_id) {
-          visitedZoneIds.add(c.experiences.zone_id);
+        const zId = c.experiences?.zone_id || c.metadata?.zone_id;
+        if (zId) {
+          visitedZoneIds.add(zId);
         }
       });
     }
@@ -58,7 +66,7 @@ export async function getUserProgression(
   // Fallback if no levels in db
   if (levels.length === 0) {
     levels = mockDb.levels.sort((a, b) => a.sort_order - b.sort_order);
-    totalZones = mockDb.zones.size;
+    totalZones = 6;
     if (!isUsingLiveSupabase() || !supabaseAdmin) {
       const comps = mockDb.completions.filter(
         (c) => c.event_id === eventId && c.profile_id === profileId
@@ -68,7 +76,13 @@ export async function getUserProgression(
         totalXP += c.xp_earned;
         const exp = mockDb.experiences.get(c.experience_id);
         if (exp) visitedZoneIds.add(exp.zone_id);
+        if (c.metadata?.zone_id) visitedZoneIds.add(c.metadata.zone_id);
       });
+
+      const passportStamps = mockDb.passportStamps.get(profileId);
+      if (passportStamps) {
+        passportStamps.forEach((zId) => visitedZoneIds.add(zId));
+      }
     }
   }
 
@@ -144,7 +158,7 @@ export async function getUserPassport(
     return zones.map((zone) => {
       const zoneExps = experiences.filter((e) => e.zone_id === zone.id);
       const zoneComps = comps.filter(
-        (c: any) => c.experiences?.zone_id === zone.id || c.experience_id === zone.id
+        (c: any) => c.experiences?.zone_id === zone.id || c.metadata?.zone_id === zone.id
       );
 
       const isUnlocked = zoneComps.length > 0;
@@ -165,8 +179,10 @@ export async function getUserPassport(
     });
   }
 
-  // Memory fallback
-  const zones = Array.from(mockDb.zones.values()).sort((a, b) => a.sort_order - b.sort_order);
+  // Memory fallback - include all zones from mockDb
+  const zones = Array.from(mockDb.zones.values())
+    .sort((a, b) => a.sort_order - b.sort_order);
+
   const userComps = mockDb.completions.filter(
     (c) => c.event_id === eventId && c.profile_id === profileId
   );
@@ -177,9 +193,11 @@ export async function getUserPassport(
     );
     const completedInZone = userComps.filter((c) => {
       const exp = mockDb.experiences.get(c.experience_id);
-      return exp && exp.zone_id === zone.id;
+      return (exp && exp.zone_id === zone.id) || c.metadata?.zone_id === zone.id;
     });
-    const hasStamp = mockDb.passportStamps.get(profileId)?.has(zone.id);
+    const hasStamp =
+      mockDb.passportStamps.get(profileId)?.has(zone.id) ||
+      (zone.id === "z-arnava" && mockDb.passportStamps.get(profileId)?.has("z-arcade"));
     const isUnlocked = Boolean(hasStamp) || completedInZone.length > 0;
 
     return {
@@ -294,4 +312,8 @@ export async function getUserAchievements(eventId: string, profileId: string) {
     isUnlocked: unlockedMap.has(ach.id),
     unlockedAt: unlockedMap.get(ach.id) || null,
   }));
+}
+
+export async function getUserPlayerStats(profileId: string): Promise<UserPlayerStats> {
+  return mockDb.getUserPlayerStats(profileId);
 }
