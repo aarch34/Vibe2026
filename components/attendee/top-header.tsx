@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,6 +15,8 @@ import {
   Gamepad2,
   Camera,
   Waves,
+  Sun,
+  Moon,
 } from "lucide-react";
 import { formatCoins, cn } from "@/lib/utils";
 
@@ -38,25 +41,42 @@ const NAV_LINKS = [
 
 export function TopHeader({ vibeId, coins, levelName, assignedZoneName }: TopHeaderProps) {
   const pathname = usePathname();
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    setIsDark(document.documentElement.classList.contains("dark"));
+  }, []);
+
+  const toggleTheme = () => {
+    const nextDark = !document.documentElement.classList.contains("dark");
+    if (nextDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+    setIsDark(nextDark);
+  };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#070B14]/90 backdrop-blur-xl border-b border-slate-800/80 px-4 sm:px-6 lg:px-8 py-2.5">
+    <header className="sticky top-0 z-40 bg-card/95 backdrop-blur-xl border-b-2 border-border px-4 sm:px-6 lg:px-8 py-2.5">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         {/* Brand Logo & VIBE ID */}
         <div className="flex items-center space-x-2.5">
           <Link href="/app" className="flex items-center space-x-1.5 group">
-            <span className="text-xl font-black tracking-wider bg-gradient-to-r from-blue-400 via-cyan-400 to-indigo-400 bg-clip-text text-transparent group-hover:scale-105 transition-transform">
+            <span className="text-xl font-black tracking-wider text-foreground group-hover:text-primary transition-colors font-mono">
               VIBE
             </span>
-            <span className="text-[10px] uppercase tracking-widest font-semibold px-1.5 py-0.5 rounded bg-blue-950/80 border border-blue-500/30 text-blue-300">
+            <span className="text-[10px] uppercase tracking-widest font-black px-1.5 py-0.5 bg-primary text-primary-foreground border border-border shadow-[1px_1px_0px_var(--border)]">
               '26
             </span>
           </Link>
-          <span className="text-xs font-mono text-slate-400 bg-slate-900/80 px-2 py-0.5 rounded border border-slate-800">
+          <span className="text-xs font-mono font-black text-foreground bg-muted px-2 py-0.5 border-2 border-border shadow-[2px_2px_0px_var(--border)]">
             {vibeId}
           </span>
           {assignedZoneName && (
-            <span className="hidden sm:inline-flex items-center space-x-1 text-[11px] font-bold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded-full">
+            <span className="hidden sm:inline-flex items-center space-x-1 text-[11px] font-black text-secondary-foreground bg-secondary border-2 border-border shadow-[2px_2px_0px_var(--border)] px-2 py-0.5">
               <span>🌊</span>
               <span>{assignedZoneName}</span>
             </span>
@@ -73,16 +93,16 @@ export function TopHeader({ vibeId, coins, levelName, assignedZoneName }: TopHea
                 key={link.href}
                 href={link.href}
                 className={cn(
-                  "flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all",
+                  "flex items-center space-x-1.5 px-3 py-1.5 text-xs font-black transition-all border-2",
                   isActive
-                    ? "bg-blue-600/20 text-blue-300 border border-blue-500/40 shadow-sm"
-                    : "text-slate-400 hover:text-white hover:bg-slate-900/60"
+                    ? "bg-primary text-primary-foreground border-border shadow-[2px_2px_0px_var(--border)]"
+                    : "text-foreground hover:bg-muted border-transparent hover:border-border"
                 )}
               >
                 <Icon
                   className={cn(
                     "w-3.5 h-3.5",
-                    isActive ? "text-blue-400" : "text-slate-400"
+                    isActive ? "text-primary-foreground" : "text-muted-foreground"
                   )}
                 />
                 <span>{link.label}</span>
@@ -94,8 +114,8 @@ export function TopHeader({ vibeId, coins, levelName, assignedZoneName }: TopHea
         {/* Right Status Badges & Controls */}
         <div className="flex items-center space-x-2 sm:space-x-3">
           {/* Level Pill */}
-          <div className="flex items-center space-x-1 text-[11px] font-semibold text-purple-300 bg-purple-950/40 border border-purple-500/30 px-2.5 py-1 rounded-full shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-purple-400" />
+          <div className="hidden sm:flex items-center space-x-1 text-[11px] font-black text-card-foreground bg-card border-2 border-border shadow-[2px_2px_0px_var(--border)] px-2.5 py-1">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
             <span className="truncate max-w-[110px] sm:max-w-none">
               {levelName.replace("VIBE ", "")}
             </span>
@@ -104,13 +124,23 @@ export function TopHeader({ vibeId, coins, levelName, assignedZoneName }: TopHea
           {/* Coins Pill */}
           <Link
             href="/app/rewards"
-            className="flex items-center space-x-1.5 bg-amber-500/10 hover:bg-amber-500/20 active:scale-95 transition-all duration-150 border border-amber-500/30 px-3 py-1 rounded-full text-amber-400 shadow-sm"
+            className="flex items-center space-x-1.5 bg-secondary hover:brightness-105 active:translate-x-[1px] active:translate-y-[1px] transition-all border-2 border-border shadow-[2px_2px_0px_var(--border)] px-3 py-1 text-secondary-foreground font-black"
           >
-            <Coins className="w-4 h-4 text-amber-400 animate-pulse" />
-            <span className="text-xs font-bold tracking-tight font-mono">
+            <Coins className="w-4 h-4 text-secondary-foreground" />
+            <span className="text-xs font-black tracking-tight font-mono">
               {formatCoins(coins)}
             </span>
           </Link>
+
+          {/* Sun / Moon Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-1.5 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] hover:bg-muted active:translate-x-[1px] active:translate-y-[1px] cursor-pointer flex items-center justify-center transition-all"
+            aria-label="Toggle Theme"
+            title="Toggle Light / Dark Mode"
+          >
+            {isDark ? <Sun className="w-4 h-4 text-secondary" /> : <Moon className="w-4 h-4 text-foreground" />}
+          </button>
         </div>
       </div>
     </header>

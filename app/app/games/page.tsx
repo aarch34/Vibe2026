@@ -17,28 +17,28 @@ export default async function GamesHubPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-2.5">
-          <div className="w-10 h-10 rounded-xl bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <Gamepad2 className="w-5 h-5" />
+          <div className="w-10 h-10 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
+            <Gamepad2 className="w-5 h-5 text-secondary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white tracking-tight">
+            <h1 className="text-xl font-black text-foreground tracking-tight font-mono">
               The Four Playable Games
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground font-bold">
               Compete in interactive challenges to earn XP, level up, and win bonus VIBE Coins!
             </p>
           </div>
         </div>
 
         {/* User Balance & Stats Badge */}
-        <div className="flex items-center space-x-3 bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl self-start sm:self-auto font-mono text-xs">
-          <div className="flex items-center space-x-1.5 text-amber-400 font-bold">
+        <div className="flex items-center space-x-3 bg-card border-2 border-border shadow-[2px_2px_0px_var(--border)] px-3.5 py-1.5 self-start sm:self-auto font-mono text-xs text-foreground">
+          <div className="flex items-center space-x-1.5 text-primary font-black">
             <Coins className="w-4 h-4" />
             <span>{formatCoins(walletSummary.wallet.balance)} VIBE</span>
           </div>
-          <span className="text-slate-600">•</span>
-          <div className="text-slate-400">
-            Played: <strong className="text-white">{playerStats.gamesPlayedCount}</strong>
+          <span className="text-border font-black">•</span>
+          <div className="text-muted-foreground font-bold">
+            Played: <strong className="text-foreground font-black">{playerStats.gamesPlayedCount}</strong>
           </div>
         </div>
       </div>

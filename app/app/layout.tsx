@@ -25,7 +25,7 @@ export default async function AttendeeLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[#070B14] text-slate-100 flex flex-col selection:bg-blue-600">
+    <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-primary selection:text-primary-foreground">
       <TopHeader
         vibeId={session.profile.vibe_id}
         coins={walletSummary.wallet.balance}

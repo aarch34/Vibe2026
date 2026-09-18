@@ -94,60 +94,54 @@ export function StallsClient({
         return (
           <div
             key={stall.id}
-            className={`p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-4 ${
-              submission?.status === "approved"
-                ? "bg-emerald-950/20 border-emerald-500/40"
-                : submission?.status === "pending"
-                ? "bg-slate-900/90 border-amber-500/30"
-                : "bg-slate-900/90 border-slate-800 hover:border-slate-700"
-            }`}
+            className="p-5 bg-card text-card-foreground border-2 border-border shadow-neo flex flex-col justify-between space-y-4"
           >
             {/* Top Stall Details */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-purple-400 bg-purple-950/60 px-2 py-0.5 rounded border border-purple-500/30">
+                <span className="text-[10px] font-mono font-black uppercase tracking-wider text-secondary-foreground bg-secondary px-2 py-0.5 border-2 border-border shadow-[1px_1px_0px_var(--border)]">
                   {stall.category || "FESTIVAL STALL"}
                 </span>
 
                 {/* Status Pill */}
                 {submission?.status === "approved" ? (
-                  <span className="flex items-center space-x-1 text-[11px] font-bold text-emerald-400 bg-emerald-950/80 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                  <span className="flex items-center space-x-1 text-[11px] font-black text-primary-foreground bg-primary px-2.5 py-0.5 border-2 border-border shadow-[1px_1px_0px_var(--border)]">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     <span>Verified (+100 XP, +25🪙)</span>
                   </span>
                 ) : submission?.status === "pending" ? (
-                  <span className="flex items-center space-x-1 text-[11px] font-bold text-amber-400 bg-amber-950/80 px-2.5 py-0.5 rounded-full border border-amber-500/30">
+                  <span className="flex items-center space-x-1 text-[11px] font-black text-secondary-foreground bg-secondary px-2.5 py-0.5 border-2 border-border shadow-[1px_1px_0px_var(--border)]">
                     <Clock className="w-3.5 h-3.5 animate-spin" />
                     <span>Pending Approval</span>
                   </span>
                 ) : submission?.status === "rejected" ? (
-                  <span className="flex items-center space-x-1 text-[11px] font-bold text-rose-400 bg-rose-950/80 px-2.5 py-0.5 rounded-full border border-rose-500/30">
+                  <span className="flex items-center space-x-1 text-[11px] font-black text-primary-foreground bg-primary px-2.5 py-0.5 border-2 border-border shadow-[1px_1px_0px_var(--border)]">
                     <XCircle className="w-3.5 h-3.5" />
                     <span>Rejected - Try Again</span>
                   </span>
                 ) : (
-                  <span className="text-[11px] font-mono text-slate-400">
+                  <span className="text-[11px] font-mono font-bold text-muted-foreground">
                     Not Verified
                   </span>
                 )}
               </div>
 
               <div>
-                <h3 className="text-base font-bold text-white tracking-tight">
+                <h3 className="text-base font-black text-foreground tracking-tight font-mono">
                   {stall.name}
                 </h3>
-                <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
+                <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed font-bold">
                   {stall.description}
                 </p>
               </div>
 
               {/* Rewards Box */}
               <div className="flex items-center space-x-3 pt-1 text-xs font-mono">
-                <div className="flex items-center space-x-1 text-purple-300 font-bold bg-purple-950/40 px-2 py-0.5 rounded border border-purple-500/20">
-                  <Sparkles className="w-3 h-3 text-purple-400" />
+                <div className="flex items-center space-x-1 text-foreground font-black bg-muted px-2 py-0.5 border-2 border-border shadow-[1px_1px_0px_var(--border)]">
+                  <Sparkles className="w-3 h-3 text-primary" />
                   <span>+{stall.xp_reward} XP</span>
                 </div>
-                <div className="flex items-center space-x-1 text-amber-400 font-bold bg-amber-950/40 px-2 py-0.5 rounded border border-amber-500/20">
+                <div className="flex items-center space-x-1 text-secondary-foreground font-black bg-secondary px-2 py-0.5 border-2 border-border shadow-[1px_1px_0px_var(--border)]">
                   <Coins className="w-3 h-3" />
                   <span>+{stall.coin_reward} VIBE</span>
                 </div>
@@ -155,34 +149,34 @@ export function StallsClient({
             </div>
 
             {/* "CAPTURE YOUR VIBE" Photo Verification Section */}
-            <div className="pt-3 border-t border-slate-800/80 space-y-3">
+            <div className="pt-3 border-t-2 border-border space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-300 flex items-center space-x-1.5">
-                  <Camera className="w-3.5 h-3.5 text-blue-400" />
+                <span className="font-black text-foreground flex items-center space-x-1.5 font-mono">
+                  <Camera className="w-3.5 h-3.5 text-primary" />
                   <span>📸 CAPTURE YOUR VIBE</span>
                 </span>
-                <span className="text-[11px] font-mono text-slate-400 flex items-center space-x-1">
-                  <Instagram className="w-3 h-3 text-pink-400" />
+                <span className="text-[11px] font-mono font-bold text-muted-foreground flex items-center space-x-1">
+                  <Instagram className="w-3 h-3 text-primary" />
                   <span>{userInstagramId}</span>
                 </span>
               </div>
 
               {/* Upload or View Preview */}
               {submission?.status === "approved" ? (
-                <div className="p-3 rounded-xl bg-emerald-950/30 border border-emerald-500/30 text-xs text-emerald-300 flex items-center justify-between">
+                <div className="p-3 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-bold flex items-center justify-between">
                   <span>Photo verified by festival volunteer team!</span>
-                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <CheckCircle2 className="w-4 h-4 text-primary" />
                 </div>
               ) : submission?.status === "pending" ? (
-                <div className="p-3 rounded-xl bg-amber-950/30 border border-amber-500/30 text-xs text-amber-300 flex items-center justify-between">
+                <div className="p-3 bg-muted text-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-bold flex items-center justify-between">
                   <span>Photo is in the volunteer verification queue...</span>
-                  <Clock className="w-4 h-4 text-amber-400 animate-spin" />
+                  <Clock className="w-4 h-4 text-primary animate-spin" />
                 </div>
               ) : (
                 <div className="space-y-2">
                   {/* Photo Preview if selected */}
                   {preview && (
-                    <div className="relative w-full h-32 rounded-xl overflow-hidden border border-slate-700 bg-slate-950">
+                    <div className="relative w-full h-32 overflow-hidden border-2 border-border bg-card">
                       <img
                         src={preview}
                         alt="Preview"
@@ -192,8 +186,8 @@ export function StallsClient({
                   )}
 
                   <div className="flex items-center space-x-2">
-                    <label className="flex-1 cursor-pointer py-2 px-3 rounded-xl bg-slate-950 border border-slate-700 hover:border-slate-600 text-center text-xs font-semibold text-slate-300 flex items-center justify-center space-x-2 transition-colors">
-                      <Camera className="w-3.5 h-3.5 text-blue-400" />
+                    <label className="flex-1 cursor-pointer py-2 px-3 bg-card border-2 border-border shadow-[2px_2px_0px_var(--border)] hover:bg-muted text-center text-xs font-black text-card-foreground flex items-center justify-center space-x-2 transition-colors active:translate-x-[1px] active:translate-y-[1px]">
+                      <Camera className="w-3.5 h-3.5 text-primary" />
                       <span>{preview ? "Change Photo" : "📷 Choose / Snap Photo"}</span>
                       <input
                         type="file"
@@ -207,7 +201,7 @@ export function StallsClient({
                     <button
                       onClick={() => handleUploadPhoto(stall.id)}
                       disabled={isUploading}
-                      className="py-2 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 active:scale-95 text-xs font-bold text-white shadow-md shadow-blue-500/20 transition-all flex items-center space-x-1.5 shrink-0"
+                      className="neo-btn-primary py-2 px-4 text-xs font-black shrink-0 space-x-1.5"
                     >
                       {isUploading ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />

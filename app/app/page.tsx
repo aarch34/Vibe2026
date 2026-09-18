@@ -103,17 +103,17 @@ export default async function AttendeeHomePage() {
     <div className="space-y-6">
       {/* 1. Welcome to VIBE Banner (Loaded with 500 Coins) */}
       {isNewRegistration && (
-        <div className="relative overflow-hidden rounded-2xl p-4 sm:p-5 bg-gradient-to-r from-blue-900/60 via-indigo-900/50 to-blue-950 border border-blue-400/30 shadow-lg shadow-blue-950/40">
+        <div className="relative overflow-hidden p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo">
           <div className="flex items-start space-x-3 sm:space-x-4">
             <span className="text-2xl sm:text-3xl">🎉</span>
             <div className="space-y-1">
-              <h2 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
+              <h2 className="text-sm sm:text-base font-black text-foreground tracking-tight uppercase">
                 Welcome to VIBE, {session.profile.display_name}!
               </h2>
-              <p className="text-xs sm:text-sm text-blue-200/90 leading-relaxed">
-                Your VIBE Wallet has been loaded with <span className="font-bold text-amber-300">500 VIBE Coins</span>. You are part of <strong className="text-cyan-300">🌊 {assignedZoneName.toUpperCase()}</strong>. Explore zones, play games, and conquer the festival leaderboard!
+              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-medium">
+                Your VIBE Wallet has been loaded with <strong className="text-foreground font-black font-mono">500 VIBE Coins</strong>. You are part of <span className="bg-secondary text-secondary-foreground px-2 py-0.5 font-black border border-border">🌊 {assignedZoneName.toUpperCase()}</span>. Explore zones, play games, and conquer the festival leaderboard!
               </p>
-              <div className="pt-1 flex items-center space-x-2 text-[10px] sm:text-xs text-cyan-300 font-medium tracking-wide">
+              <div className="pt-1 flex items-center space-x-2 text-[10px] sm:text-xs font-black tracking-wider uppercase text-muted-foreground">
                 <span>Explore</span> • <span>Experience</span> • <span>Earn</span> • <span>Spend</span> • <span>Repeat</span>
               </div>
             </div>
@@ -125,52 +125,49 @@ export default async function AttendeeHomePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Attendee Identity & Core Metrics */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Attendee Profile Hero Card (Fulfilling Section 4 Header Specs) */}
-          <div className="relative overflow-hidden rounded-2xl p-5 bg-gradient-to-br from-slate-900 via-blue-950/60 to-slate-900 border border-blue-500/20 shadow-xl shadow-blue-950/30">
-            <div className="absolute -top-12 -right-12 w-40 h-40 bg-blue-600/20 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-cyan-500/15 rounded-full blur-2xl pointer-events-none" />
-
-            <div className="relative z-10 space-y-4">
+          {/* Attendee Profile Hero Card */}
+          <div className="p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
+            <div className="space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-semibold text-blue-400 tracking-wide uppercase">
+                  <p className="text-xs font-black text-muted-foreground tracking-wider uppercase">
                     HEY {session.profile.display_name.toUpperCase()} 👋
                   </p>
                   <div className="flex items-center space-x-2 mt-1">
-                    <span className="inline-flex items-center space-x-1 text-xs font-black text-cyan-300 bg-cyan-950/80 border border-cyan-400/40 px-2.5 py-0.5 rounded-full shadow-sm">
+                    <span className="inline-flex items-center space-x-1 text-xs font-black text-secondary-foreground bg-secondary border-2 border-border px-2.5 py-0.5 shadow-[2px_2px_0px_var(--border)]">
                       <span>🌊</span>
                       <span>{assignedZoneName.toUpperCase()}</span>
-                      <span className="text-[9px] text-cyan-400 font-normal ml-0.5">(YOUR ZONE)</span>
+                      <span className="text-[9px] font-bold ml-0.5">(YOUR ZONE)</span>
                     </span>
                   </div>
-                  <p className="text-xs text-slate-400 font-medium mt-1">
+                  <p className="text-xs text-muted-foreground font-bold mt-1">
                     {session.profile.club || session.profile.college || "Rotaract District 3192"}
                   </p>
                 </div>
 
                 <div className="flex flex-col items-end">
-                  <span className="text-[11px] font-mono font-bold text-cyan-400 bg-cyan-950/60 border border-cyan-500/30 px-2 py-0.5 rounded">
+                  <span className="text-xs font-mono font-black text-primary-foreground bg-primary border-2 border-border px-2.5 py-0.5 shadow-[2px_2px_0px_var(--border)]">
                     {session.profile.vibe_id}
                   </span>
-                  <span className="text-[10px] text-slate-400 mt-1">
+                  <span className="text-[10px] font-bold text-muted-foreground mt-1">
                     District Freshers '26
                   </span>
                 </div>
               </div>
 
               {/* XP & Level Progression Bar */}
-              <div className="pt-3 border-t border-slate-800/80">
-                <div className="flex items-center justify-between text-xs mb-1.5">
+              <div className="pt-3 border-t-2 border-border">
+                <div className="flex items-center justify-between text-xs mb-1.5 font-black">
                   <div className="flex items-center space-x-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                    <span className="font-bold text-purple-300">
+                    <Sparkles className="w-3.5 h-3.5 text-primary" />
+                    <span className="text-foreground">
                       LEVEL {progression.currentLevel.sort_order} — {progression.currentLevel.name.toUpperCase()}
                     </span>
                   </div>
-                  <span className="font-mono text-slate-300 font-semibold">
+                  <span className="font-mono text-foreground">
                     {formatXP(progression.totalXP)}
                     {progression.nextLevel && (
-                      <span className="text-slate-400 text-[10px]">
+                      <span className="text-muted-foreground text-[10px]">
                         {" "}
                         / {formatXP(progression.nextLevel.min_xp)}
                       </span>
@@ -178,17 +175,17 @@ export default async function AttendeeHomePage() {
                   </span>
                 </div>
 
-                <div className="w-full h-2.5 bg-slate-800/90 rounded-full overflow-hidden p-0.5 border border-slate-700/50">
+                <div className="w-full h-3 bg-muted border-2 border-border p-0.5 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-500 via-cyan-400 to-indigo-500 rounded-full transition-all duration-500 shadow-sm"
+                    className="h-full bg-primary transition-all duration-500"
                     style={{ width: `${progression.progressPercent}%` }}
                   />
                 </div>
 
                 {progression.nextLevel && (
-                  <p className="text-[10px] text-slate-400 mt-1.5 text-right font-medium">
+                  <p className="text-[10px] text-muted-foreground mt-1.5 text-right font-bold">
                     {formatXP(progression.xpToNextLevel)} needed for{" "}
-                    <span className="text-blue-300 font-semibold">
+                    <span className="text-foreground font-black">
                       {progression.nextLevel.name}
                     </span>
                   </p>
@@ -199,55 +196,55 @@ export default async function AttendeeHomePage() {
 
           {/* Section 4: 4 PROGRESS COUNTERS */}
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center space-x-3 shadow-sm">
-              <div className="w-9 h-9 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400 text-sm shrink-0">
+            <div className="p-3 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center space-x-3">
+              <div className="w-9 h-9 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-sm shrink-0">
                 🗺️
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">Zone Progress</span>
-                <span className="text-sm sm:text-base font-black font-mono text-white">
+                <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Zone Progress</span>
+                <span className="text-sm sm:text-base font-black font-mono text-foreground">
                   {playerStats.zonesVisitedCount} / 6
                 </span>
-                <span className="text-[9px] text-slate-400 block">explored</span>
+                <span className="text-[9px] text-muted-foreground font-bold block">explored</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center space-x-3 shadow-sm">
-              <div className="w-9 h-9 rounded-lg bg-cyan-600/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-sm shrink-0">
+            <div className="p-3 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center space-x-3">
+              <div className="w-9 h-9 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-sm shrink-0">
                 ⚡
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">Experiences</span>
-                <span className="text-sm sm:text-base font-black font-mono text-white">
+                <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Experiences</span>
+                <span className="text-sm sm:text-base font-black font-mono text-foreground">
                   {playerStats.experiencesCompletedCount}
                 </span>
-                <span className="text-[9px] text-slate-400 block">completed</span>
+                <span className="text-[9px] text-muted-foreground font-bold block">completed</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center space-x-3 shadow-sm">
-              <div className="w-9 h-9 rounded-lg bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400 text-sm shrink-0">
+            <div className="p-3 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center space-x-3">
+              <div className="w-9 h-9 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-sm shrink-0">
                 📸
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">Stalls</span>
-                <span className="text-sm sm:text-base font-black font-mono text-white">
+                <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Stalls</span>
+                <span className="text-sm sm:text-base font-black font-mono text-foreground">
                   {playerStats.stallsVisitedCount}
                 </span>
-                <span className="text-[9px] text-slate-400 block">visited</span>
+                <span className="text-[9px] text-muted-foreground font-bold block">visited</span>
               </div>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center space-x-3 shadow-sm">
-              <div className="w-9 h-9 rounded-lg bg-amber-600/20 border border-amber-500/30 flex items-center justify-center text-amber-400 text-sm shrink-0">
+            <div className="p-3 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center space-x-3">
+              <div className="w-9 h-9 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-sm shrink-0">
                 🎮
               </div>
               <div className="min-w-0">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">Games</span>
-                <span className="text-sm sm:text-base font-black font-mono text-white">
+                <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Games</span>
+                <span className="text-sm sm:text-base font-black font-mono text-foreground">
                   {playerStats.gamesPlayedCount}
                 </span>
-                <span className="text-[9px] text-slate-400 block">played</span>
+                <span className="text-[9px] text-muted-foreground font-bold block">played</span>
               </div>
             </div>
           </div>
@@ -257,20 +254,20 @@ export default async function AttendeeHomePage() {
             {/* Metric 1: Spendable Coins */}
             <Link
               href="/app/rewards"
-              className="p-3.5 sm:p-4 rounded-xl bg-slate-900/90 border border-amber-500/20 hover:border-amber-400/50 hover:bg-slate-900 transition-all flex flex-col justify-between shadow-sm group"
+              className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all flex flex-col justify-between group"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                <span className="text-[10px] uppercase tracking-wider font-black text-foreground">
                   🪙 VIBE Coins
                 </span>
-                <Coins className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                <Coins className="w-4 h-4 text-foreground group-hover:scale-110 transition-transform" />
               </div>
               <div className="mt-3">
-                <span className="text-2xl sm:text-3xl font-black font-mono text-white">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
                   {formatCoins(walletSummary.wallet.balance)}
                 </span>
-                <p className="text-[10px] text-amber-400/90 font-medium mt-0.5">
-                  Spendable Balance →
+                <p className="text-[10px] text-foreground font-black mt-0.5 flex items-center space-x-1">
+                  <span>Spendable Balance →</span>
                 </p>
               </div>
             </Link>
@@ -278,30 +275,30 @@ export default async function AttendeeHomePage() {
             {/* Metric 2: Overall XP */}
             <Link
               href="/app/leaderboard"
-              className="p-3.5 sm:p-4 rounded-xl bg-slate-900/90 border border-purple-500/20 hover:border-purple-400/50 hover:bg-slate-900 transition-all flex flex-col justify-between shadow-sm group"
+              className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all flex flex-col justify-between group"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-wider font-bold text-slate-400">
+                <span className="text-[10px] uppercase tracking-wider font-black text-foreground">
                   ⭐ VIBE XP
                 </span>
-                <Sparkles className="w-4 h-4 text-purple-400 group-hover:scale-110 transition-transform" />
+                <Sparkles className="w-4 h-4 text-foreground group-hover:scale-110 transition-transform" />
               </div>
               <div className="mt-3">
-                <span className="text-2xl sm:text-3xl font-black font-mono text-white">
+                <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
                   {formatXP(progression.totalXP)}
                 </span>
-                <p className="text-[10px] text-purple-400/90 font-medium mt-0.5">
-                  Rank #{userRank?.rank || 1} • Never Decreases
+                <p className="text-[10px] text-foreground font-black mt-0.5 flex items-center space-x-1">
+                  <span>Rank #{userRank?.rank || 1} • Permanent</span>
                 </p>
               </div>
             </Link>
           </div>
 
           {/* Strategic Principle Callout */}
-          <div className="p-3.5 rounded-xl bg-slate-900/50 border border-slate-800 flex items-start space-x-2.5">
-            <Info className="w-4 h-4 text-blue-400 shrink-0 mt-0.5" />
-            <p className="text-[11px] sm:text-xs text-slate-300 leading-relaxed font-medium">
-              <strong className="text-white">Zone Battle Rule:</strong> Any VIBE Coins you spend on activities belonging to a zone are transferred to that zone's collected total for the championship!
+          <div className="p-3.5 bg-muted border-2 border-border text-foreground flex items-start space-x-2.5">
+            <Info className="w-4 h-4 text-foreground shrink-0 mt-0.5" />
+            <p className="text-[11px] sm:text-xs text-foreground leading-relaxed font-bold">
+              <span className="font-black underline">Zone Battle Rule:</span> Any VIBE Coins you spend on activities belonging to a zone are transferred to that zone's collected total for the championship!
             </p>
           </div>
         </div>
@@ -311,28 +308,27 @@ export default async function AttendeeHomePage() {
           {/* Networking & Instagram Friends Banner */}
           <Link
             href="/app/friends"
-            className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-purple-950/70 via-pink-950/40 to-slate-900 border border-purple-500/30 hover:border-purple-400/60 active:scale-98 transition-all flex items-center justify-between group shadow-md"
+            className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all flex items-center justify-between group"
           >
-            <div className="flex items-center space-x-3 min-w-0">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white shrink-0 shadow-md">
+            <div className="flex items-center space-x-3.5 min-w-0">
+              <div className="w-10 h-10 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
                 <Users className="w-5 h-5" />
               </div>
               <div className="min-w-0">
                 <div className="flex items-center space-x-2">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-pink-400">Networking</span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold">+25 XP Each</span>
+                  <span className="text-[10px] font-black uppercase tracking-wider text-primary">Networking</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 bg-secondary text-secondary-foreground border border-border font-black">+25 XP Each</span>
                 </div>
-                <h3 className="text-xs sm:text-sm font-extrabold text-white group-hover:text-pink-300 transition-colors truncate">
+                <h3 className="text-xs sm:text-sm font-black text-foreground group-hover:text-primary transition-colors truncate">
                   Connect & Follow Friends on Instagram
                 </h3>
-                <p className="text-[11px] text-slate-300 truncate">
+                <p className="text-[11px] text-muted-foreground font-medium truncate">
                   Find fellow attendees, follow on IG & level up together
                 </p>
               </div>
             </div>
-            <div className="flex items-center space-x-1 text-xs font-bold text-pink-400 shrink-0 ml-2">
-              <span className="hidden sm:inline">Connect</span>
-              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            <div className="neo-btn-primary px-3 py-1.5 text-xs font-black uppercase tracking-wider shrink-0 ml-2">
+              Connect →
             </div>
           </Link>
 
@@ -340,80 +336,80 @@ export default async function AttendeeHomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <Link
               href="/app/map"
-              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-blue-900/40 via-slate-900 to-slate-900 border border-blue-500/30 hover:border-blue-400/60 active:scale-95 transition-all group shadow-sm"
+              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all group"
             >
-              <div className="w-9 h-9 rounded-lg bg-blue-600/20 border border-blue-500/40 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                <Compass className="w-4 h-4 text-blue-400" />
+              <div className="w-9 h-9 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
+                <Compass className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-extrabold text-white leading-tight truncate">Explore Zones</h2>
-                <p className="text-[10px] text-slate-400 truncate">6 Official Zones</p>
+                <h2 className="text-xs font-black text-foreground leading-tight truncate">Explore Zones</h2>
+                <p className="text-[10px] text-muted-foreground font-bold truncate">6 Official Zones</p>
               </div>
             </Link>
 
             <Link
               href="/app/games"
-              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-amber-900/30 via-slate-900 to-slate-900 border border-amber-500/30 hover:border-amber-400/60 active:scale-95 transition-all group shadow-sm"
+              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all group"
             >
-              <div className="w-9 h-9 rounded-lg bg-amber-600/20 border border-amber-500/40 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                <Gamepad2 className="w-4 h-4 text-amber-400" />
+              <div className="w-9 h-9 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
+                <Gamepad2 className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-extrabold text-white leading-tight truncate">Play Games</h2>
-                <p className="text-[10px] text-slate-400 truncate">4 Mini-Games</p>
+                <h2 className="text-xs font-black text-foreground leading-tight truncate">Play Games</h2>
+                <p className="text-[10px] text-muted-foreground font-bold truncate">4 Mini-Games</p>
               </div>
             </Link>
 
             <Link
               href="/app/scan"
-              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-cyan-900/30 via-slate-900 to-slate-900 border border-cyan-500/30 hover:border-cyan-400/60 active:scale-95 transition-all group shadow-sm"
+              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all group"
             >
-              <div className="w-9 h-9 rounded-lg bg-cyan-600/20 border border-cyan-500/40 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                <QrCode className="w-4 h-4 text-cyan-400" />
+              <div className="w-9 h-9 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
+                <QrCode className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-extrabold text-white leading-tight truncate">Scan Check-in</h2>
-                <p className="text-[10px] text-slate-400 truncate">QR Scanner</p>
+                <h2 className="text-xs font-black text-foreground leading-tight truncate">Scan Check-in</h2>
+                <p className="text-[10px] text-muted-foreground font-bold truncate">QR Scanner</p>
               </div>
             </Link>
 
             <Link
               href="/app/leaderboard"
-              className="flex items-center space-x-3 p-3.5 rounded-xl bg-gradient-to-br from-purple-900/30 via-slate-900 to-slate-900 border border-purple-500/30 hover:border-purple-400/60 active:scale-95 transition-all group shadow-sm"
+              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all group"
             >
-              <div className="w-9 h-9 rounded-lg bg-purple-600/20 border border-purple-500/40 flex items-center justify-center group-hover:scale-105 transition-transform shrink-0">
-                <Trophy className="w-4 h-4 text-purple-400" />
+              <div className="w-9 h-9 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
+                <Trophy className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-extrabold text-white leading-tight truncate">Leaderboard</h2>
-                <p className="text-[10px] text-slate-400 truncate">XP & Zone Battle</p>
+                <h2 className="text-xs font-black text-foreground leading-tight truncate">Leaderboard</h2>
+                <p className="text-[10px] text-muted-foreground font-bold truncate">XP & Zone Battle</p>
               </div>
             </Link>
           </div>
 
           {/* Quick Ways to Earn VIBE Coins (Section 9) */}
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 via-blue-950/30 to-slate-900 border border-blue-500/20 space-y-2">
+          <div className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center space-x-1.5">
-                <Coins className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs font-black text-foreground uppercase tracking-wider flex items-center space-x-1.5">
+                <Coins className="w-4 h-4 text-foreground" />
                 <span>Ways to Earn More Coins</span>
               </span>
-              <Link href="/app/quests" className="text-[11px] text-blue-400 hover:text-cyan-300 font-semibold">
+              <Link href="/app/quests" className="neo-btn-card px-2.5 py-1 text-xs font-black">
                 View Quests →
               </Link>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-[11px] text-slate-300">
-              <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="text-amber-400 font-bold block">+50 VIBE</span>
-                <span className="text-[10px] text-slate-400">Discover new zone</span>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold">
+              <div className="p-2.5 bg-muted border-2 border-border">
+                <span className="text-foreground font-black font-mono block">+50 VIBE</span>
+                <span className="text-[10px] text-muted-foreground font-bold">Discover new zone</span>
               </div>
-              <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="text-amber-400 font-bold block">+25 VIBE</span>
-                <span className="text-[10px] text-slate-400">Stall photo approve</span>
+              <div className="p-2.5 bg-muted border-2 border-border">
+                <span className="text-foreground font-black font-mono block">+25 VIBE</span>
+                <span className="text-[10px] text-muted-foreground font-bold">Stall photo approve</span>
               </div>
-              <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="text-amber-400 font-bold block">+100-500 VIBE</span>
-                <span className="text-[10px] text-slate-400">Games & Hidden QRs</span>
+              <div className="p-2.5 bg-muted border-2 border-border">
+                <span className="text-foreground font-black font-mono block">+100-500 VIBE</span>
+                <span className="text-[10px] text-muted-foreground font-bold">Games & Hidden QRs</span>
               </div>
             </div>
           </div>
@@ -422,17 +418,16 @@ export default async function AttendeeHomePage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Flame className="w-4 h-4 text-orange-400" />
-                <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
+                <Flame className="w-4 h-4 text-primary" />
+                <h2 className="text-sm sm:text-base font-black text-foreground tracking-tight uppercase">
                   Featured Zone Missions
                 </h2>
               </div>
               <Link
                 href="/app/map"
-                className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center space-x-0.5"
+                className="neo-btn-card px-3 py-1 text-xs font-black"
               >
-                <span>View All 6 Zones</span>
-                <ChevronRight className="w-3.5 h-3.5" />
+                <span>View All 6 Zones →</span>
               </Link>
             </div>
 
@@ -444,39 +439,39 @@ export default async function AttendeeHomePage() {
                 return (
                   <div
                     key={exp.id}
-                    className="p-4 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all flex flex-col justify-between shadow-sm group"
+                    className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo flex flex-col justify-between"
                   >
                     <div className="space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-bold text-blue-400 bg-blue-950/60 px-2 py-0.5 rounded border border-blue-500/20">
+                        <span className="text-[10px] font-black text-foreground bg-muted border border-border px-2 py-0.5">
                           🌊 {zoneName}
                         </span>
                         {sponsorName && (
-                          <span className="text-[10px] font-bold text-amber-400 bg-amber-950/60 px-2 py-0.5 rounded border border-amber-500/20">
+                          <span className="text-[10px] font-black text-secondary-foreground bg-secondary border border-border px-2 py-0.5">
                             {sponsorName}
                           </span>
                         )}
                       </div>
-                      <h3 className="text-sm font-bold text-white group-hover:text-blue-300 transition-colors leading-snug">
+                      <h3 className="text-sm font-black text-foreground leading-snug">
                         {exp.title}
                       </h3>
-                      <p className="text-xs text-slate-400 line-clamp-2">
+                      <p className="text-xs text-muted-foreground font-medium line-clamp-2">
                         {exp.description}
                       </p>
                     </div>
 
-                    <div className="mt-3 pt-2.5 border-t border-slate-800 flex items-center justify-between">
-                      <div className="flex items-center space-x-1 text-amber-400 font-mono font-bold text-xs bg-amber-950/40 border border-amber-500/20 px-2 py-0.5 rounded-md">
-                        <Coins className="w-3 h-3" />
+                    <div className="mt-4 pt-3 border-t-2 border-border flex items-center justify-between">
+                      <div className="flex items-center space-x-1 bg-secondary text-secondary-foreground font-mono font-black text-xs border-2 border-border px-2 py-1 shadow-[2px_2px_0px_var(--border)]">
+                        <Coins className="w-3.5 h-3.5" />
                         <span>{exp.coin_cost} VIBE</span>
                       </div>
                       <Link
                         href={`/app/scan?code=vibe-${exp.slug}`}
-                        className="flex items-center space-x-1 text-xs font-bold text-cyan-400 hover:text-cyan-300"
+                        className="neo-btn-primary px-3 py-1.5 text-xs font-black flex items-center space-x-1"
                       >
-                        <Sparkles className="w-3 h-3 text-purple-400" />
-                        <span className="text-purple-300">+{exp.xp_reward} XP</span>
-                        <ArrowRight className="w-3 h-3 ml-1" />
+                        <Sparkles className="w-3 h-3" />
+                        <span>+{exp.xp_reward} XP</span>
+                        <ArrowRight className="w-3 h-3 ml-0.5" />
                       </Link>
                     </div>
                   </div>

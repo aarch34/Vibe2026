@@ -161,57 +161,57 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
 
   if (gameState === "intro") {
     return (
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-cyan-950/30 to-slate-900 border border-cyan-500/30 text-center space-y-5">
-        <div className="w-14 h-14 rounded-2xl bg-cyan-600/20 border border-cyan-500/40 flex items-center justify-center mx-auto text-cyan-400">
+      <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo text-center space-y-5 max-w-md mx-auto">
+        <div className="w-14 h-14 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
           <Flame className="w-7 h-7" />
         </div>
 
         <div>
-          <span className="text-[10px] uppercase font-bold text-cyan-400 tracking-wider">
+          <span className="text-[10px] uppercase font-black text-primary tracking-wider">
             Game 4 • Festival Culture & Mechanics
           </span>
-          <h2 className="text-xl font-extrabold text-white mt-0.5">
+          <h2 className="text-xl font-black text-foreground mt-0.5 font-mono">
             ROCCO Festival Quiz
           </h2>
-          <p className="text-xs text-slate-300 max-w-sm mx-auto mt-1 leading-relaxed">
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 leading-relaxed font-bold">
             Answer 5 questions on festival lore, zone mechanics, and district competition for tiered XP!
           </p>
         </div>
 
         {/* Tiered Payout Table */}
-        <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-left space-y-1.5 text-[11px] font-mono max-w-xs mx-auto">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block text-center pb-1 border-b border-slate-800">
+        <div className="p-3 bg-muted text-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-left space-y-1.5 text-[11px] font-mono max-w-xs mx-auto font-bold">
+          <span className="text-[10px] uppercase font-black text-muted-foreground block text-center pb-1 border-b-2 border-border font-sans">
             Tiered XP Rewards (Free Entry)
           </span>
           <div className="flex justify-between">
-            <span className="text-slate-400">0 – 30% Score:</span>
-            <span className="text-purple-300 font-bold">+10 XP</span>
+            <span className="text-muted-foreground">0 – 30% Score:</span>
+            <span className="text-foreground font-black">+10 XP</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">31 – 60% Score:</span>
-            <span className="text-purple-300 font-bold">+15 XP</span>
+            <span className="text-muted-foreground">31 – 60% Score:</span>
+            <span className="text-foreground font-black">+15 XP</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">61 – 80% Score:</span>
-            <span className="text-purple-300 font-bold">+20 XP</span>
+            <span className="text-muted-foreground">61 – 80% Score:</span>
+            <span className="text-foreground font-black">+20 XP</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-slate-400">81 – 100% Score:</span>
-            <span className="text-purple-300 font-bold">+25 XP</span>
+            <span className="text-muted-foreground">81 – 100% Score:</span>
+            <span className="text-primary font-black">+25 XP</span>
           </div>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 text-amber-200 text-xs max-w-sm mx-auto">
-          🌟 <strong>100% Perfect Score Bonus:</strong> Get 5/5 correct to win a <span className="font-bold text-amber-400">+10 VIBE Coins bonus</span>!
+        <div className="p-2.5 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] text-xs max-w-sm mx-auto font-bold">
+          🌟 <strong>100% Perfect Score Bonus:</strong> Get 5/5 correct to win a <span className="font-black">+10 VIBE Coins bonus</span>!
         </div>
 
         {errorMsg && (
-          <p className="text-xs text-rose-400 font-semibold">{errorMsg}</p>
+          <p className="text-xs text-rose-500 font-bold">{errorMsg}</p>
         )}
 
         <button
           onClick={startQuiz}
-          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-sm font-extrabold text-white shadow-lg shadow-cyan-500/30 active:scale-95 transition-all cursor-pointer"
+          className="neo-btn-primary w-full max-w-xs py-3.5 text-sm font-black uppercase tracking-wider mx-auto cursor-pointer flex items-center justify-center"
         >
           Start Festival Quiz (Free)
         </button>
@@ -221,22 +221,22 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
 
   if (gameState === "playing") {
     return (
-      <div className="p-5 sm:p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 max-w-lg mx-auto">
+      <div className="p-5 sm:p-6 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4 max-w-lg mx-auto">
         {/* Progress Header */}
-        <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+        <div className="flex items-center justify-between text-xs text-muted-foreground font-mono font-bold">
           <span>Question {currentIdx + 1} of {VIBE_QUESTIONS.length}</span>
-          <span className="text-cyan-400 font-bold">Score: {score}</span>
+          <span className="text-primary font-black">Score: {score}</span>
         </div>
 
-        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+        <div className="w-full h-2.5 bg-muted border-2 border-border overflow-hidden">
           <div
-            className="h-full bg-cyan-400 transition-all duration-300"
+            className="h-full bg-primary transition-all duration-300"
             style={{ width: `${((currentIdx + 1) / VIBE_QUESTIONS.length) * 100}%` }}
           />
         </div>
 
         {/* Question Title */}
-        <h3 className="text-base sm:text-lg font-bold text-white leading-snug">
+        <h3 className="text-base sm:text-lg font-black text-foreground leading-snug">
           {currentQ.question}
         </h3>
 
@@ -246,12 +246,14 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
             const isSelected = selectedOpt === idx;
             const isCorrect = idx === currentQ.correctIndex;
 
-            let btnStyle = "bg-slate-950/80 border-slate-800 text-slate-300 hover:border-slate-700";
+            let btnStyle = "bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] cursor-pointer";
             if (isAnswered) {
               if (isCorrect) {
-                btnStyle = "bg-emerald-950/60 border-emerald-500 text-emerald-200 font-bold";
+                btnStyle = "bg-primary text-primary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] font-black";
               } else if (isSelected) {
-                btnStyle = "bg-rose-950/60 border-rose-500 text-rose-200";
+                btnStyle = "bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] font-bold";
+              } else {
+                btnStyle = "bg-muted text-muted-foreground border-2 border-border opacity-60";
               }
             }
 
@@ -260,11 +262,11 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
                 key={idx}
                 disabled={isAnswered}
                 onClick={() => handleSelectOption(idx)}
-                className={`w-full text-left p-3 rounded-xl border text-xs transition-all flex items-center justify-between ${btnStyle}`}
+                className={`w-full text-left p-3.5 border-2 text-xs font-bold transition-all flex items-center justify-between ${btnStyle}`}
               >
                 <span>{opt}</span>
-                {isAnswered && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
-                {isAnswered && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-rose-400 shrink-0" />}
+                {isAnswered && isCorrect && <CheckCircle2 className="w-4 h-4 text-primary-foreground shrink-0" />}
+                {isAnswered && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-secondary-foreground shrink-0" />}
               </button>
             );
           })}
@@ -272,8 +274,8 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
 
         {/* Explanation on Answer */}
         {isAnswered && (
-          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-1">
-            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">
+          <div className="p-3.5 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs text-foreground space-y-1 font-bold">
+            <span className="text-[10px] font-black text-primary uppercase tracking-wider block font-mono">
               VIBE Breakdown
             </span>
             <p>{currentQ.explanation}</p>
@@ -284,10 +286,10 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
         {isAnswered && (
           <button
             onClick={handleNextQuestion}
-            className="w-full py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-xs font-bold text-white flex items-center justify-center space-x-1.5 transition-colors"
+            className="neo-btn-primary w-full py-3.5 text-xs font-black uppercase tracking-wider flex items-center justify-center space-x-2 cursor-pointer"
           >
             <span>{currentIdx + 1 < VIBE_QUESTIONS.length ? "Next Question" : "View Results"}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-4 h-4" />
           </button>
         )}
       </div>
@@ -303,26 +305,26 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
   else if (percent >= 31) xpAwarded = 100;
 
   return (
-    <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4 max-w-md mx-auto">
+    <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo text-center space-y-4 max-w-md mx-auto">
       {isSubmitting ? (
         <div className="py-12 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-cyan-400 mx-auto" />
-          <p className="text-xs text-slate-400">Saving quiz rewards...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+          <p className="text-xs text-muted-foreground font-bold">Saving quiz rewards...</p>
         </div>
       ) : (
         <>
-          <div className="w-14 h-14 rounded-full bg-cyan-600/20 border border-cyan-500/40 flex items-center justify-center mx-auto text-cyan-400">
+          <div className="w-14 h-14 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
             <Trophy className="w-7 h-7" />
           </div>
 
           <div>
-            <span className="text-[10px] uppercase font-bold text-cyan-400 tracking-wider">
+            <span className="text-[10px] uppercase font-black text-primary tracking-wider">
               Quiz Completed!
             </span>
-            <h3 className="text-xl font-black text-white mt-0.5 font-mono">
+            <h3 className="text-xl font-black text-foreground mt-0.5 font-mono">
               Score: {score} / {VIBE_QUESTIONS.length} ({percent}%)
             </h3>
-            <p className="text-xs text-slate-300 mt-1">
+            <p className="text-xs text-muted-foreground mt-1 font-bold">
               {isPerfect
                 ? "🌟 PERFECT SCORE! 100% bonus coins credited to your wallet!"
                 : percent >= 80
@@ -332,32 +334,32 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
           </div>
 
           {/* Reward Breakdown */}
-          <div className="grid grid-cols-2 gap-2 p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono">
+          <div className="grid grid-cols-2 gap-2 p-3.5 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-mono font-bold text-foreground">
             <div>
-              <span className="text-[10px] text-slate-400 block">XP Earned</span>
-              <span className="text-purple-300 font-bold text-sm">
+              <span className="text-[10px] text-muted-foreground block font-sans">XP Earned</span>
+              <span className="text-primary font-black text-sm">
                 +{xpAwarded} XP
               </span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 block">Coins Earned</span>
-              <span className="text-amber-400 font-bold text-sm">
+              <span className="text-[10px] text-muted-foreground block font-sans">Coins Earned</span>
+              <span className="text-foreground font-black text-sm">
                 +{isPerfect ? 10 : 0} VIBE
               </span>
             </div>
           </div>
 
-          <div className="flex items-center justify-center space-x-2 pt-2">
+          <div className="flex items-center justify-center space-x-3 pt-3">
             <button
               onClick={startQuiz}
-              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors cursor-pointer"
+              className="neo-btn-secondary py-2.5 px-4 text-xs font-black cursor-pointer"
             >
               Play Again (Free)
             </button>
             {onFinished && (
               <button
                 onClick={onFinished}
-                className="py-2.5 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-xs font-bold text-white transition-colors"
+                className="neo-btn-card py-2.5 px-4 text-xs font-black cursor-pointer"
               >
                 Back to Games Hub
               </button>

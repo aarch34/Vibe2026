@@ -67,63 +67,61 @@ export default async function ProfilePage() {
       {/* Left Column: Profile Card & Transaction Ledger */}
       <div className="lg:col-span-5 space-y-5">
         {/* 1. Attendee Profile Header Card (Section 29) */}
-        <div className="p-5 rounded-2xl bg-gradient-to-br from-slate-900 via-blue-950/40 to-slate-900 border border-slate-800 shadow-xl space-y-4">
+        <div className="p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
           <div className="flex items-start space-x-3.5">
-            <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-blue-600 to-cyan-500 p-0.5 shadow-md shrink-0">
-              <div className="w-full h-full rounded-full bg-slate-950 flex items-center justify-center font-black text-lg text-white">
-                {session.profile.display_name.charAt(0)}
-              </div>
+            <div className="w-14 h-14 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center font-black text-xl shrink-0">
+              {session.profile.display_name.charAt(0)}
             </div>
 
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between">
-                <h1 className="text-base sm:text-lg font-black text-white truncate">
+                <h1 className="text-base sm:text-lg font-black text-foreground truncate">
                   {session.profile.display_name}
                 </h1>
-                <span className="text-xs font-mono font-bold text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-500/30 shrink-0 ml-2">
+                <span className="text-xs font-mono font-black text-primary-foreground bg-primary px-2 py-0.5 border-2 border-border shadow-[1px_1px_0px_var(--border)] shrink-0 ml-2">
                   {session.profile.vibe_id}
                 </span>
               </div>
 
               {/* Instagram Handle */}
-              <div className="flex items-center space-x-1 text-xs text-pink-400 font-mono mt-0.5">
+              <div className="flex items-center space-x-1 text-xs text-primary font-mono font-bold mt-0.5">
                 <Instagram className="w-3.5 h-3.5" />
                 <span>{instaHandle}</span>
               </div>
 
               {/* Club & Assigned Zone */}
-              <p className="text-xs text-slate-400 mt-1 truncate">
+              <p className="text-xs text-muted-foreground font-bold mt-1 truncate">
                 {session.profile.club || session.profile.college || "Rotaract District 3192"}
               </p>
 
               <div className="pt-1.5">
-                <span className="inline-flex items-center space-x-1 text-xs font-black text-cyan-300 bg-cyan-950/80 border border-cyan-400/40 px-2.5 py-0.5 rounded-full shadow-sm">
+                <span className="inline-flex items-center space-x-1 text-xs font-black text-secondary-foreground bg-secondary border-2 border-border px-2.5 py-0.5 shadow-[2px_2px_0px_var(--border)]">
                   <span>🌊</span>
                   <span>{assignedZoneName.toUpperCase()}</span>
-                  <span className="text-[9px] text-cyan-400 font-normal ml-0.5">(YOUR ZONE)</span>
+                  <span className="text-[9px] font-bold ml-0.5">(YOUR ZONE)</span>
                 </span>
               </div>
             </div>
           </div>
 
           {/* Level and Coins Quick Bar */}
-          <div className="grid grid-cols-2 gap-2 pt-3 border-t border-slate-800/80">
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block">Progression</span>
-              <span className="text-xs font-bold text-purple-300">
+          <div className="grid grid-cols-2 gap-2 pt-3 border-t-2 border-border">
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] font-black uppercase text-muted-foreground block">Progression</span>
+              <span className="text-xs font-black text-foreground">
                 LEVEL {progression.currentLevel.sort_order} — {progression.currentLevel.name.toUpperCase()}
               </span>
-              <p className="text-[10px] font-mono text-slate-400 mt-0.5">
+              <p className="text-[10px] font-mono font-bold text-muted-foreground mt-0.5">
                 {formatXP(progression.totalXP)}
               </p>
             </div>
 
-            <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800">
-              <span className="text-[10px] text-slate-400 block">Current Balance</span>
-              <span className="text-xs font-black font-mono text-amber-400">
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] font-black uppercase text-muted-foreground block">Current Balance</span>
+              <span className="text-xs font-black font-mono text-foreground">
                 {formatCoins(walletSummary.wallet.balance)} Coins
               </span>
-              <p className="text-[10px] font-mono text-slate-400 mt-0.5">
+              <p className="text-[10px] font-mono font-bold text-muted-foreground mt-0.5">
                 Spent: {formatCoins(walletSummary.totalSpent)}
               </p>
             </div>
@@ -131,34 +129,34 @@ export default async function ProfilePage() {
         </div>
 
         {/* 2. Immutable Wallet Transaction Ledger */}
-        <div className="space-y-3 p-4 rounded-2xl bg-slate-900/60 border border-slate-800">
+        <div className="space-y-3 p-4 bg-card text-card-foreground border-2 border-border shadow-neo">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-1.5">
-              <History className="w-4 h-4 text-blue-400" />
-              <h2 className="text-sm font-bold text-white tracking-tight">
+              <History className="w-4 h-4 text-primary" />
+              <h2 className="text-sm font-black text-foreground uppercase tracking-tight">
                 Wallet Ledger
               </h2>
             </div>
-            <span className="text-[11px] font-mono text-slate-400">
+            <span className="text-[11px] font-mono font-black text-muted-foreground">
               {walletSummary.transactions.length} entries
             </span>
           </div>
 
-          <div className="space-y-1.5 max-h-72 lg:max-h-80 overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-72 lg:max-h-80 overflow-y-auto pr-1">
             {walletSummary.transactions.map((tx) => {
               const isCredit = tx.type === "earn" || tx.type === "initial_credit";
 
               return (
                 <div
                   key={tx.id}
-                  className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80 flex items-center justify-between text-xs"
+                  className="p-2.5 bg-muted border-2 border-border flex items-center justify-between text-xs"
                 >
                   <div className="flex items-center space-x-2">
                     <div
-                      className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 ${
+                      className={`w-6 h-6 border-2 border-border flex items-center justify-center shrink-0 ${
                         isCredit
-                          ? "bg-emerald-950 text-emerald-400 border border-emerald-500/30"
-                          : "bg-rose-950 text-rose-400 border border-rose-500/30"
+                          ? "bg-secondary text-secondary-foreground"
+                          : "bg-primary text-primary-foreground"
                       }`}
                     >
                       {isCredit ? (
@@ -168,10 +166,10 @@ export default async function ProfilePage() {
                       )}
                     </div>
                     <div>
-                      <span className="font-bold text-white uppercase tracking-tight text-[11px]">
+                      <span className="font-black text-foreground uppercase tracking-tight text-[11px]">
                         {tx.type.replace("_", " ")}
                       </span>
-                      <span className="text-[10px] text-slate-400 block font-mono">
+                      <span className="text-[10px] text-muted-foreground block font-mono font-bold">
                         {new Date(tx.created_at).toLocaleTimeString([], {
                           hour: "2-digit",
                           minute: "2-digit",
@@ -182,14 +180,14 @@ export default async function ProfilePage() {
 
                   <div className="text-right font-mono">
                     <span
-                      className={`font-bold ${
-                        isCredit ? "text-emerald-400" : "text-rose-400"
+                      className={`font-black ${
+                        isCredit ? "text-foreground" : "text-primary"
                       }`}
                     >
                       {isCredit ? "+" : "-"}
                       {formatCoins(tx.amount)}
                     </span>
-                    <span className="text-[10px] text-slate-400 block">
+                    <span className="text-[10px] text-muted-foreground block font-bold">
                       Bal: {formatCoins(tx.balance_after)}
                     </span>
                   </div>
@@ -203,87 +201,87 @@ export default async function ProfilePage() {
       {/* Right Column: 10-Metric Stats Grid, Passport & Badges */}
       <div className="lg:col-span-7 space-y-5">
         {/* Section 30: THE 10-METRIC PLAYER STATS GRID */}
-        <div className="p-4 sm:p-5 rounded-2xl bg-slate-900/80 border border-blue-500/30 space-y-3 shadow-xl">
+        <div className="p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3">
           <div className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4 text-cyan-400" />
-            <h2 className="text-sm sm:text-base font-extrabold text-white tracking-tight">
+            <BarChart3 className="w-4 h-4 text-primary" />
+            <h2 className="text-sm sm:text-base font-black text-foreground uppercase tracking-tight">
               10 Player Statistics
             </h2>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">
             {/* 1. Total VIBE earned */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">1. VIBE Earned</span>
-              <span className="text-sm font-black font-mono text-amber-400">+{formatCoins(playerStats.totalVibeEarned)}</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">1. VIBE Earned</span>
+              <span className="text-sm font-black font-mono text-foreground">+{formatCoins(playerStats.totalVibeEarned)}</span>
             </div>
 
             {/* 2. Total VIBE spent */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">2. VIBE Spent</span>
-              <span className="text-sm font-black font-mono text-rose-400">-{formatCoins(playerStats.totalVibeSpent)}</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">2. VIBE Spent</span>
+              <span className="text-sm font-black font-mono text-primary">-{formatCoins(playerStats.totalVibeSpent)}</span>
             </div>
 
             {/* 3. XP earned */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">3. XP Earned</span>
-              <span className="text-sm font-black font-mono text-purple-300">{formatXP(playerStats.xpEarned)}</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">3. XP Earned</span>
+              <span className="text-sm font-black font-mono text-foreground">{formatXP(playerStats.xpEarned)}</span>
             </div>
 
             {/* 4. Zones visited */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">4. Zones (0/6)</span>
-              <span className="text-sm font-black font-mono text-cyan-300">{playerStats.zonesVisitedCount} / 6</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">4. Zones</span>
+              <span className="text-sm font-black font-mono text-foreground">{playerStats.zonesVisitedCount} / 6</span>
             </div>
 
             {/* 5. Experiences completed */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">5. Experiences</span>
-              <span className="text-sm font-black font-mono text-white">{playerStats.experiencesCompletedCount}</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">5. Experiences</span>
+              <span className="text-sm font-black font-mono text-foreground">{playerStats.experiencesCompletedCount}</span>
             </div>
 
             {/* 6. Stalls visited */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">6. Stalls Visited</span>
-              <span className="text-sm font-black font-mono text-white">{playerStats.stallsVisitedCount}</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">6. Stalls</span>
+              <span className="text-sm font-black font-mono text-foreground">{playerStats.stallsVisitedCount}</span>
             </div>
 
             {/* 7. Games played */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">7. Games Played</span>
-              <span className="text-sm font-black font-mono text-white">{playerStats.gamesPlayedCount}</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">7. Games</span>
+              <span className="text-sm font-black font-mono text-foreground">{playerStats.gamesPlayedCount}</span>
             </div>
 
             {/* 8. Games won */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">8. Games Won</span>
-              <span className="text-sm font-black font-mono text-emerald-400">{playerStats.gamesWonCount}</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">8. Won</span>
+              <span className="text-sm font-black font-mono text-foreground">{playerStats.gamesWonCount}</span>
             </div>
 
             {/* 9. Photos approved */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">9. Photos Approved</span>
-              <span className="text-sm font-black font-mono text-cyan-400">{playerStats.photosApprovedCount}</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">9. Photos</span>
+              <span className="text-sm font-black font-mono text-foreground">{playerStats.photosApprovedCount}</span>
             </div>
 
             {/* 10. Quests completed */}
-            <div className="p-3 rounded-xl bg-slate-950 border border-slate-800">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block truncate">10. Quests Done</span>
-              <span className="text-sm font-black font-mono text-amber-300">{playerStats.questsCompletedCount}</span>
+            <div className="p-3 bg-muted border-2 border-border">
+              <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">10. Quests</span>
+              <span className="text-sm font-black font-mono text-foreground">{playerStats.questsCompletedCount}</span>
             </div>
           </div>
         </div>
 
         {/* Digital Passport (6 Official Zones Grid) */}
-        <div id="passport" className="space-y-3 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+        <div id="passport" className="space-y-3 p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <ShieldCheck className="w-4 h-4 text-cyan-400" />
-              <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <h2 className="text-sm sm:text-base font-black text-foreground uppercase tracking-tight">
                 6-Zone Digital Passport Stamps
               </h2>
             </div>
-            <span className="text-xs font-mono text-cyan-400 font-bold bg-cyan-950/60 border border-cyan-500/30 px-2.5 py-0.5 rounded-md">
+            <span className="text-xs font-mono font-black bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] px-2.5 py-0.5">
               {progression.zonesVisitedCount} / 6 Zones
             </span>
           </div>
@@ -292,26 +290,26 @@ export default async function ProfilePage() {
             {passportZones.map((item) => (
               <div
                 key={item.zone.id}
-                className={`p-3 rounded-xl border transition-all ${
+                className={`p-3 border-2 border-border transition-all ${
                   item.isUnlocked
-                    ? "bg-emerald-950/20 border-emerald-500/40"
-                    : "bg-slate-950/60 border-slate-800/80 opacity-70"
+                    ? "bg-secondary/20 shadow-[2px_2px_0px_var(--border)]"
+                    : "bg-muted opacity-60"
                 }`}
               >
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[9px] font-mono font-bold text-slate-400">
+                  <span className="text-[9px] font-mono font-black text-muted-foreground">
                     Z{item.zone.sort_order}
                   </span>
                   {item.isUnlocked ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                    <CheckCircle2 className="w-3.5 h-3.5 text-foreground" />
                   ) : (
-                    <Lock className="w-3.5 h-3.5 text-slate-500" />
+                    <Lock className="w-3.5 h-3.5 text-muted-foreground" />
                   )}
                 </div>
-                <h4 className="text-xs font-bold text-white truncate">
+                <h4 className="text-xs font-black text-foreground truncate">
                   🌊 {item.zone.name}
                 </h4>
-                <span className="text-[10px] text-slate-400 block mt-0.5 font-mono">
+                <span className="text-[10px] text-muted-foreground block mt-0.5 font-mono font-bold">
                   {item.isUnlocked
                     ? `${item.completedExperiencesCount} Completed`
                     : "Unvisited"}
@@ -322,10 +320,10 @@ export default async function ProfilePage() {
         </div>
 
         {/* Achievements Showcase */}
-        <div className="space-y-3 p-4 sm:p-5 rounded-2xl bg-slate-900/60 border border-slate-800">
+        <div className="space-y-3 p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo">
           <div className="flex items-center space-x-2">
-            <Trophy className="w-4 h-4 text-purple-400" />
-            <h2 className="text-sm sm:text-base font-bold text-white tracking-tight">
+            <Trophy className="w-4 h-4 text-primary" />
+            <h2 className="text-sm sm:text-base font-black text-foreground uppercase tracking-tight">
               Achievements Showcase
             </h2>
           </div>
@@ -334,21 +332,21 @@ export default async function ProfilePage() {
             {achievements.map(({ achievement, isUnlocked }) => (
               <div
                 key={achievement.id}
-                className={`p-3.5 rounded-xl border ${
+                className={`p-3.5 border-2 border-border ${
                   isUnlocked
-                    ? "bg-purple-950/20 border-purple-500/40"
-                    : "bg-slate-950/40 border-slate-800/60 opacity-60"
+                    ? "bg-secondary/20 shadow-[2px_2px_0px_var(--border)]"
+                    : "bg-muted opacity-60"
                 }`}
               >
                 <div className="flex items-center space-x-2 mb-1">
                   <span className="text-base">
                     {isUnlocked ? "🏆" : "🔒"}
                   </span>
-                  <h4 className="text-xs font-bold text-white truncate">
+                  <h4 className="text-xs font-black text-foreground truncate">
                     {achievement.name}
                   </h4>
                 </div>
-                <p className="text-[11px] text-slate-400 line-clamp-2">
+                <p className="text-[11px] text-muted-foreground font-medium line-clamp-2">
                   {achievement.description}
                 </p>
               </div>

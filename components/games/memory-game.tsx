@@ -42,8 +42,12 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const secondsLeftRef = useRef(40);
+  const isEndingRef = useRef(false);
 
   function initializeCards() {
+    isEndingRef.current = false;
+    secondsLeftRef.current = 40;
     const deck: Card[] = [];
     const pairs = [...CARD_ICONS, ...CARD_ICONS];
     // Shuffle
@@ -78,11 +82,15 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
 
     timerRef.current = setInterval(() => {
       setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          handleGameOver(false, 0);
+        const next = prev - 1;
+        secondsLeftRef.current = Math.max(0, next);
+        if (next <= 0) {
+          if (!isEndingRef.current) {
+            setTimeout(() => handleGameOver(false, 0), 0);
+          }
           return 0;
         }
-        return prev - 1;
+        return next;
       });
     }, 1000);
 
@@ -120,8 +128,8 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
 
           setMatchedPairs((mp) => {
             const newCount = mp + 1;
-            if (newCount === CARD_ICONS.length) {
-              handleGameOver(true, secondsLeft);
+            if (newCount === CARD_ICONS.length && !isEndingRef.current) {
+              setTimeout(() => handleGameOver(true, secondsLeftRef.current), 0);
             }
             return newCount;
           });
@@ -142,6 +150,8 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
   }
 
   async function handleGameOver(won: boolean, remainingSec: number) {
+    if (isEndingRef.current) return;
+    isEndingRef.current = true;
     if (timerRef.current) clearInterval(timerRef.current);
     setGameState("gameover");
     setIsSubmitting(true);
@@ -179,45 +189,45 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
 
   if (gameState === "intro") {
     return (
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-purple-950/30 to-slate-900 border border-purple-500/30 text-center space-y-5">
-        <div className="w-14 h-14 rounded-2xl bg-purple-600/20 border border-purple-500/40 flex items-center justify-center mx-auto text-purple-400">
+      <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo text-center space-y-5 max-w-md mx-auto">
+        <div className="w-14 h-14 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
           <Sparkles className="w-7 h-7" />
         </div>
 
         <div>
-          <span className="text-[10px] uppercase font-bold text-purple-400 tracking-wider">
+          <span className="text-[10px] uppercase font-black text-primary tracking-wider">
             Game 3 • Visual Focus & Recall
           </span>
-          <h2 className="text-xl font-extrabold text-white mt-0.5">
+          <h2 className="text-xl font-black text-foreground mt-0.5 font-mono">
             VIBE Memory Match
           </h2>
-          <p className="text-xs text-slate-300 max-w-sm mx-auto mt-1 leading-relaxed">
+          <p className="text-xs text-muted-foreground max-w-sm mx-auto mt-1 leading-relaxed font-bold">
             Flip 12 cards, match 6 festival symbol pairs before the 40-second countdown runs out!
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono max-w-xs mx-auto">
+        <div className="grid grid-cols-2 gap-2 p-3 bg-muted text-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-mono max-w-xs mx-auto font-bold">
           <div>
-            <span className="text-[10px] text-slate-400 block">Entry Fee</span>
-            <span className="text-emerald-400 font-bold">FREE</span>
+            <span className="text-[10px] text-muted-foreground block font-sans">Entry Fee</span>
+            <span className="text-primary font-black">FREE</span>
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 block">Base Reward</span>
-            <span className="text-purple-300 font-bold">+15 XP</span>
+            <span className="text-[10px] text-muted-foreground block font-sans">Base Reward</span>
+            <span className="text-foreground font-black">+15 XP</span>
           </div>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 text-purple-200 text-xs max-w-sm mx-auto">
-          ⚡ <strong>Speed Bonus:</strong> Clear all 6 pairs in under 25 seconds to win <span className="font-bold text-amber-400">+10 VIBE</span> and <span className="font-bold text-purple-300">+25 total XP</span>!
+        <div className="p-2.5 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] text-xs max-w-sm mx-auto font-bold">
+          ⚡ <strong>Speed Bonus:</strong> Clear all 6 pairs in under 25 seconds to win <span className="font-black">+10 VIBE</span> and <span className="font-black">+25 total XP</span>!
         </div>
 
         {errorMsg && (
-          <p className="text-xs text-rose-400 font-semibold">{errorMsg}</p>
+          <p className="text-xs text-rose-500 font-bold">{errorMsg}</p>
         )}
 
         <button
           onClick={startGame}
-          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-sm font-extrabold text-white shadow-lg shadow-purple-500/30 active:scale-95 transition-all cursor-pointer"
+          className="neo-btn-primary w-full max-w-xs py-3.5 text-sm font-black uppercase tracking-wider mx-auto cursor-pointer flex items-center justify-center"
         >
           Start Memory Game (Free)
         </button>
@@ -227,18 +237,18 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
 
   if (gameState === "playing") {
     return (
-      <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-4 max-w-md mx-auto">
+      <div className="p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4 max-w-md mx-auto">
         {/* HUD */}
-        <div className="flex items-center justify-between text-xs font-mono">
-          <div className="flex items-center space-x-1.5 text-cyan-400">
+        <div className="flex items-center justify-between text-xs font-mono font-bold text-foreground">
+          <div className="flex items-center space-x-1.5 text-primary">
             <Clock className="w-3.5 h-3.5" />
-            <span className="font-bold">{secondsLeft}s left</span>
+            <span>{secondsLeft}s left</span>
           </div>
-          <div className="text-slate-400">
-            Pairs: <strong className="text-purple-300">{matchedPairs} / 6</strong>
+          <div>
+            Pairs: <strong className="text-foreground">{matchedPairs} / 6</strong>
           </div>
-          <div className="text-slate-400">
-            Moves: <strong className="text-white">{moves}</strong>
+          <div>
+            Moves: <strong className="text-foreground">{moves}</strong>
           </div>
         </div>
 
@@ -252,12 +262,12 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
                 key={card.id}
                 disabled={card.isMatched || card.isFlipped}
                 onClick={() => handleCardClick(idx)}
-                className={`aspect-square rounded-xl text-2xl font-bold flex items-center justify-center transition-all duration-300 border ${
+                className={`aspect-square text-2xl font-black flex items-center justify-center transition-all duration-150 border-2 border-border ${
                   card.isMatched
-                    ? "bg-emerald-950/60 border-emerald-500 text-emerald-300 scale-95"
+                    ? "bg-primary text-primary-foreground shadow-[2px_2px_0px_var(--border)] scale-95"
                     : isRevealed
-                    ? "bg-blue-900/60 border-blue-400 text-white rotate-y-180"
-                    : "bg-slate-950 hover:bg-slate-800 border-slate-700 text-transparent"
+                    ? "bg-secondary text-secondary-foreground shadow-[3px_3px_0px_var(--border)] rotate-y-180"
+                    : "bg-card text-card-foreground hover:bg-muted shadow-[3px_3px_0px_var(--border)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0px_var(--border)] cursor-pointer"
                 }`}
               >
                 {isRevealed ? card.icon : "❓"}
@@ -275,26 +285,26 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
   const isFastBonus = won && timeTaken <= 25;
 
   return (
-    <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4 max-w-md mx-auto">
+    <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo text-center space-y-4 max-w-md mx-auto">
       {isSubmitting ? (
         <div className="py-12 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-400 mx-auto" />
-          <p className="text-xs text-slate-400">Saving match records...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+          <p className="text-xs text-muted-foreground font-bold">Saving match records...</p>
         </div>
       ) : (
         <>
-          <div className="w-14 h-14 rounded-full bg-purple-600/20 border border-purple-500/40 flex items-center justify-center mx-auto text-purple-400">
-            {won ? <Award className="w-7 h-7 text-amber-400 animate-bounce" /> : <Clock className="w-7 h-7 text-rose-400" />}
+          <div className="w-14 h-14 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
+            {won ? <Award className="w-7 h-7 animate-bounce" /> : <Clock className="w-7 h-7" />}
           </div>
 
           <div>
-            <span className="text-[10px] uppercase font-bold text-purple-400 tracking-wider">
+            <span className="text-[10px] uppercase font-black text-primary tracking-wider">
               {won ? "Victory!" : "Time's Up!"}
             </span>
-            <h3 className="text-xl font-black text-white mt-0.5 font-mono">
+            <h3 className="text-xl font-black text-foreground mt-0.5 font-mono">
               {won ? `Cleared in ${timeTaken}s!` : `Matched ${matchedPairs}/6 pairs`}
             </h3>
-            <p className="text-xs text-slate-300 mt-1">
+            <p className="text-xs text-muted-foreground mt-1 font-bold">
               {isFastBonus
                 ? "⚡ Lightning speed! Fast completion bonus awarded (+100🪙 & +150 extra XP)!"
                 : won
@@ -304,32 +314,32 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
           </div>
 
           {/* Reward Breakdown */}
-          <div className="grid grid-cols-2 gap-2 p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono">
+          <div className="grid grid-cols-2 gap-2 p-3.5 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-mono font-bold text-foreground">
             <div>
-              <span className="text-[10px] text-slate-400 block">XP Earned</span>
-              <span className="text-purple-300 font-bold text-sm">
+              <span className="text-[10px] text-muted-foreground block font-sans">XP Earned</span>
+              <span className="text-primary font-black text-sm">
                 +{won ? (isFastBonus ? 25 : 20) : 10} XP
               </span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 block">Coins Earned</span>
-              <span className="text-amber-400 font-bold text-sm">
+              <span className="text-[10px] text-muted-foreground block font-sans">Coins Earned</span>
+              <span className="text-foreground font-black text-sm">
                 +{isFastBonus ? 10 : 0} VIBE
               </span>
             </div>
           </div>
 
-          <div className="flex items-center justify-center space-x-2 pt-2">
+          <div className="flex items-center justify-center space-x-3 pt-3">
             <button
               onClick={startGame}
-              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors cursor-pointer"
+              className="neo-btn-secondary py-2.5 px-4 text-xs font-black cursor-pointer"
             >
               Play Again (Free)
             </button>
             {onFinished && (
               <button
                 onClick={onFinished}
-                className="py-2.5 px-4 rounded-xl bg-purple-600 hover:bg-purple-500 text-xs font-bold text-white transition-colors"
+                className="neo-btn-card py-2.5 px-4 text-xs font-black cursor-pointer"
               >
                 Back to Games Hub
               </button>

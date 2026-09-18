@@ -48,63 +48,63 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070B14] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 relative overflow-hidden selection:bg-primary selection:text-primary-foreground">
       {/* Background glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-md p-6 sm:p-8 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl space-y-6 relative z-10 backdrop-blur-xl">
+      <div className="w-full max-w-md p-6 sm:p-8 bg-card text-card-foreground border-2 border-border shadow-neo space-y-6 relative z-10">
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-blue-600 to-cyan-500 flex items-center justify-center mx-auto text-white shadow-lg shadow-blue-500/30">
+          <div className="w-14 h-14 bg-primary text-primary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
             <ShieldAlert className="w-7 h-7" />
           </div>
 
-          <span className="text-[10px] uppercase font-bold tracking-widest text-cyan-400 font-mono block">
+          <span className="text-[10px] uppercase font-black tracking-widest text-primary font-mono block">
             ROCCO 2026 • Command Center
           </span>
-          <h1 className="text-2xl font-black text-white tracking-tight">
+          <h1 className="text-2xl font-black text-foreground uppercase tracking-tight">
             Admin Authentication
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground font-medium">
             Restricted access for designated festival administrators (jk, gunjan).
           </p>
         </div>
 
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs font-semibold">
+          <div className="p-3 bg-destructive text-destructive-foreground border-2 border-border text-xs font-bold">
             {errorMsg}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] uppercase font-bold text-slate-400 font-mono block">
+            <label className="text-[11px] uppercase font-black text-muted-foreground font-mono block">
               Admin Username
             </label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <User className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="jk or gunjan"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400 font-mono transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-muted border-2 border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary font-mono font-bold"
                 autoCapitalize="none"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] uppercase font-bold text-slate-400 font-mono block">
+            <label className="text-[11px] uppercase font-black text-muted-foreground font-mono block">
               Password
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400 font-mono transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-muted border-2 border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary font-mono font-bold"
               />
             </div>
           </div>
@@ -112,7 +112,7 @@ export default function AdminLoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 active:scale-98 transition-all text-sm font-black text-white shadow-lg shadow-blue-500/25 flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+            className="neo-btn-primary w-full py-3.5 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2 disabled:opacity-50 shadow-[4px_4px_0px_var(--border)] active:translate-x-[2px] active:translate-y-[2px]"
           >
             {isSubmitting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -126,31 +126,31 @@ export default function AdminLoginPage() {
         </form>
 
         {/* Quick Credentials Helper */}
-        <div className="pt-4 border-t border-slate-800/80 space-y-2.5">
-          <span className="text-[10px] text-slate-500 uppercase tracking-wider font-mono block text-center">
+        <div className="pt-4 border-t-2 border-border space-y-2.5">
+          <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-black block text-center">
             Authorized Administrator Logins
           </span>
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
               onClick={() => fillQuickLogin("jk", "jk@vibe2026")}
-              className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 text-left transition-colors cursor-pointer group"
+              className="neo-btn-card p-2.5 border-2 border-border text-left shadow-[2px_2px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px]"
             >
-              <span className="text-[11px] font-bold text-cyan-400 block group-hover:text-cyan-300">
+              <span className="text-[11px] font-black text-foreground block">
                 👤 JK
               </span>
-              <span className="text-[9px] text-slate-500 font-mono">jk / jk@vibe2026</span>
+              <span className="text-[9px] text-muted-foreground font-mono font-bold">jk / jk@vibe2026</span>
             </button>
 
             <button
               type="button"
               onClick={() => fillQuickLogin("gunjan", "gunjan@vibe2026")}
-              className="p-2.5 rounded-xl bg-slate-950 hover:bg-slate-800/80 border border-slate-800 text-left transition-colors cursor-pointer group"
+              className="neo-btn-card p-2.5 border-2 border-border text-left shadow-[2px_2px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px]"
             >
-              <span className="text-[11px] font-bold text-cyan-400 block group-hover:text-cyan-300">
+              <span className="text-[11px] font-black text-foreground block">
                 👤 Gunjan
               </span>
-              <span className="text-[9px] text-slate-500 font-mono">gunjan / gunjan@vibe2026</span>
+              <span className="text-[9px] text-muted-foreground font-mono font-bold">gunjan / gunjan@vibe2026</span>
             </button>
           </div>
         </div>

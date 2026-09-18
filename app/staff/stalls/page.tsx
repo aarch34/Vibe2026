@@ -30,7 +30,7 @@ export default async function StaffStallsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070B14] text-slate-100 p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
+    <div className="min-h-screen bg-background text-foreground p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       <StallVerificationQueue initialSubmissions={submissions} />
     </div>
   );

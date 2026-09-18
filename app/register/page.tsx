@@ -75,21 +75,21 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#070B14] text-white flex flex-col justify-between selection:bg-blue-600">
+    <div className="min-h-screen bg-background text-foreground flex flex-col justify-between selection:bg-primary selection:text-primary-foreground">
       {/* Top Header */}
-      <header className="px-6 py-4 border-b border-slate-800/80 bg-slate-950/40 backdrop-blur-md sticky top-0 z-50">
+      <header className="px-6 py-4 border-b-2 border-border bg-card/95 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <Link href="/" className="flex items-center space-x-2">
-            <span className="text-2xl font-black tracking-wider bg-gradient-to-r from-blue-400 via-cyan-400 to-purple-400 bg-clip-text text-transparent">
+            <span className="text-2xl font-black tracking-wider text-foreground font-mono">
               VIBE
             </span>
-            <span className="text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded bg-blue-950 border border-blue-500/30 text-blue-300">
+            <span className="text-[10px] uppercase tracking-widest font-black px-2 py-0.5 bg-primary text-primary-foreground border-2 border-border shadow-[1px_1px_0px_var(--border)]">
               Freshers '26
             </span>
           </Link>
           <Link
             href="/app"
-            className="text-xs font-semibold text-slate-400 hover:text-white transition-colors"
+            className="neo-btn-card px-3 py-1.5 text-xs font-black uppercase tracking-wider"
           >
             Already registered? Skip to App →
           </Link>
@@ -100,30 +100,30 @@ export default function RegisterPage() {
       <main className="max-w-2xl mx-auto px-4 py-8 sm:py-12 w-full">
         <div className="space-y-6">
           <div className="text-center space-y-2">
-            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-blue-950/60 border border-blue-500/30 text-blue-300 text-xs font-semibold">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-spin" />
+            <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-black">
+              <Sparkles className="w-3.5 h-3.5 text-primary" />
               <span>Rotaract District 3192 Registration</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-b from-white via-slate-100 to-slate-400 bg-clip-text text-transparent">
+            <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground font-mono">
               Create Your VIBE Profile
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 max-w-md mx-auto">
-              Get assigned to your festival zone, claim your <strong>500 VIBE Coins</strong> starter wallet, and dive into the live competition!
+            <p className="text-xs sm:text-sm text-muted-foreground font-bold max-w-md mx-auto">
+              Get assigned to your festival zone, claim your <strong className="text-primary font-black">500 VIBE Coins</strong> starter wallet, and dive into the live competition!
             </p>
           </div>
 
           {errorMsg && (
-            <div className="p-3.5 rounded-xl bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex items-center space-x-2">
+            <div className="p-3.5 bg-primary text-primary-foreground border-2 border-border shadow-neo text-xs flex items-center space-x-2 font-black">
               <span>⚠️</span>
               <span>{errorMsg}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="p-5 sm:p-7 rounded-2xl bg-slate-900/80 border border-slate-800 shadow-2xl space-y-4">
+          <form onSubmit={handleSubmit} className="p-5 sm:p-7 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
             {/* Full Name */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-                <User className="w-3.5 h-3.5 text-blue-400" />
+              <label className="text-xs font-black text-foreground flex items-center space-x-1.5">
+                <User className="w-3.5 h-3.5 text-primary" />
                 <span>Full Name *</span>
               </label>
               <input
@@ -132,15 +132,15 @@ export default function RegisterPage() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="e.g. Aarcha U"
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                className="w-full bg-muted border-2 border-border px-3.5 py-2.5 text-sm font-bold text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors"
               />
             </div>
 
             {/* Phone & Email Row */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-                  <Phone className="w-3.5 h-3.5 text-emerald-400" />
+                <label className="text-xs font-black text-foreground flex items-center space-x-1.5">
+                  <Phone className="w-3.5 h-3.5 text-primary" />
                   <span>Phone Number</span>
                 </label>
                 <input
@@ -148,13 +148,13 @@ export default function RegisterPage() {
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="+91 98765 43210"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-muted border-2 border-border px-3.5 py-2.5 text-sm font-bold text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-                  <Mail className="w-3.5 h-3.5 text-purple-400" />
+                <label className="text-xs font-black text-foreground flex items-center space-x-1.5">
+                  <Mail className="w-3.5 h-3.5 text-primary" />
                   <span>Email Address</span>
                 </label>
                 <input
@@ -162,7 +162,7 @@ export default function RegisterPage() {
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="aarcha@example.com"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-muted border-2 border-border px-3.5 py-2.5 text-sm font-bold text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors"
                 />
               </div>
             </div>
@@ -170,8 +170,8 @@ export default function RegisterPage() {
             {/* Rotaract Club & Instagram */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+                <label className="text-xs font-black text-foreground flex items-center space-x-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-primary" />
                   <span>Rotaract Club *</span>
                 </label>
                 <input
@@ -179,14 +179,14 @@ export default function RegisterPage() {
                   required
                   value={formData.club}
                   onChange={(e) => setFormData({ ...formData, club: e.target.value })}
-                  placeholder="e.g. RC Bangalore West"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  placeholder="e.g. Rotaract Club of Bangalore"
+                  className="w-full bg-muted border-2 border-border px-3.5 py-2.5 text-sm font-bold text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-                  <Instagram className="w-3.5 h-3.5 text-pink-400" />
+                <label className="text-xs font-black text-foreground flex items-center space-x-1.5">
+                  <Instagram className="w-3.5 h-3.5 text-primary" />
                   <span>Instagram ID (Handle)</span>
                 </label>
                 <input
@@ -194,34 +194,34 @@ export default function RegisterPage() {
                   value={formData.instagramId}
                   onChange={(e) => setFormData({ ...formData, instagramId: e.target.value })}
                   placeholder="@aarcha.u"
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 transition-colors"
+                  className="w-full bg-muted border-2 border-border px-3.5 py-2.5 text-sm font-bold text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors"
                 />
               </div>
             </div>
 
             {/* Registration ID */}
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-slate-300 flex items-center space-x-1.5">
-                <Hash className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Ticket / Registration ID</span>
+              <label className="text-xs font-black text-foreground flex items-center space-x-1.5">
+                <Hash className="w-3.5 h-3.5 text-primary" />
+                <span>Ticket / Registration ID (Optional)</span>
               </label>
               <input
                 type="text"
                 value={formData.registrationId}
                 onChange={(e) => setFormData({ ...formData, registrationId: e.target.value })}
                 placeholder="REG-2026-0042 (optional)"
-                className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 font-mono transition-colors"
+                className="w-full bg-muted border-2 border-border px-3.5 py-2.5 text-sm font-bold text-foreground placeholder:text-muted-foreground focus:outline-none font-mono transition-colors"
               />
             </div>
 
             {/* Zone Assignment Selection */}
             <div className="space-y-2 pt-2">
-              <label className="text-xs font-bold text-slate-300 flex items-center justify-between">
+              <label className="text-xs font-black text-foreground flex items-center justify-between">
                 <span className="flex items-center space-x-1.5">
-                  <Waves className="w-3.5 h-3.5 text-blue-400" />
+                  <Waves className="w-3.5 h-3.5 text-primary" />
                   <span>Assigned VIBE Zone</span>
                 </span>
-                <span className="text-[10px] text-cyan-400 font-normal">
+                <span className="text-[10px] text-primary font-black font-mono">
                   6 Official Zones
                 </span>
               </label>
@@ -231,20 +231,20 @@ export default function RegisterPage() {
                   const isSelected = formData.assignedZoneId === zone.id;
                   return (
                     <button
-                      type="button"
                       key={zone.id}
+                      type="button"
                       onClick={() => setFormData({ ...formData, assignedZoneId: zone.id })}
-                      className={`p-2.5 rounded-xl border text-left transition-all ${
+                      className={`p-3 text-left border-2 border-border transition-all cursor-pointer ${
                         isSelected
-                          ? "bg-blue-600/20 border-blue-500 shadow-md shadow-blue-500/20"
-                          : "bg-slate-950/60 border-slate-800 hover:border-slate-700 opacity-80"
+                          ? "bg-secondary text-secondary-foreground shadow-[3px_3px_0px_var(--border)] font-black"
+                          : "bg-card text-card-foreground hover:bg-muted shadow-[1px_1px_0px_var(--border)] font-bold"
                       }`}
                     >
                       <div className="flex items-center space-x-1.5">
                         <span className="text-sm">{zone.icon}</span>
-                        <span className="text-xs font-bold text-white">{zone.name}</span>
+                        <span className="text-xs font-black">{zone.name}</span>
                       </div>
-                      <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+                      <p className="text-[10px] opacity-80 mt-0.5 truncate font-bold">
                         {zone.tagline}
                       </p>
                     </button>
@@ -258,7 +258,7 @@ export default function RegisterPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-cyan-500 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 active:scale-95 text-sm font-extrabold text-white shadow-xl shadow-blue-500/30 transition-all flex items-center justify-center space-x-2"
+                className="w-full py-3.5 neo-btn-primary text-sm font-black uppercase tracking-wider space-x-2 cursor-pointer flex items-center justify-center"
               >
                 {isLoading ? (
                   <>
@@ -278,7 +278,7 @@ export default function RegisterPage() {
       </main>
 
       {/* Footer */}
-      <footer className="px-6 py-4 border-t border-slate-800/60 text-center text-xs text-slate-500">
+      <footer className="px-6 py-4 border-t-2 border-border text-center text-xs font-bold text-muted-foreground font-mono">
         Rotaract District 3192 • VIBE 2026 Festival Operations
       </footer>
     </div>

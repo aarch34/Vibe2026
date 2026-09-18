@@ -30,50 +30,50 @@ export default async function AdminRewardsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white tracking-tight">
+          <h1 className="text-2xl font-black text-foreground tracking-tight font-mono">
             Reward Inventory & Stock
           </h1>
-          <p className="text-sm text-slate-400">
+          <p className="text-xs text-muted-foreground font-bold">
             Monitor reward stock, redemption limits, and sponsor allocation
           </p>
         </div>
       </div>
 
-      <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-sm">
+      <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="w-full text-left text-xs font-mono">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 uppercase font-mono text-[11px]">
-                <th className="pb-3">Reward Item</th>
-                <th className="pb-3">Sponsor</th>
-                <th className="pb-3">Cost</th>
-                <th className="pb-3">Stock Left</th>
-                <th className="pb-3">Per-User Limit</th>
-                <th className="pb-3">Status</th>
+              <tr className="border-b-2 border-border text-muted-foreground uppercase text-[11px]">
+                <th className="pb-3 font-black">Reward Item</th>
+                <th className="pb-3 font-black">Sponsor</th>
+                <th className="pb-3 font-black">Cost</th>
+                <th className="pb-3 font-black">Stock Left</th>
+                <th className="pb-3 font-black">Per-User Limit</th>
+                <th className="pb-3 font-black">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y-2 divide-border font-medium">
               {rewards.map((r) => (
-                <tr key={r.id} className="hover:bg-slate-800/30">
-                  <td className="py-3 text-white font-bold">{r.name}</td>
-                  <td className="py-3 text-slate-300">
+                <tr key={r.id} className="hover:bg-muted transition-colors">
+                  <td className="py-3 text-foreground font-black">{r.name}</td>
+                  <td className="py-3 text-muted-foreground font-bold">
                     {r.sponsorName}
                   </td>
-                  <td className="py-3 font-mono font-bold text-amber-400">
+                  <td className="py-3 font-mono font-black text-primary">
                     {formatCoins(r.coin_cost)} Coins
                   </td>
-                  <td className="py-3 font-mono font-bold text-white">
+                  <td className="py-3 font-mono font-black text-foreground">
                     {r.stock > 0 ? (
-                      <span className="text-emerald-400">{r.stock} remaining</span>
+                      <span className="text-foreground">{r.stock} remaining</span>
                     ) : (
-                      <span className="text-rose-400">SOLD OUT</span>
+                      <span className="text-primary font-black">SOLD OUT</span>
                     )}
                   </td>
-                  <td className="py-3 font-mono text-slate-400">
+                  <td className="py-3 font-mono text-muted-foreground font-bold">
                     {r.redemption_limit ? `${r.redemption_limit} max` : "Unlimited"}
                   </td>
                   <td className="py-3">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-500/30">
+                    <span className="px-2 py-0.5 border-2 border-border text-[10px] font-black bg-secondary text-secondary-foreground shadow-[1px_1px_0px_var(--border)]">
                       ACTIVE
                     </span>
                   </td>

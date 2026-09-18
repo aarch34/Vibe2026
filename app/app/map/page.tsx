@@ -58,13 +58,15 @@ export default async function VenueMapPage() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center space-x-2">
-        <Compass className="w-5 h-5 text-blue-400" />
+      <div className="flex items-center space-x-2.5">
+        <div className="w-10 h-10 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
+          <Compass className="w-5 h-5 text-primary-foreground" />
+        </div>
         <div>
-          <h1 className="text-lg font-black text-white tracking-tight">
+          <h1 className="text-xl font-black text-foreground tracking-tight font-mono">
             Venue Game Map
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground font-bold">
             Tap a zone to discover missions, games, and rewards
           </p>
         </div>

@@ -70,7 +70,7 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
     },
     {
       id: "vibe_quiz" as const,
-      title: "ROCCO Festival Quiz",
+      title: "VIBE Festival Quiz",
       tagline: "Lore, Music & Culture",
       icon: "🌊",
       badge: "Tiered XP",
@@ -88,7 +88,7 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
       <div className="space-y-4">
         <button
           onClick={() => setActiveGame(null)}
-          className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 text-xs font-bold transition-colors border border-slate-800"
+          className="neo-btn-card px-4 py-2 text-xs font-black uppercase tracking-wider space-x-2"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>All 4 Games</span>
@@ -127,40 +127,40 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
       {games.map((g) => (
         <div
           key={g.id}
-          className={`p-5 rounded-2xl bg-gradient-to-br ${g.colorGradient} border transition-all flex flex-col justify-between space-y-4 shadow-lg group`}
+          className="p-5 bg-card text-card-foreground border-2 border-border shadow-neo transition-all flex flex-col justify-between space-y-4 group"
         >
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
               <span className="text-2xl">{g.icon}</span>
-              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border ${g.badgeColor}`}>
+              <span className="text-[10px] font-black uppercase tracking-wider px-2.5 py-1 bg-muted text-foreground border-2 border-border">
                 {g.badge}
               </span>
             </div>
 
             <div>
-              <h3 className="text-base font-extrabold text-white group-hover:text-cyan-300 transition-colors">
+              <h3 className="text-base font-black text-foreground">
                 {g.title}
               </h3>
-              <p className="text-[11px] font-medium text-slate-400">
+              <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wide">
                 {g.tagline}
               </p>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+              <p className="text-xs text-foreground/80 mt-1 leading-relaxed">
                 {g.description}
               </p>
             </div>
 
             <div className="grid grid-cols-2 gap-2 pt-1 text-xs font-mono">
-              <div className="p-2 rounded-lg bg-slate-950/80 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">Entry Fee</span>
-                <span className="text-emerald-400 font-bold">FREE</span>
+              <div className="p-2.5 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)]">
+                <span className="text-[10px] text-muted-foreground block font-bold uppercase">Entry Fee</span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-black">FREE</span>
               </div>
-              <div className="p-2 rounded-lg bg-slate-950/80 border border-slate-800">
-                <span className="text-[10px] text-slate-400 block">Rewards</span>
-                <span className="text-purple-300 font-bold">{g.rewardXP}</span>
+              <div className="p-2.5 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)]">
+                <span className="text-[10px] text-muted-foreground block font-bold uppercase">Rewards</span>
+                <span className="text-purple-600 dark:text-purple-300 font-black">{g.rewardXP}</span>
               </div>
             </div>
 
-            <div className="p-2 rounded-lg bg-slate-950/60 border border-slate-800/80 text-[11px] text-amber-300 flex items-center space-x-1.5">
+            <div className="p-2.5 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-[11px] font-bold flex items-center space-x-1.5">
               <span>🏆</span>
               <span><strong>Bonus:</strong> {g.bonus}</span>
             </div>
@@ -168,7 +168,7 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
 
           <button
             onClick={() => setActiveGame(g.id)}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-xs font-black text-white shadow-md shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
+            className="w-full py-3 neo-btn-primary text-xs font-black uppercase tracking-wider space-x-2"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>Play Now (Free)</span>

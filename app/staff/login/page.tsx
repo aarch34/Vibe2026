@@ -66,63 +66,63 @@ export default function ZonalStaffLoginPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#070B14] flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 relative overflow-hidden selection:bg-primary selection:text-primary-foreground">
       {/* Glow backdrop */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-accent/10 rounded-full blur-3xl pointer-events-none" />
 
-      <div className="w-full max-w-lg p-6 sm:p-8 rounded-2xl bg-slate-900/90 border border-slate-800 shadow-2xl space-y-6 relative z-10 backdrop-blur-xl">
+      <div className="w-full max-w-lg p-6 sm:p-8 bg-card text-card-foreground border-2 border-border shadow-neo space-y-6 relative z-10">
         <div className="text-center space-y-2">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-cyan-600 to-blue-500 flex items-center justify-center mx-auto text-white shadow-lg shadow-cyan-500/30">
+          <div className="w-14 h-14 bg-primary text-primary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
             <MapPin className="w-7 h-7" />
           </div>
 
-          <span className="text-[10px] uppercase font-bold tracking-widest text-cyan-400 font-mono block">
+          <span className="text-[10px] uppercase font-black tracking-widest text-primary font-mono block">
             ROCCO 2026 • Staff Operations
           </span>
-          <h1 className="text-2xl font-black text-white tracking-tight">
+          <h1 className="text-2xl font-black text-foreground uppercase tracking-tight">
             Zonal Heads Portal
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground font-medium">
             Dedicated check-in station & coin collection console for the 6 official zones.
           </p>
         </div>
 
         {errorMsg && (
-          <div className="p-3 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs font-semibold">
+          <div className="p-3 bg-destructive text-destructive-foreground border-2 border-border text-xs font-bold">
             {errorMsg}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="text-[11px] uppercase font-bold text-slate-400 font-mono block">
+            <label className="text-[11px] uppercase font-black text-muted-foreground font-mono block">
               Zonal Head Username (12 Logins Available)
             </label>
             <div className="relative">
-              <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <User className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 placeholder="e.g. arnava1, taranaga2, varuna1"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400 font-mono transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-muted border-2 border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary font-mono font-bold"
                 autoCapitalize="none"
               />
             </div>
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-[11px] uppercase font-bold text-slate-400 font-mono block">
+            <label className="text-[11px] uppercase font-black text-muted-foreground font-mono block">
               Password
             </label>
             <div className="relative">
-              <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950 border border-slate-800 text-sm text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-400 font-mono transition-colors"
+                className="w-full pl-10 pr-4 py-2.5 bg-muted border-2 border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary font-mono font-bold"
               />
             </div>
           </div>
@@ -130,7 +130,7 @@ export default function ZonalStaffLoginPage() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 active:scale-98 transition-all text-sm font-black text-white shadow-lg shadow-cyan-500/25 flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+            className="neo-btn-primary w-full py-3.5 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2 disabled:opacity-50 shadow-[4px_4px_0px_var(--border)] active:translate-x-[2px] active:translate-y-[2px]"
           >
             {isSubmitting ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -144,35 +144,35 @@ export default function ZonalStaffLoginPage() {
         </form>
 
         {/* 12 Logins Quick-Click Selector */}
-        <div className="pt-4 border-t border-slate-800/80 space-y-3">
+        <div className="pt-4 border-t-2 border-border space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-slate-400 uppercase tracking-wider font-mono font-bold">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-black">
               12 Official Zonal Logins (2 Per Zone)
             </span>
-            <span className="text-[10px] text-cyan-400 font-mono">Password: [zone]@vibe2026</span>
+            <span className="text-[10px] text-foreground font-mono font-bold">Password: [zone]@vibe2026</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {zonePresets.map((z) => (
               <div
                 key={z.zone}
-                className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-left space-y-1.5"
+                className="p-2.5 bg-muted border-2 border-border text-left space-y-1.5"
               >
-                <span className={`text-[11px] font-bold block ${z.color}`}>
+                <span className="text-[11px] font-black block text-foreground">
                   Zone {z.zone}
                 </span>
                 <div className="flex items-center space-x-1">
                   <button
                     type="button"
                     onClick={() => fillZoneLogin(z.user1, z.pass)}
-                    className="flex-1 py-1 rounded bg-slate-900 hover:bg-slate-800 text-[10px] font-mono text-slate-300 transition-colors text-center border border-slate-800 cursor-pointer"
+                    className="neo-btn-card flex-1 py-1 text-[10px] font-mono font-bold border-2 border-border shadow-[1px_1px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px]"
                   >
                     Head 1
                   </button>
                   <button
                     type="button"
                     onClick={() => fillZoneLogin(z.user2, z.pass)}
-                    className="flex-1 py-1 rounded bg-slate-900 hover:bg-slate-800 text-[10px] font-mono text-slate-300 transition-colors text-center border border-slate-800 cursor-pointer"
+                    className="neo-btn-card flex-1 py-1 text-[10px] font-mono font-bold border-2 border-border shadow-[1px_1px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px]"
                   >
                     Head 2
                   </button>

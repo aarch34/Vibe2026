@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Award,
   ArrowRight,
+  Play,
 } from "lucide-react";
 import { submitGameResultAction } from "@/actions/games/play";
 import confetti from "canvas-confetti";
@@ -153,47 +154,48 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
 
   if (gameState === "intro") {
     return (
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-blue-950/40 to-slate-900 border border-blue-500/30 text-center space-y-5">
-        <div className="w-14 h-14 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center mx-auto text-blue-400">
+      <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo text-center space-y-5">
+        <div className="w-14 h-14 bg-primary text-primary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
           <Trophy className="w-7 h-7" />
         </div>
 
         <div>
-          <span className="text-[10px] uppercase font-bold text-blue-400 tracking-wider">
+          <span className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
             Game 1 • Knowledge Challenge
           </span>
-          <h2 className="text-xl font-extrabold text-white mt-0.5">
-            Rotaract VIBE Quiz
+          <h2 className="text-xl font-black text-foreground mt-0.5">
+            Rotaract Trivia Game
           </h2>
-          <p className="text-xs text-slate-300 max-w-sm mx-auto mt-1 leading-relaxed">
-            Test your knowledge of Rotaract, Rotary history, and District 3192 across 5 questions!
+          <p className="text-xs text-foreground/80 max-w-sm mx-auto mt-1 leading-relaxed">
+            Test your knowledge about Rotaract District 3192 history, leadership, and youth service initiatives!
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono max-w-xs mx-auto">
+        <div className="grid grid-cols-2 gap-2 p-3 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-mono max-w-xs mx-auto">
           <div>
-            <span className="text-[10px] text-slate-400 block">Entry Fee</span>
-            <span className="text-emerald-400 font-bold">FREE</span>
+            <span className="text-[10px] text-muted-foreground block font-bold uppercase">Entry Fee</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-black">FREE</span>
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 block">Completion</span>
-            <span className="text-purple-300 font-bold">+15 XP</span>
+            <span className="text-[10px] text-muted-foreground block font-bold uppercase">Base Reward</span>
+            <span className="text-purple-600 dark:text-purple-300 font-black">+15 XP</span>
           </div>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 text-amber-200 text-xs max-w-sm mx-auto">
-          🔥 <strong>High Score Bonus:</strong> Score ≥ 80% (4/5) to win <span className="font-bold text-amber-400">+10 VIBE</span> and <span className="font-bold text-purple-300">+25 total XP</span>!
+        <div className="p-2.5 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-bold max-w-sm mx-auto">
+          🔥 <strong>High Score Bonus:</strong> Score ≥ 80% (4/5) to win <span className="font-black">+10 VIBE</span> and <span className="font-black">+25 total XP</span>!
         </div>
 
         {errorMsg && (
-          <p className="text-xs text-rose-400 font-semibold">{errorMsg}</p>
+          <p className="text-xs text-rose-500 font-bold">{errorMsg}</p>
         )}
 
         <button
           onClick={startQuiz}
-          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-sm font-extrabold text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all cursor-pointer"
+          className="w-full max-w-xs py-3.5 neo-btn-primary text-sm font-black uppercase tracking-wider space-x-2 mx-auto cursor-pointer flex items-center justify-center"
         >
-          Start Quiz (Free)
+          <Play className="w-4 h-4 fill-current" />
+          <span>Start Quiz (Free)</span>
         </button>
       </div>
     );
@@ -201,37 +203,37 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
 
   if (gameState === "playing") {
     return (
-      <div className="p-5 sm:p-6 rounded-2xl bg-slate-900 border border-slate-800 space-y-4">
+      <div className="p-5 sm:p-6 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
         {/* Progress Header */}
-        <div className="flex items-center justify-between text-xs text-slate-400 font-mono">
+        <div className="flex items-center justify-between text-xs text-muted-foreground font-mono font-bold">
           <span>Question {currentIdx + 1} of {ROTARACT_QUESTIONS.length}</span>
-          <span className="text-cyan-400 font-bold">Score: {score}</span>
+          <span className="text-primary font-black">Score: {score}</span>
         </div>
 
-        <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+        <div className="w-full h-2 bg-muted border border-border overflow-hidden">
           <div
-            className="h-full bg-blue-500 transition-all duration-300"
+            className="h-full bg-primary transition-all duration-300"
             style={{ width: `${((currentIdx + 1) / ROTARACT_QUESTIONS.length) * 100}%` }}
           />
         </div>
 
         {/* Question Title */}
-        <h3 className="text-base sm:text-lg font-bold text-white leading-snug">
+        <h3 className="text-base sm:text-lg font-black text-foreground leading-snug">
           {currentQ.question}
         </h3>
 
         {/* Options */}
-        <div className="space-y-2 pt-1">
+        <div className="space-y-2.5 pt-1">
           {currentQ.options.map((opt, idx) => {
             const isSelected = selectedOpt === idx;
             const isCorrect = idx === currentQ.correctIndex;
 
-            let btnStyle = "bg-slate-950/80 border-slate-800 text-slate-300 hover:border-slate-700";
+            let btnStyle = "bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:shadow-[5px_5px_0px_var(--border)] active:translate-x-0.5 active:translate-y-0.5";
             if (isAnswered) {
               if (isCorrect) {
-                btnStyle = "bg-emerald-950/60 border-emerald-500 text-emerald-200 font-bold";
+                btnStyle = "bg-emerald-500 text-black border-2 border-border shadow-[3px_3px_0px_var(--border)] font-black";
               } else if (isSelected) {
-                btnStyle = "bg-rose-950/60 border-rose-500 text-rose-200";
+                btnStyle = "bg-primary text-primary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] font-black";
               }
             }
 
@@ -240,11 +242,11 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
                 key={idx}
                 disabled={isAnswered}
                 onClick={() => handleSelectOption(idx)}
-                className={`w-full text-left p-3 rounded-xl border text-xs transition-all flex items-center justify-between ${btnStyle}`}
+                className={`w-full text-left p-3.5 border-2 text-xs font-bold transition-all flex items-center justify-between cursor-pointer ${btnStyle}`}
               >
                 <span>{opt}</span>
-                {isAnswered && isCorrect && <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />}
-                {isAnswered && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-rose-400 shrink-0" />}
+                {isAnswered && isCorrect && <CheckCircle2 className="w-4 h-4 text-black shrink-0" />}
+                {isAnswered && isSelected && !isCorrect && <XCircle className="w-4 h-4 text-white shrink-0" />}
               </button>
             );
           })}
@@ -252,8 +254,8 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
 
         {/* Explanation on Answer */}
         {isAnswered && (
-          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 space-y-1">
-            <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider block">
+          <div className="p-3 bg-muted border-2 border-border text-xs text-foreground/90 space-y-1">
+            <span className="text-[10px] font-black text-primary uppercase tracking-wider block">
               Did you know?
             </span>
             <p>{currentQ.explanation}</p>
@@ -264,7 +266,7 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
         {isAnswered && (
           <button
             onClick={handleNextQuestion}
-            className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white flex items-center justify-center space-x-1.5 transition-colors"
+            className="w-full py-3.5 neo-btn-secondary text-xs font-black uppercase tracking-wider space-x-2 cursor-pointer flex items-center justify-center"
           >
             <span>{currentIdx + 1 < ROTARACT_QUESTIONS.length ? "Next Question" : "Finish Quiz"}</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -319,17 +321,17 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
             </div>
           </div>
 
-          <div className="flex items-center justify-center space-x-2 pt-2">
+          <div className="flex items-center justify-center space-x-3 pt-3">
             <button
               onClick={startQuiz}
-              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors cursor-pointer"
+              className="neo-btn-secondary py-2.5 px-4 text-xs font-black cursor-pointer"
             >
               Play Again (Free)
             </button>
             {onFinished && (
               <button
                 onClick={onFinished}
-                className="py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-bold text-white transition-colors"
+                className="neo-btn-card py-2.5 px-4 text-xs font-black cursor-pointer"
               >
                 Back to Games Hub
               </button>

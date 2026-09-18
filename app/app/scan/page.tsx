@@ -17,12 +17,12 @@ export default async function ScanPage({
   return (
     <div className="space-y-4">
       <div className="flex items-center space-x-2">
-        <QrCode className="w-5 h-5 text-blue-400" />
+        <QrCode className="w-5 h-5 text-primary" />
         <div>
-          <h1 className="text-lg font-black text-white tracking-tight">
+          <h1 className="text-lg font-black text-foreground tracking-tight uppercase">
             Scan Event Checkpoint
           </h1>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-muted-foreground font-medium">
             Scan physical zone signboards to unlock missions & rewards
           </p>
         </div>

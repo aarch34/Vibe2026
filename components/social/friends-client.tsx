@@ -105,44 +105,44 @@ export function FriendsClient({
   return (
     <div className="space-y-6 pb-20">
       {/* Header Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-purple-950/50 via-slate-900 to-pink-950/40 border border-purple-500/30 text-center space-y-3 relative overflow-hidden">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-purple-500/20 border border-purple-400/30 text-purple-300 text-xs font-bold">
-          <Instagram className="w-3.5 h-3.5 text-pink-400" />
+      <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo text-center space-y-3 relative">
+        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-black">
+          <Instagram className="w-3.5 h-3.5 text-primary" />
           <span>ROCCO Fresher Networking</span>
         </div>
 
-        <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-black text-foreground tracking-tight font-mono">
           Find Friends & Connect
         </h1>
 
-        <p className="text-xs sm:text-sm text-slate-300 max-w-md mx-auto leading-relaxed">
+        <p className="text-xs sm:text-sm text-muted-foreground max-w-md mx-auto leading-relaxed font-bold">
           Follow your fellow Rotaractors on Instagram, become in-app friends, and earn{" "}
-          <strong className="text-purple-300 font-bold">+25 XP</strong> for every friend you make!
+          <strong className="text-primary font-black">+25 XP</strong> for every friend you make!
         </p>
 
         {/* Stats Summary */}
         <div className="grid grid-cols-2 gap-3 max-w-xs mx-auto pt-2">
-          <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-            <span className="text-[10px] text-slate-400 block font-mono">My Friends</span>
-            <span className="text-xl font-black text-white font-mono">{friends.length}</span>
+          <div className="p-3 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] text-center">
+            <span className="text-[10px] text-muted-foreground block font-mono font-bold">My Friends</span>
+            <span className="text-xl font-black text-foreground font-mono">{friends.length}</span>
           </div>
-          <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-center">
-            <span className="text-[10px] text-slate-400 block font-mono">Friendship XP</span>
-            <span className="text-xl font-black text-purple-300 font-mono">+{totalXp} XP</span>
+          <div className="p-3 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] text-center">
+            <span className="text-[10px] text-muted-foreground block font-mono font-bold">Friendship XP</span>
+            <span className="text-xl font-black text-primary font-mono">+{totalXp} XP</span>
           </div>
         </div>
       </div>
 
       {/* Notification Toast */}
       {notification && (
-        <div className="p-3.5 rounded-xl bg-emerald-950/80 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center justify-between shadow-lg animate-in fade-in">
+        <div className="p-3.5 bg-secondary text-secondary-foreground border-2 border-border shadow-neo text-xs font-black flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
             <span>{notification}</span>
           </div>
           <button
             onClick={() => setNotification(null)}
-            className="text-slate-400 hover:text-white text-xs px-1"
+            className="text-secondary-foreground hover:opacity-75 text-xs px-1 font-black cursor-pointer"
           >
             ✕
           </button>
@@ -158,32 +158,32 @@ export function FriendsClient({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by name, VIBE ID, college or Instagram..."
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-purple-500 transition-colors"
+            className="w-full pl-10 pr-4 py-2.5 bg-card border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs text-foreground placeholder:text-muted-foreground focus:outline-none transition-colors font-bold"
           />
         </div>
 
-        <div className="flex rounded-xl bg-slate-950 p-1 border border-slate-800">
+        <div className="flex bg-card p-1.5 border-2 border-border shadow-[3px_3px_0px_var(--border)]">
           <button
             onClick={() => setActiveTab("discover")}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center space-x-1.5 ${
+            className={`flex-1 py-2 text-xs font-black transition-colors flex items-center justify-center space-x-1.5 border-2 ${
               activeTab === "discover"
-                ? "bg-slate-800 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-primary text-primary-foreground border-border shadow-[2px_2px_0px_var(--border)]"
+                : "text-muted-foreground hover:text-foreground border-transparent hover:border-border"
             }`}
           >
-            <UserPlus className="w-3.5 h-3.5 text-purple-400" />
+            <UserPlus className="w-3.5 h-3.5" />
             <span>Discover ({filteredAttendees.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab("my-friends")}
-            className={`flex-1 py-2 text-xs font-bold rounded-lg transition-colors flex items-center justify-center space-x-1.5 ${
+            className={`flex-1 py-2 text-xs font-black transition-colors flex items-center justify-center space-x-1.5 border-2 ${
               activeTab === "my-friends"
-                ? "bg-slate-800 text-white shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-secondary text-secondary-foreground border-border shadow-[2px_2px_0px_var(--border)]"
+                : "text-muted-foreground hover:text-foreground border-transparent hover:border-border"
             }`}
           >
-            <Heart className="w-3.5 h-3.5 text-pink-400" />
+            <Heart className="w-3.5 h-3.5" />
             <span>My Friends ({friends.length})</span>
           </button>
         </div>
@@ -193,10 +193,10 @@ export function FriendsClient({
       {activeTab === "discover" && (
         <div className="space-y-3">
           {filteredAttendees.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-slate-900/50 border border-slate-800 text-slate-400 text-xs space-y-1">
-              <Users className="w-8 h-8 mx-auto text-slate-600 mb-2" />
-              <p className="font-semibold">No freshers found matching your search</p>
-              <p className="text-[11px] text-slate-500">Try searching for another name or VIBE ID.</p>
+            <div className="p-8 text-center bg-card text-card-foreground border-2 border-border shadow-neo text-xs space-y-1">
+              <Users className="w-8 h-8 mx-auto text-muted-foreground mb-2" />
+              <p className="font-bold">No freshers found matching your search</p>
+              <p className="text-[11px] text-muted-foreground">Try searching for another name or VIBE ID.</p>
             </div>
           ) : (
             filteredAttendees.map((attendee) => {
@@ -204,19 +204,19 @@ export function FriendsClient({
               return (
                 <div
                   key={attendee.id}
-                  className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-slate-700 transition-all flex items-center justify-between gap-3 shadow-sm"
+                  className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-neo flex items-center justify-between gap-3"
                 >
                   <div className="flex items-center space-x-3 min-w-0">
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white font-black text-xs shrink-0 shadow-sm">
+                    <div className="w-11 h-11 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center font-black text-xs shrink-0">
                       {attendee.displayName.slice(0, 2).toUpperCase()}
                     </div>
 
                     <div className="min-w-0">
                       <div className="flex items-center space-x-2">
-                        <span className="font-bold text-sm text-white truncate">
+                        <span className="font-black text-sm text-foreground truncate">
                           {attendee.displayName}
                         </span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 shrink-0">
+                        <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 bg-muted text-foreground border border-border shrink-0">
                           {attendee.vibeId}
                         </span>
                       </div>
@@ -226,14 +226,14 @@ export function FriendsClient({
                           href={`https://instagram.com/${attendee.instagramHandle.replace("@", "")}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center space-x-1 text-[11px] text-pink-400 hover:text-pink-300 transition-colors"
+                          className="inline-flex items-center space-x-1 text-[11px] text-primary hover:underline font-bold transition-colors"
                         >
                           <Instagram className="w-3 h-3" />
                           <span>@{attendee.instagramHandle.replace("@", "")}</span>
                         </a>
 
                         {attendee.college && (
-                          <span className="text-[10px] text-slate-400 truncate max-w-[120px]">
+                          <span className="text-[10px] text-muted-foreground truncate max-w-[120px] font-bold">
                             • {attendee.college}
                           </span>
                         )}
@@ -242,7 +242,7 @@ export function FriendsClient({
                   </div>
 
                   {attendee.isFriend ? (
-                    <span className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-bold shrink-0">
+                    <span className="inline-flex items-center space-x-1 px-3 py-1.5 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-black shrink-0">
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>Friends</span>
                     </span>
@@ -250,14 +250,14 @@ export function FriendsClient({
                     <button
                       onClick={() => handleConnect(attendee)}
                       disabled={isBusy}
-                      className="inline-flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 active:scale-95 transition-all text-white text-xs font-bold shrink-0 shadow-md shadow-purple-600/20 disabled:opacity-50 cursor-pointer"
+                      className="neo-btn-primary px-3.5 py-2 text-xs font-black shrink-0 disabled:opacity-50 cursor-pointer space-x-1.5"
                     >
                       {isBusy ? (
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                       ) : (
                         <Instagram className="w-3.5 h-3.5" />
                       )}
-                      <span>Follow & Connect (+25 XP)</span>
+                      <span>Connect (+25 XP)</span>
                     </button>
                   )}
                 </div>
@@ -271,10 +271,10 @@ export function FriendsClient({
       {activeTab === "my-friends" && (
         <div className="space-y-3">
           {filteredFriends.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl bg-slate-900/50 border border-slate-800 text-slate-400 text-xs space-y-1">
-              <Heart className="w-8 h-8 mx-auto text-slate-600 mb-2" />
-              <p className="font-semibold">No friends connected yet</p>
-              <p className="text-[11px] text-slate-500">
+            <div className="p-8 text-center bg-card text-card-foreground border-2 border-border shadow-neo text-xs space-y-1">
+              <Heart className="w-8 h-8 mx-auto text-primary mb-2" />
+              <p className="font-black text-foreground font-mono">No friends connected yet</p>
+              <p className="text-[11px] text-muted-foreground font-bold">
                 Switch to the "Discover" tab to follow fellow attendees and earn +25 XP each!
               </p>
             </div>
@@ -282,19 +282,19 @@ export function FriendsClient({
             filteredFriends.map((friend) => (
               <div
                 key={friend.profileId}
-                className="p-3.5 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between gap-3 shadow-sm"
+                className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-between gap-3"
               >
                 <div className="flex items-center space-x-3 min-w-0">
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-tr from-pink-600 to-purple-600 flex items-center justify-center text-white font-black text-xs shrink-0 shadow-sm">
+                  <div className="w-11 h-11 bg-primary text-primary-foreground border-2 border-border shadow-[1px_1px_0px_var(--border)] flex items-center justify-center font-black text-xs shrink-0 font-mono">
                     {friend.displayName.slice(0, 2).toUpperCase()}
                   </div>
 
                   <div className="min-w-0">
                     <div className="flex items-center space-x-2">
-                      <span className="font-bold text-sm text-white truncate">
+                      <span className="font-black text-sm text-foreground truncate font-mono">
                         {friend.displayName}
                       </span>
-                      <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-slate-800 text-cyan-300 shrink-0">
+                      <span className="text-[10px] font-mono px-1.5 py-0.5 bg-muted text-foreground border border-border shrink-0 font-bold">
                         {friend.vibeId}
                       </span>
                     </div>
@@ -304,19 +304,19 @@ export function FriendsClient({
                         href={`https://instagram.com/${(friend.instagramHandle || friend.displayName.toLowerCase().replace(/\s+/g, "_")).replace("@", "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center space-x-1 text-[11px] text-pink-400 hover:text-pink-300 transition-colors"
+                        className="inline-flex items-center space-x-1 text-[11px] text-primary hover:underline font-bold transition-colors"
                       >
                         <Instagram className="w-3 h-3" />
                         <span>@{friend.instagramHandle || friend.displayName.toLowerCase().replace(/\s+/g, "_")}</span>
-                        <ExternalLink className="w-2.5 h-2.5 text-slate-500" />
+                        <ExternalLink className="w-2.5 h-2.5 text-muted-foreground" />
                       </a>
                     </div>
                   </div>
                 </div>
 
                 <div className="text-right shrink-0">
-                  <span className="inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg bg-purple-950/60 border border-purple-500/30 text-purple-300 text-[11px] font-bold">
-                    <Award className="w-3 h-3 text-amber-400" />
+                  <span className="inline-flex items-center space-x-1 px-2.5 py-1 bg-secondary text-secondary-foreground border-2 border-border shadow-[1px_1px_0px_var(--border)] text-[11px] font-black font-mono">
+                    <Award className="w-3 h-3 text-secondary-foreground" />
                     <span>+25 XP</span>
                   </span>
                 </div>

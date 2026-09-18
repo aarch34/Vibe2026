@@ -35,18 +35,20 @@ export default async function LeaderboardPage() {
       {/* Page Title */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Trophy className="w-5 h-5 text-yellow-400" />
+          <div className="w-9 h-9 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
+            <Trophy className="w-5 h-5 text-secondary-foreground" />
+          </div>
           <div>
-            <h1 className="text-lg font-black text-white tracking-tight">
+            <h1 className="text-lg font-black text-foreground tracking-tight font-mono">
               {isFrozen ? "Final District Standings" : "Festival Leaderboards"}
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground font-bold">
               Rotaract District 3192 Live Standings & Zone Battle
             </p>
           </div>
         </div>
 
-        <span className="text-xs font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg">
+        <span className="text-xs font-mono font-black text-foreground bg-card border-2 border-border shadow-[2px_2px_0px_var(--border)] px-3 py-1">
           {leaderboardRes.totalParticipants} Attendees
         </span>
       </div>

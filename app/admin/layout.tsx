@@ -41,15 +41,15 @@ export default async function AdminLayout({
   ];
 
   return (
-    <div className="min-h-screen bg-[#070B14] text-slate-100 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row">
       {/* Mobile Admin Header */}
-      <header className="md:hidden border-b border-slate-800 bg-[#0B1120] p-4 space-y-3 shrink-0">
+      <header className="md:hidden border-b-2 border-border bg-card p-4 space-y-3 shrink-0">
         <div className="flex items-center justify-between">
           <div>
-            <span className="text-lg font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="text-lg font-black text-foreground uppercase tracking-wider">
               ROCCO ADMIN
             </span>
-            <span className="text-[10px] text-slate-400 font-mono block">
+            <span className="text-[10px] text-muted-foreground font-mono font-bold block">
               {admin ? `Admin: ${admin.username.toUpperCase()}` : "Rotaract District 3192"}
             </span>
           </div>
@@ -58,7 +58,7 @@ export default async function AdminLayout({
               <form action={logoutAdminAction}>
                 <button
                   type="submit"
-                  className="text-xs text-rose-400 hover:text-rose-300 flex items-center space-x-1 bg-rose-950/60 border border-rose-500/30 px-2 py-1 rounded-lg cursor-pointer"
+                  className="neo-btn-card text-xs font-bold px-2 py-1 border-2 border-border shadow-[1px_1px_0px_var(--border)] flex items-center space-x-1"
                 >
                   <LogOut className="w-3 h-3" />
                   <span>Logout</span>
@@ -67,14 +67,14 @@ export default async function AdminLayout({
             ) : (
               <Link
                 href="/admin/login"
-                className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center space-x-1 bg-cyan-950/60 border border-cyan-500/30 px-2 py-1 rounded-lg"
+                className="neo-btn-primary text-xs font-bold px-2.5 py-1"
               >
                 <span>Login</span>
               </Link>
             )}
             <Link
               href="/app"
-              className="text-xs text-blue-400 hover:text-blue-300 flex items-center space-x-1 bg-blue-950/60 border border-blue-500/30 px-2.5 py-1 rounded-lg"
+              className="neo-btn-secondary text-xs font-bold px-2.5 py-1 flex items-center space-x-1"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>App</span>
@@ -83,16 +83,16 @@ export default async function AdminLayout({
         </div>
 
         {/* Scrollable Horizontal Tabs for Mobile */}
-        <div className="flex items-center space-x-1.5 overflow-x-auto pb-1 scrollbar-none text-xs">
+        <div className="flex items-center space-x-2 overflow-x-auto pb-1 text-xs">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg text-slate-300 hover:text-white bg-slate-900 border border-slate-800 shrink-0 font-medium"
+                className="neo-btn-card flex items-center space-x-1.5 px-3 py-1.5 text-foreground shrink-0 font-bold border-2 border-border shadow-[2px_2px_0px_var(--border)]"
               >
-                <Icon className="w-3.5 h-3.5 text-blue-400" />
+                <Icon className="w-3.5 h-3.5" />
                 <span>{item.label}</span>
               </Link>
             );
@@ -101,26 +101,26 @@ export default async function AdminLayout({
       </header>
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-64 border-r border-slate-800 bg-[#0B1120] flex-col shrink-0 min-h-screen">
-        <div className="p-5 border-b border-slate-800 space-y-2">
+      <aside className="hidden md:flex w-64 border-r-2 border-border bg-card flex-col shrink-0 min-h-screen">
+        <div className="p-5 border-b-2 border-border space-y-2">
           <div>
-            <span className="text-xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="text-xl font-black text-foreground uppercase tracking-wider">
               ROCCO ADMIN
             </span>
-            <p className="text-[11px] text-slate-400 font-mono">
+            <p className="text-[11px] text-muted-foreground font-mono font-bold">
               Rotaract District 3192
             </p>
           </div>
 
           {admin ? (
-            <div className="p-2 rounded-xl bg-slate-900/90 border border-slate-800 flex items-center justify-between">
+            <div className="p-2.5 bg-muted border-2 border-border flex items-center justify-between">
               <div className="flex items-center space-x-2 min-w-0">
-                <div className="w-6 h-6 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center text-xs font-bold shrink-0">
+                <div className="w-6 h-6 bg-secondary text-secondary-foreground border border-border flex items-center justify-center text-xs font-black shrink-0">
                   <UserCheck className="w-3.5 h-3.5" />
                 </div>
                 <div className="min-w-0">
-                  <span className="text-[10px] text-slate-400 block font-mono">Logged in as</span>
-                  <span className="text-xs font-bold text-white uppercase truncate block">
+                  <span className="text-[10px] text-muted-foreground block font-mono font-bold">Logged in as</span>
+                  <span className="text-xs font-black text-foreground uppercase truncate block">
                     {admin.username}
                   </span>
                 </div>
@@ -129,7 +129,7 @@ export default async function AdminLayout({
                 <button
                   type="submit"
                   title="Log out of admin console"
-                  className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/30 transition-colors cursor-pointer"
+                  className="neo-btn-card p-1 border border-border"
                 >
                   <LogOut className="w-3.5 h-3.5" />
                 </button>
@@ -138,33 +138,33 @@ export default async function AdminLayout({
           ) : (
             <Link
               href="/admin/login"
-              className="block p-2 text-center rounded-xl bg-cyan-950/60 border border-cyan-500/30 text-cyan-400 text-xs font-bold hover:bg-cyan-900/40 transition-colors"
+              className="neo-btn-primary block p-2 text-center text-xs font-black uppercase tracking-wider"
             >
               Sign In (jk / gunjan)
             </Link>
           )}
         </div>
 
-        <nav className="p-3 space-y-1 flex-1">
+        <nav className="p-3 space-y-1.5 flex-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors"
+                className="flex items-center space-x-3 px-3 py-2 text-xs font-bold text-foreground hover:bg-muted border-2 border-transparent hover:border-border transition-all"
               >
-                <Icon className="w-4 h-4 text-blue-400" />
+                <Icon className="w-4 h-4 text-primary" />
                 <span>{item.label}</span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="p-4 border-t border-slate-800">
+        <div className="p-4 border-t-2 border-border">
           <Link
             href="/app"
-            className="flex items-center space-x-2 text-xs text-slate-400 hover:text-white transition-colors"
+            className="neo-btn-card w-full py-2.5 px-3 flex items-center justify-center space-x-2 text-xs font-black uppercase tracking-wider"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Switch to Attendee App</span>

@@ -10,13 +10,13 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
 
   beforeAll(async () => {
     try {
-      const res = await fetch(`${BASE_URL}/`, { signal: AbortSignal.timeout(1200) });
-      if (res.status === 200) {
+      const res = await fetch(`${BASE_URL}/`, { signal: AbortSignal.timeout(4000) });
+      if (res.status < 500) {
         isServerRunning = true;
       }
-    } catch {
+    } catch (err: any) {
       isServerRunning = false;
-      console.warn("⚠️ Local server on http://localhost:3000 is not running. E2E HTTP tests will be skipped.");
+      console.warn("⚠️ Local server on http://localhost:3000 is not running:", err.message);
     }
   });
 

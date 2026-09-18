@@ -19,7 +19,7 @@ export function AttendeeBottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-3 pb-safe pt-2 bg-[#070B14]/90 backdrop-blur-xl border-t border-slate-800/80">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-3 pb-safe pt-2 bg-card/95 backdrop-blur-xl border-t-2 border-border shadow-neo">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -35,15 +35,15 @@ export function AttendeeBottomNav() {
               >
                 <div
                   className={cn(
-                    "w-14 h-14 rounded-full flex items-center justify-center transition-transform duration-200 active:scale-95 shadow-lg border-2",
+                    "w-12 h-12 border-2 border-border flex items-center justify-center transition-all duration-150 active:translate-x-[2px] active:translate-y-[2px] shadow-[3px_3px_0px_var(--border)]",
                     isActive
-                      ? "bg-gradient-to-tr from-cyan-500 to-blue-600 border-cyan-300 shadow-cyan-500/50"
-                      : "bg-gradient-to-tr from-blue-600 to-cyan-500 border-blue-400 shadow-blue-500/40 hover:scale-105"
+                      ? "bg-secondary text-secondary-foreground"
+                      : "bg-primary text-primary-foreground hover:brightness-105"
                   )}
                 >
-                  <Icon className="w-7 h-7 text-white" />
+                  <Icon className="w-6 h-6" />
                 </div>
-                <span className="text-[10px] font-semibold tracking-wider uppercase text-cyan-400 mt-1">
+                <span className="text-[10px] font-black tracking-wider uppercase text-foreground mt-1 font-mono">
                   Scan
                 </span>
               </Link>
@@ -55,14 +55,14 @@ export function AttendeeBottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center py-1 px-2 rounded-lg transition-colors duration-150 active:scale-95",
+                "flex flex-col items-center py-1 px-2 font-bold transition-all active:scale-95",
                 isActive
-                  ? "text-blue-400 font-semibold"
-                  : "text-slate-400 hover:text-slate-200"
+                  ? "text-primary font-black"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className={cn("w-5 h-5 mb-1", isActive && "text-blue-400")} />
-              <span className="text-[10px] font-medium tracking-tight">
+              <Icon className={cn("w-5 h-5 mb-1", isActive ? "text-primary" : "text-muted-foreground")} />
+              <span className="text-[10px] font-black tracking-tight">
                 {item.label}
               </span>
             </Link>

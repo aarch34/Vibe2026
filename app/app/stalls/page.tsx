@@ -44,24 +44,24 @@ export default async function StallsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-2.5">
-          <div className="w-10 h-10 rounded-xl bg-purple-600/20 border border-purple-500/30 flex items-center justify-center text-purple-400">
-            <Camera className="w-5 h-5" />
+          <div className="w-10 h-10 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
+            <Camera className="w-5 h-5 text-primary-foreground" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white tracking-tight">
+            <h1 className="text-xl font-black text-foreground tracking-tight font-mono">
               Event Stalls & Photo Checkpoints
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground font-bold">
               Visit stalls, snap photos with your handle, and earn ⭐ +100 XP & 🪙 +25 VIBE!
             </p>
           </div>
         </div>
 
-        <div className="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl self-start sm:self-auto">
-          <span className="text-[11px] uppercase font-bold text-slate-400">
+        <div className="flex items-center space-x-2 bg-card border-2 border-border shadow-[2px_2px_0px_var(--border)] px-3 py-1.5 self-start sm:self-auto">
+          <span className="text-[11px] uppercase font-black text-muted-foreground font-mono">
             Verified Stalls:
           </span>
-          <span className="text-xs font-mono font-black text-cyan-400">
+          <span className="text-xs font-mono font-black text-primary">
             {approvedCount} / {stalls.length}
           </span>
         </div>

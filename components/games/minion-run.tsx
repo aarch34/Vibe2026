@@ -45,8 +45,14 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const nextItemIdRef = useRef(1);
   const touchStartX = useRef<number | null>(null);
+  const scoreRef = useRef(0);
+  const livesRef = useRef(3);
+  const isOverRef = useRef(false);
 
   function startGame() {
+    isOverRef.current = false;
+    scoreRef.current = 0;
+    livesRef.current = 3;
     setErrorMsg(null);
     setScore(0);
     setLives(3);
@@ -80,7 +86,11 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          endGame(score, lives);
+          if (!isOverRef.current) {
+            setTimeout(() => {
+              endGame(scoreRef.current, livesRef.current);
+            }, 0);
+          }
           return 0;
         }
         return prev - 1;
@@ -99,16 +109,27 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
           if (item.y >= 80 && item.y <= 92 && item.lane === playerLane) {
             // Collision
             if (item.type === "banana") {
-              setScore((s) => s + 10);
+              setScore((s) => {
+                const next = s + 10;
+                scoreRef.current = next;
+                return next;
+              });
               item.y = 999; // consume
             } else if (item.type === "coin") {
-              setScore((s) => s + 25);
+              setScore((s) => {
+                const next = s + 25;
+                scoreRef.current = next;
+                return next;
+              });
               item.y = 999; // consume
             } else if (item.type === "wave") {
               setLives((l) => {
-                const next = l - 1;
-                if (next <= 0) {
-                  endGame(score, 0);
+                const next = Math.max(0, l - 1);
+                livesRef.current = next;
+                if (next === 0 && !isOverRef.current) {
+                  setTimeout(() => {
+                    endGame(scoreRef.current, 0);
+                  }, 0);
                 }
                 return next;
               });
@@ -139,9 +160,11 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
       if (timerRef.current) clearInterval(timerRef.current);
       if (gameLoopRef.current) clearInterval(gameLoopRef.current);
     };
-  }, [gameState, playerLane, score, lives]);
+  }, [gameState, playerLane]);
 
   async function endGame(finalScore: number, finalLives: number) {
+    if (isOverRef.current) return;
+    isOverRef.current = true;
     if (timerRef.current) clearInterval(timerRef.current);
     if (gameLoopRef.current) clearInterval(gameLoopRef.current);
 
@@ -180,43 +203,44 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
 
   if (gameState === "intro") {
     return (
-      <div className="p-6 rounded-2xl bg-gradient-to-br from-slate-900 via-amber-950/30 to-slate-900 border border-amber-500/30 text-center space-y-5">
-        <div className="w-14 h-14 rounded-2xl bg-amber-600/20 border border-amber-500/40 flex items-center justify-center mx-auto text-amber-400">
+      <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo text-center space-y-5">
+        <div className="w-14 h-14 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
           <Gamepad2 className="w-7 h-7" />
         </div>
 
         <div>
-          <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+          <span className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
             Game 2 • Arcade Reaction Runner
           </span>
-          <h2 className="text-xl font-extrabold text-white mt-0.5">
+          <h2 className="text-xl font-black text-foreground mt-0.5">
             Minion VIBE Run
           </h2>
-          <p className="text-xs text-slate-300 max-w-sm mx-auto mt-1 leading-relaxed">
+          <p className="text-xs text-foreground/80 max-w-sm mx-auto mt-1 leading-relaxed">
             Dash across 3 lanes, collect 🍌 Bananas (+10) and 🪙 Coins (+25) while dodging 🌊 Tidal Waves!
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono max-w-xs mx-auto">
+        <div className="grid grid-cols-2 gap-2 p-3 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-mono max-w-xs mx-auto">
           <div>
-            <span className="text-[10px] text-slate-400 block">Entry Fee</span>
-            <span className="text-emerald-400 font-bold">FREE</span>
+            <span className="text-[10px] text-muted-foreground block font-bold uppercase">Entry Fee</span>
+            <span className="text-emerald-600 dark:text-emerald-400 font-black">FREE</span>
           </div>
           <div>
-            <span className="text-[10px] text-slate-400 block">Base Reward</span>
-            <span className="text-purple-300 font-bold">+15 XP</span>
+            <span className="text-[10px] text-muted-foreground block font-bold uppercase">Base Reward</span>
+            <span className="text-purple-600 dark:text-purple-300 font-black">+15 XP</span>
           </div>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 text-amber-200 text-xs max-w-sm mx-auto">
-          🏆 <strong>High Score Bonus:</strong> Score ≥ 120 points to win <span className="font-bold text-amber-400">+10 VIBE</span> and <span className="font-bold text-purple-300">+25 total XP</span>!
+        <div className="p-2.5 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-bold max-w-sm mx-auto">
+          🏆 <strong>High Score Bonus:</strong> Score ≥ 120 points to win <span className="font-black">+10 VIBE</span> and <span className="font-black">+25 total XP</span>!
         </div>
 
         <button
           onClick={startGame}
-          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-sm font-black text-slate-950 shadow-lg shadow-amber-500/30 active:scale-95 transition-all cursor-pointer"
+          className="w-full max-w-xs py-3.5 neo-btn-secondary text-sm font-black uppercase tracking-wider space-x-2 mx-auto"
         >
-          Start Minion Run (Free)
+          <Play className="w-4 h-4 fill-current" />
+          <span>Start Minion Run (Free)</span>
         </button>
       </div>
     );
@@ -224,26 +248,26 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
 
   if (gameState === "playing") {
     return (
-      <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 max-w-md mx-auto">
-      {/* HUD */}
-      <div className="flex items-center justify-between text-xs font-mono">
-        <div className="flex items-center space-x-1.5">
-          <span className="text-slate-400">Score:</span>
-          <span className="text-amber-400 font-bold text-sm">{score}</span>
+      <div className="p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3 max-w-md mx-auto">
+        {/* HUD */}
+        <div className="flex items-center justify-between text-xs font-mono font-bold text-foreground">
+          <div className="flex items-center space-x-1.5">
+            <span className="text-muted-foreground font-sans">Score:</span>
+            <span className="text-primary font-black text-sm">{score}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <span className="text-muted-foreground font-sans">Lives:</span>
+            <span>{lives > 0 ? "❤️".repeat(Math.min(3, Math.max(0, lives))) : "💀"}</span>
+          </div>
+          <div className="flex items-center space-x-1">
+            <span className="text-muted-foreground font-sans">Time:</span>
+            <span className="text-foreground font-black">{timeLeft}s</span>
+          </div>
         </div>
-        <div className="flex items-center space-x-1">
-          <span className="text-slate-400">Lives:</span>
-          <span>{"❤️".repeat(lives)}</span>
-        </div>
-        <div className="flex items-center space-x-1">
-          <span className="text-slate-400">Time:</span>
-          <span className="text-cyan-300 font-bold">{timeLeft}s</span>
-        </div>
-      </div>
 
-      {/* 3-Lane Track with Tap & Swipe Support */}
-      <div
-        className="relative w-full h-80 rounded-2xl bg-gradient-to-b from-blue-950 via-slate-950 to-blue-950 border-2 border-slate-700 overflow-hidden shadow-inner touch-none cursor-pointer"
+        {/* 3-Lane Track with Tap & Swipe Support */}
+        <div
+          className="relative w-full h-80 bg-background border-2 border-border shadow-[2px_2px_0px_var(--border)] overflow-hidden touch-none cursor-pointer"
         onClick={(e) => {
           const rect = e.currentTarget.getBoundingClientRect();
           const clickX = e.clientX - rect.left;
@@ -298,17 +322,17 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
         </div>
 
         {/* Touch Controls (Mobile Friendly) */}
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        <div className="grid grid-cols-2 gap-2.5 pt-1">
           <button
             onClick={() => setPlayerLane((prev) => Math.max(0, prev - 1))}
-            className="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center space-x-1 border border-slate-700"
+            className="py-3 neo-btn-card text-card-foreground font-black text-xs uppercase tracking-wider flex items-center justify-center space-x-1.5"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Move Left (A)</span>
           </button>
           <button
             onClick={() => setPlayerLane((prev) => Math.min(2, prev + 1))}
-            className="py-3 rounded-xl bg-slate-800 hover:bg-slate-700 active:scale-95 text-white font-bold text-xs flex items-center justify-center space-x-1 border border-slate-700"
+            className="py-3 neo-btn-card text-card-foreground font-black text-xs uppercase tracking-wider flex items-center justify-center space-x-1.5"
           >
             <span>Move Right (D)</span>
             <ArrowRight className="w-4 h-4" />
@@ -321,26 +345,26 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
   // GameOver State
   const isHighScore = score >= 120 && lives > 0;
   return (
-    <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-4 max-w-md mx-auto">
+    <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo text-center space-y-4 max-w-md mx-auto">
       {isSubmitting ? (
         <div className="py-12 space-y-3">
-          <Loader2 className="w-8 h-8 animate-spin text-amber-400 mx-auto" />
-          <p className="text-xs text-slate-400">Saving Minion Run rewards...</p>
+          <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+          <p className="text-xs text-muted-foreground font-bold">Saving Minion Run rewards...</p>
         </div>
       ) : (
         <>
-          <div className="w-14 h-14 rounded-full bg-amber-600/20 border border-amber-500/40 flex items-center justify-center mx-auto text-amber-400">
+          <div className="w-14 h-14 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
             <Trophy className="w-7 h-7" />
           </div>
 
           <div>
-            <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider">
+            <span className="text-[10px] uppercase font-black text-muted-foreground tracking-wider block">
               Run Completed!
             </span>
-            <h3 className="text-2xl font-black text-white mt-0.5 font-mono">
+            <h3 className="text-2xl font-black text-foreground mt-0.5 font-mono">
               Score: {score} pts
             </h3>
-            <p className="text-xs text-slate-300 mt-1">
+            <p className="text-xs text-foreground/80 mt-1">
               {isHighScore
                 ? "🎉 High Score achieved! Bonus coins and double XP awarded!"
                 : "Good run! Dodge those waves and aim for ≥ 120 points for the bonus!"}
@@ -348,16 +372,16 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
           </div>
 
           {/* Reward Breakdown */}
-          <div className="grid grid-cols-2 gap-2 p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs font-mono">
+          <div className="grid grid-cols-2 gap-2 p-3.5 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-mono">
             <div>
-              <span className="text-[10px] text-slate-400 block">XP Earned</span>
-              <span className="text-purple-300 font-bold text-sm">
+              <span className="text-[10px] text-muted-foreground block font-bold uppercase">XP Earned</span>
+              <span className="text-purple-600 dark:text-purple-300 font-black text-sm">
                 +{isHighScore ? 25 : 15} XP
               </span>
             </div>
             <div>
-              <span className="text-[10px] text-slate-400 block">Coins Earned</span>
-              <span className="text-amber-400 font-bold text-sm">
+              <span className="text-[10px] text-muted-foreground block font-bold uppercase">Coins Earned</span>
+              <span className="text-amber-500 dark:text-amber-400 font-black text-sm">
                 +{isHighScore ? 10 : 0} VIBE
               </span>
             </div>
@@ -366,14 +390,14 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
           <div className="flex items-center justify-center space-x-2 pt-2">
             <button
               onClick={startGame}
-              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors cursor-pointer"
+              className="neo-btn-secondary py-2.5 px-4 text-xs font-black uppercase tracking-wide"
             >
               Run Again (Free)
             </button>
             {onFinished && (
               <button
                 onClick={onFinished}
-                className="py-2.5 px-4 rounded-xl bg-amber-500 hover:bg-amber-400 text-xs font-bold text-slate-950 transition-colors"
+                className="neo-btn-card py-2.5 px-4 text-xs font-black uppercase tracking-wide"
               >
                 Back to Games Hub
               </button>
