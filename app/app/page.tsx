@@ -16,6 +16,7 @@ import {
   Gamepad2,
   Camera,
   Waves,
+  Users,
 } from "lucide-react";
 import { getCurrentUserSession } from "@/lib/auth/session";
 import { getWalletSummary } from "@/lib/wallet/wallet-service";
@@ -307,6 +308,34 @@ export default async function AttendeeHomePage() {
 
         {/* Right Column: 4 Primary Action Buttons & Featured Missions */}
         <div className="lg:col-span-7 space-y-5">
+          {/* Networking & Instagram Friends Banner */}
+          <Link
+            href="/app/friends"
+            className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-purple-950/70 via-pink-950/40 to-slate-900 border border-purple-500/30 hover:border-purple-400/60 active:scale-98 transition-all flex items-center justify-between group shadow-md"
+          >
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white shrink-0 shadow-md">
+                <Users className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center space-x-2">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-pink-400">Networking</span>
+                  <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-semibold">+25 XP Each</span>
+                </div>
+                <h3 className="text-xs sm:text-sm font-extrabold text-white group-hover:text-pink-300 transition-colors truncate">
+                  Connect & Follow Friends on Instagram
+                </h3>
+                <p className="text-[11px] text-slate-300 truncate">
+                  Find fellow attendees, follow on IG & level up together
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-1 text-xs font-bold text-pink-400 shrink-0 ml-2">
+              <span className="hidden sm:inline">Connect</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </div>
+          </Link>
+
           {/* Section 4: THE FOUR PRIMARY ACTION BUTTONS */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <Link

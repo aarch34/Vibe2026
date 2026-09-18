@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -6,6 +6,25 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
   let sessionCookie = "";
   let registeredUserId = "";
   let registeredProfileId = "";
+  let isServerRunning = false;
+
+  beforeAll(async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/`, { signal: AbortSignal.timeout(1200) });
+      if (res.status === 200) {
+        isServerRunning = true;
+      }
+    } catch {
+      isServerRunning = false;
+      console.warn("⚠️ Local server on http://localhost:3000 is not running. E2E HTTP tests will be skipped.");
+    }
+  });
+
+  beforeEach((context) => {
+    if (!isServerRunning) {
+      context.skip();
+    }
+  });
 
   // ----------------------------------------------------------------
   // 1. LANDING PAGE & SIX ZONES

@@ -36,10 +36,10 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
       icon: "🎯",
       badge: "Trivia",
       badgeColor: "bg-blue-950/80 text-blue-400 border-blue-500/30",
-      description: "Answer 5 questions about Rotaract and District 3192. Score ≥ 80% to win a +100 VIBE bonus!",
-      cost: 50,
-      rewardXP: "100 - 200 XP",
-      bonus: "+100 VIBE (≥80%)",
+      description: "Answer 5 questions about Rotaract and District 3192. Score ≥ 80% to win bonus coins!",
+      cost: 0,
+      rewardXP: "+15 - 25 XP",
+      bonus: "+10 VIBE (≥80%)",
       colorGradient: "from-blue-600/20 via-slate-900 to-slate-900 border-blue-500/30 hover:border-blue-400/60",
     },
     {
@@ -49,10 +49,10 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
       icon: "🍌",
       badge: "Arcade",
       badgeColor: "bg-amber-950/80 text-amber-400 border-amber-500/30",
-      description: "Dodge incoming waves, gather bananas & coins. Reach ≥ 120 points for +150 VIBE and double XP!",
-      cost: 50,
-      rewardXP: "100 - 300 XP",
-      bonus: "+150 VIBE (≥120 pts)",
+      description: "Dodge incoming waves, gather bananas & coins. Reach ≥ 120 points for bonus coins & maximum XP!",
+      cost: 0,
+      rewardXP: "+15 - 25 XP",
+      bonus: "+10 VIBE (≥120 pts)",
       colorGradient: "from-amber-600/20 via-slate-900 to-slate-900 border-amber-500/30 hover:border-amber-400/60",
     },
     {
@@ -63,22 +63,22 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
       badge: "Memory",
       badgeColor: "bg-purple-950/80 text-purple-400 border-purple-500/30",
       description: "Match all 6 pairs in a 12-card grid before time runs out. Clear in under 25s for speed bonus!",
-      cost: 50,
-      rewardXP: "100 - 250 XP",
-      bonus: "+100 VIBE (<25s)",
+      cost: 0,
+      rewardXP: "+10 - 25 XP",
+      bonus: "+10 VIBE (<25s)",
       colorGradient: "from-purple-600/20 via-slate-900 to-slate-900 border-purple-500/30 hover:border-purple-400/60",
     },
     {
       id: "vibe_quiz" as const,
-      title: "VIBE Festival Quiz",
+      title: "ROCCO Festival Quiz",
       tagline: "Lore, Music & Culture",
       icon: "🌊",
       badge: "Tiered XP",
       badgeColor: "bg-cyan-950/80 text-cyan-400 border-cyan-500/30",
-      description: "5 dynamic questions with 4-tier score XP payouts. Score 100% to take home +100 bonus coins!",
-      cost: 50,
-      rewardXP: "50 - 250 XP",
-      bonus: "+100 VIBE (100%)",
+      description: "5 dynamic questions with score XP payouts. Score 100% to take home bonus coins!",
+      cost: 0,
+      rewardXP: "+10 - 25 XP",
+      bonus: "+10 VIBE (100%)",
       colorGradient: "from-cyan-600/20 via-slate-900 to-slate-900 border-cyan-500/30 hover:border-cyan-400/60",
     },
   ];
@@ -152,7 +152,7 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
             <div className="grid grid-cols-2 gap-2 pt-1 text-xs font-mono">
               <div className="p-2 rounded-lg bg-slate-950/80 border border-slate-800">
                 <span className="text-[10px] text-slate-400 block">Entry Fee</span>
-                <span className="text-amber-400 font-bold">{g.cost} VIBE</span>
+                <span className="text-emerald-400 font-bold">FREE</span>
               </div>
               <div className="p-2 rounded-lg bg-slate-950/80 border border-slate-800">
                 <span className="text-[10px] text-slate-400 block">Rewards</span>
@@ -168,11 +168,10 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
 
           <button
             onClick={() => setActiveGame(g.id)}
-            disabled={userBalance < g.cost}
-            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 disabled:opacity-40 text-xs font-black text-white shadow-md shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center space-x-1.5"
+            className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-xs font-black text-white shadow-md shadow-blue-500/20 active:scale-95 transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
-            <span>{userBalance < g.cost ? "Need 50 Coins" : `Play Now (${g.cost} VIBE)`}</span>
+            <span>Play Now (Free)</span>
           </button>
         </div>
       ))}

@@ -19,6 +19,7 @@ export default async function VenueMapPage() {
         .from("zones")
         .select("*")
         .eq("event_id", session.eventId)
+        .eq("is_active", true)
         .order("sort_order", { ascending: true }),
       supabaseAdmin
         .from("experiences")

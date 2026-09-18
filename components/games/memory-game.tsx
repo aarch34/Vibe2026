@@ -67,10 +67,6 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
   }
 
   function startGame() {
-    if (userBalance < 50) {
-      setErrorMsg("You need at least 50 VIBE Coins to enter the Memory Game.");
-      return;
-    }
     setErrorMsg(null);
     initializeCards();
     setGameState("playing");
@@ -152,15 +148,15 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
 
     const timeTaken = 40 - remainingSec;
     const isFastBonus = won && timeTaken <= 25;
-    const xpPayout = won ? (isFastBonus ? 250 : 100) : 50;
-    const coinPayout = isFastBonus ? 100 : 0;
+    const xpPayout = won ? (isFastBonus ? 25 : 20) : 10;
+    const coinPayout = isFastBonus ? 10 : 0;
 
     try {
       const res = await submitGameResultAction({
         gameType: "memory_game",
         score: won ? 6 : matchedPairs,
         maxScore: 6,
-        coinCost: 50,
+        coinCost: 0,
         coinReward: coinPayout,
         xpReward: xpPayout,
       });
@@ -203,16 +199,16 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
         <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono max-w-xs mx-auto">
           <div>
             <span className="text-[10px] text-slate-400 block">Entry Fee</span>
-            <span className="text-amber-400 font-bold">50 VIBE</span>
+            <span className="text-emerald-400 font-bold">FREE</span>
           </div>
           <div>
             <span className="text-[10px] text-slate-400 block">Base Reward</span>
-            <span className="text-purple-300 font-bold">+100 XP</span>
+            <span className="text-purple-300 font-bold">+15 XP</span>
           </div>
         </div>
 
         <div className="p-2.5 rounded-xl bg-purple-950/40 border border-purple-500/30 text-purple-200 text-xs max-w-sm mx-auto">
-          ⚡ <strong>Speed Bonus:</strong> Clear all 6 pairs in under 25 seconds to win <span className="font-bold text-amber-400">+100 VIBE</span> and <span className="font-bold text-purple-300">+150 extra XP</span> (Total 250 XP)!
+          ⚡ <strong>Speed Bonus:</strong> Clear all 6 pairs in under 25 seconds to win <span className="font-bold text-amber-400">+10 VIBE</span> and <span className="font-bold text-purple-300">+25 total XP</span>!
         </div>
 
         {errorMsg && (
@@ -221,10 +217,9 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
 
         <button
           onClick={startGame}
-          disabled={userBalance < 50}
-          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 disabled:opacity-50 text-sm font-extrabold text-white shadow-lg shadow-purple-500/30 active:scale-95 transition-all"
+          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-500 hover:from-purple-500 hover:to-indigo-400 text-sm font-extrabold text-white shadow-lg shadow-purple-500/30 active:scale-95 transition-all cursor-pointer"
         >
-          {userBalance < 50 ? "Insufficient Coins (Need 50)" : "Start Memory Game (50 VIBE)"}
+          Start Memory Game (Free)
         </button>
       </div>
     );
@@ -313,13 +308,13 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
             <div>
               <span className="text-[10px] text-slate-400 block">XP Earned</span>
               <span className="text-purple-300 font-bold text-sm">
-                +{won ? (isFastBonus ? 250 : 100) : 50} XP
+                +{won ? (isFastBonus ? 25 : 20) : 10} XP
               </span>
             </div>
             <div>
               <span className="text-[10px] text-slate-400 block">Coins Earned</span>
               <span className="text-amber-400 font-bold text-sm">
-                +{isFastBonus ? 100 : 0} VIBE
+                +{isFastBonus ? 10 : 0} VIBE
               </span>
             </div>
           </div>
@@ -327,9 +322,9 @@ export function MemoryGame({ userBalance, onFinished }: MemoryGameProps) {
           <div className="flex items-center justify-center space-x-2 pt-2">
             <button
               onClick={startGame}
-              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors"
+              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors cursor-pointer"
             >
-              Play Again (50🪙)
+              Play Again (Free)
             </button>
             {onFinished && (
               <button

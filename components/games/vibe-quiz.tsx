@@ -95,10 +95,6 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
   const currentQ = VIBE_QUESTIONS[currentIdx];
 
   function startQuiz() {
-    if (userBalance < 50) {
-      setErrorMsg("You need at least 50 VIBE Coins to enter the Festival Quiz.");
-      return;
-    }
     setErrorMsg(null);
     setScore(0);
     setCurrentIdx(0);
@@ -124,15 +120,15 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
       setSelectedOpt(null);
       setIsAnswered(false);
     } else {
-      // Calculate tiered reward
+      // Calculate tiered reward (10 - 25 XP)
       const percent = Math.round((score / VIBE_QUESTIONS.length) * 100);
-      let xpPayout = 50;
-      if (percent >= 81) xpPayout = 250;
-      else if (percent >= 61) xpPayout = 150;
-      else if (percent >= 31) xpPayout = 100;
+      let xpPayout = 10;
+      if (percent >= 81) xpPayout = 25;
+      else if (percent >= 61) xpPayout = 20;
+      else if (percent >= 31) xpPayout = 15;
 
       const isPerfectScore = score === VIBE_QUESTIONS.length;
-      const coinPayout = isPerfectScore ? 100 : 0;
+      const coinPayout = isPerfectScore ? 10 : 0;
 
       setIsSubmitting(true);
       try {
@@ -140,7 +136,7 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
           gameType: "vibe_quiz",
           score,
           maxScore: VIBE_QUESTIONS.length,
-          coinCost: 50,
+          coinCost: 0,
           coinReward: coinPayout,
           xpReward: xpPayout,
         });
@@ -175,7 +171,7 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
             Game 4 • Festival Culture & Mechanics
           </span>
           <h2 className="text-xl font-extrabold text-white mt-0.5">
-            VIBE Festival Quiz
+            ROCCO Festival Quiz
           </h2>
           <p className="text-xs text-slate-300 max-w-sm mx-auto mt-1 leading-relaxed">
             Answer 5 questions on festival lore, zone mechanics, and district competition for tiered XP!
@@ -185,28 +181,28 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
         {/* Tiered Payout Table */}
         <div className="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-left space-y-1.5 text-[11px] font-mono max-w-xs mx-auto">
           <span className="text-[10px] uppercase font-bold text-slate-400 block text-center pb-1 border-b border-slate-800">
-            Tiered XP Rewards
+            Tiered XP Rewards (Free Entry)
           </span>
           <div className="flex justify-between">
             <span className="text-slate-400">0 – 30% Score:</span>
-            <span className="text-purple-300 font-bold">50 XP</span>
+            <span className="text-purple-300 font-bold">+10 XP</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">31 – 60% Score:</span>
-            <span className="text-purple-300 font-bold">100 XP</span>
+            <span className="text-purple-300 font-bold">+15 XP</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">61 – 80% Score:</span>
-            <span className="text-purple-300 font-bold">150 XP</span>
+            <span className="text-purple-300 font-bold">+20 XP</span>
           </div>
           <div className="flex justify-between">
             <span className="text-slate-400">81 – 100% Score:</span>
-            <span className="text-purple-300 font-bold">250 XP</span>
+            <span className="text-purple-300 font-bold">+25 XP</span>
           </div>
         </div>
 
         <div className="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 text-amber-200 text-xs max-w-sm mx-auto">
-          🌟 <strong>100% Perfect Score Bonus:</strong> Get 5/5 correct to win a <span className="font-bold text-amber-400">+100 VIBE Coins bonus</span>!
+          🌟 <strong>100% Perfect Score Bonus:</strong> Get 5/5 correct to win a <span className="font-bold text-amber-400">+10 VIBE Coins bonus</span>!
         </div>
 
         {errorMsg && (
@@ -215,10 +211,9 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
 
         <button
           onClick={startQuiz}
-          disabled={userBalance < 50}
-          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 disabled:opacity-50 text-sm font-extrabold text-white shadow-lg shadow-cyan-500/30 active:scale-95 transition-all"
+          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-sm font-extrabold text-white shadow-lg shadow-cyan-500/30 active:scale-95 transition-all cursor-pointer"
         >
-          {userBalance < 50 ? "Insufficient Coins (Need 50)" : "Start Festival Quiz (50 VIBE)"}
+          Start Festival Quiz (Free)
         </button>
       </div>
     );
@@ -331,7 +326,7 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
               {isPerfect
                 ? "🌟 PERFECT SCORE! 100% bonus coins credited to your wallet!"
                 : percent >= 80
-                ? "Excellent job! You unlocked the top tier (250 XP)!"
+                ? "Excellent job! You unlocked the top tier (+25 XP)!"
                 : "Good attempt! You unlocked tiered XP for your journey!"}
             </p>
           </div>
@@ -347,7 +342,7 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
             <div>
               <span className="text-[10px] text-slate-400 block">Coins Earned</span>
               <span className="text-amber-400 font-bold text-sm">
-                +{isPerfect ? 100 : 0} VIBE
+                +{isPerfect ? 10 : 0} VIBE
               </span>
             </div>
           </div>
@@ -355,9 +350,9 @@ export function VibeQuiz({ userBalance, onFinished }: VibeQuizProps) {
           <div className="flex items-center justify-center space-x-2 pt-2">
             <button
               onClick={startQuiz}
-              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors"
+              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors cursor-pointer"
             >
-              Play Again (50🪙)
+              Play Again (Free)
             </button>
             {onFinished && (
               <button

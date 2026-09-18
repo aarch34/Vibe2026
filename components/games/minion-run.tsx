@@ -44,12 +44,9 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const nextItemIdRef = useRef(1);
+  const touchStartX = useRef<number | null>(null);
 
   function startGame() {
-    if (userBalance < 50) {
-      setErrorMsg("You need at least 50 VIBE Coins to enter Minion Run.");
-      return;
-    }
     setErrorMsg(null);
     setScore(0);
     setLives(3);
@@ -152,15 +149,15 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
     setIsSubmitting(true);
 
     const isHighScore = finalScore >= 120 && finalLives > 0;
-    const xpPayout = isHighScore ? 300 : 100;
-    const coinPayout = isHighScore ? 150 : 0;
+    const xpPayout = isHighScore ? 25 : 15;
+    const coinPayout = isHighScore ? 10 : 0;
 
     try {
       const res = await submitGameResultAction({
         gameType: "minion_run",
         score: finalScore,
         maxScore: 200,
-        coinCost: 50,
+        coinCost: 0,
         coinReward: coinPayout,
         xpReward: xpPayout,
       });
@@ -203,28 +200,23 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
         <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono max-w-xs mx-auto">
           <div>
             <span className="text-[10px] text-slate-400 block">Entry Fee</span>
-            <span className="text-amber-400 font-bold">50 VIBE</span>
+            <span className="text-emerald-400 font-bold">FREE</span>
           </div>
           <div>
             <span className="text-[10px] text-slate-400 block">Base Reward</span>
-            <span className="text-purple-300 font-bold">+100 XP</span>
+            <span className="text-purple-300 font-bold">+15 XP</span>
           </div>
         </div>
 
         <div className="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 text-amber-200 text-xs max-w-sm mx-auto">
-          🏆 <strong>High Score Bonus:</strong> Score ≥ 120 points to win <span className="font-bold text-amber-400">+150 VIBE</span> and <span className="font-bold text-purple-300">+200 extra XP</span> (Total 300 XP)!
+          🏆 <strong>High Score Bonus:</strong> Score ≥ 120 points to win <span className="font-bold text-amber-400">+10 VIBE</span> and <span className="font-bold text-purple-300">+25 total XP</span>!
         </div>
-
-        {errorMsg && (
-          <p className="text-xs text-rose-400 font-semibold">{errorMsg}</p>
-        )}
 
         <button
           onClick={startGame}
-          disabled={userBalance < 50}
-          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 disabled:opacity-50 text-sm font-black text-slate-950 shadow-lg shadow-amber-500/30 active:scale-95 transition-all"
+          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-400 hover:to-yellow-300 text-sm font-black text-slate-950 shadow-lg shadow-amber-500/30 active:scale-95 transition-all cursor-pointer"
         >
-          {userBalance < 50 ? "Insufficient Coins (Need 50)" : "Start Minion Run (50 VIBE)"}
+          Start Minion Run (Free)
         </button>
       </div>
     );
@@ -233,24 +225,46 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
   if (gameState === "playing") {
     return (
       <div className="p-4 sm:p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-3 max-w-md mx-auto">
-        {/* HUD */}
-        <div className="flex items-center justify-between text-xs font-mono">
-          <div className="flex items-center space-x-1.5">
-            <span className="text-slate-400">Score:</span>
-            <span className="text-amber-400 font-bold text-sm">{score}</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <span className="text-slate-400">Lives:</span>
-            <span>{"❤️".repeat(lives)}</span>
-          </div>
-          <div className="flex items-center space-x-1">
-            <span className="text-slate-400">Time:</span>
-            <span className="text-cyan-300 font-bold">{timeLeft}s</span>
-          </div>
+      {/* HUD */}
+      <div className="flex items-center justify-between text-xs font-mono">
+        <div className="flex items-center space-x-1.5">
+          <span className="text-slate-400">Score:</span>
+          <span className="text-amber-400 font-bold text-sm">{score}</span>
         </div>
+        <div className="flex items-center space-x-1">
+          <span className="text-slate-400">Lives:</span>
+          <span>{"❤️".repeat(lives)}</span>
+        </div>
+        <div className="flex items-center space-x-1">
+          <span className="text-slate-400">Time:</span>
+          <span className="text-cyan-300 font-bold">{timeLeft}s</span>
+        </div>
+      </div>
 
-        {/* 3-Lane Track */}
-        <div className="relative w-full h-80 rounded-2xl bg-gradient-to-b from-blue-950 via-slate-950 to-blue-950 border-2 border-slate-700 overflow-hidden shadow-inner">
+      {/* 3-Lane Track with Tap & Swipe Support */}
+      <div
+        className="relative w-full h-80 rounded-2xl bg-gradient-to-b from-blue-950 via-slate-950 to-blue-950 border-2 border-slate-700 overflow-hidden shadow-inner touch-none cursor-pointer"
+        onClick={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const clickX = e.clientX - rect.left;
+          const third = rect.width / 3;
+          if (clickX < third) setPlayerLane(0);
+          else if (clickX < third * 2) setPlayerLane(1);
+          else setPlayerLane(2);
+        }}
+        onTouchStart={(e) => {
+          touchStartX.current = e.touches[0].clientX;
+        }}
+        onTouchEnd={(e) => {
+          if (touchStartX.current === null) return;
+          const diff = e.changedTouches[0].clientX - touchStartX.current;
+          if (Math.abs(diff) > 25) {
+            if (diff > 0) setPlayerLane((prev) => Math.min(2, prev + 1));
+            else setPlayerLane((prev) => Math.max(0, prev - 1));
+          }
+          touchStartX.current = null;
+        }}
+      >
           {/* Lane Divider Lines */}
           <div className="absolute inset-0 grid grid-cols-3 divide-x divide-slate-800/80 pointer-events-none">
             <div />
@@ -338,13 +352,13 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
             <div>
               <span className="text-[10px] text-slate-400 block">XP Earned</span>
               <span className="text-purple-300 font-bold text-sm">
-                +{isHighScore ? 300 : 100} XP
+                +{isHighScore ? 25 : 15} XP
               </span>
             </div>
             <div>
               <span className="text-[10px] text-slate-400 block">Coins Earned</span>
               <span className="text-amber-400 font-bold text-sm">
-                +{isHighScore ? 150 : 0} VIBE
+                +{isHighScore ? 10 : 0} VIBE
               </span>
             </div>
           </div>
@@ -352,9 +366,9 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
           <div className="flex items-center justify-center space-x-2 pt-2">
             <button
               onClick={startGame}
-              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors"
+              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors cursor-pointer"
             >
-              Run Again (50🪙)
+              Run Again (Free)
             </button>
             {onFinished && (
               <button

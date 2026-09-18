@@ -90,10 +90,6 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
   const currentQ = ROTARACT_QUESTIONS[currentIdx];
 
   function startQuiz() {
-    if (userBalance < 50) {
-      setErrorMsg("You need at least 50 VIBE Coins to enter this game.");
-      return;
-    }
     setErrorMsg(null);
     setScore(0);
     setCurrentIdx(0);
@@ -123,8 +119,8 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
       // Game finished, finalize score
       const finalScore = score + (selectedOpt === currentQ.correctIndex ? 0 : 0);
       const isHighScore = finalScore >= 4; // ≥80%
-      const xpPayout = isHighScore ? 200 : 100;
-      const coinPayout = isHighScore ? 100 : 0;
+      const xpPayout = isHighScore ? 25 : 15;
+      const coinPayout = isHighScore ? 10 : 0;
 
       setIsSubmitting(true);
       try {
@@ -132,7 +128,7 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
           gameType: "rotaract_game",
           score: finalScore,
           maxScore: ROTARACT_QUESTIONS.length,
-          coinCost: 50,
+          coinCost: 0,
           coinReward: coinPayout,
           xpReward: xpPayout,
         });
@@ -177,16 +173,16 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
         <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-mono max-w-xs mx-auto">
           <div>
             <span className="text-[10px] text-slate-400 block">Entry Fee</span>
-            <span className="text-amber-400 font-bold">50 VIBE</span>
+            <span className="text-emerald-400 font-bold">FREE</span>
           </div>
           <div>
             <span className="text-[10px] text-slate-400 block">Completion</span>
-            <span className="text-purple-300 font-bold">+100 XP</span>
+            <span className="text-purple-300 font-bold">+15 XP</span>
           </div>
         </div>
 
         <div className="p-2.5 rounded-xl bg-amber-950/30 border border-amber-500/30 text-amber-200 text-xs max-w-sm mx-auto">
-          🔥 <strong>High Score Bonus:</strong> Score ≥ 80% (4/5) to win <span className="font-bold text-amber-400">+100 VIBE</span> and <span className="font-bold text-purple-300">+100 extra XP</span>!
+          🔥 <strong>High Score Bonus:</strong> Score ≥ 80% (4/5) to win <span className="font-bold text-amber-400">+10 VIBE</span> and <span className="font-bold text-purple-300">+25 total XP</span>!
         </div>
 
         {errorMsg && (
@@ -195,10 +191,9 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
 
         <button
           onClick={startQuiz}
-          disabled={userBalance < 50}
-          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 disabled:opacity-50 text-sm font-extrabold text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all"
+          className="w-full max-w-xs py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-sm font-extrabold text-white shadow-lg shadow-blue-500/30 active:scale-95 transition-all cursor-pointer"
         >
-          {userBalance < 50 ? "Insufficient Coins (Need 50)" : "Start Quiz (50 VIBE)"}
+          Start Quiz (Free)
         </button>
       </div>
     );
@@ -313,13 +308,13 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
             <div>
               <span className="text-[10px] text-slate-400 block">XP Earned</span>
               <span className="text-purple-300 font-bold text-sm">
-                +{isHighScore ? 200 : 100} XP
+                +{isHighScore ? 25 : 15} XP
               </span>
             </div>
             <div>
               <span className="text-[10px] text-slate-400 block">Coins Earned</span>
               <span className="text-amber-400 font-bold text-sm">
-                +{isHighScore ? 100 : 0} VIBE
+                +{isHighScore ? 10 : 0} VIBE
               </span>
             </div>
           </div>
@@ -327,9 +322,9 @@ export function RotaractGame({ userBalance, onFinished }: RotaractGameProps) {
           <div className="flex items-center justify-center space-x-2 pt-2">
             <button
               onClick={startQuiz}
-              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors"
+              className="py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-bold text-slate-200 transition-colors cursor-pointer"
             >
-              Play Again (50🪙)
+              Play Again (Free)
             </button>
             {onFinished && (
               <button

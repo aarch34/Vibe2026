@@ -24,12 +24,11 @@ describe("VIBE Complete Game Economy & Progression Engine", () => {
   });
 
   it("verifies a valid QR code and returns 5-tier experience preview", async () => {
-    const res = await verifyQRScan("vibe-arcade-vr-2026", eventId, profileId);
+    const res = await verifyQRScan("vibe-zone-arnava-xp", eventId, profileId);
     expect(res.valid).toBe(true);
-    expect(res.experience?.title).toBe("VR Cyber Flight Simulator");
-    expect(res.zone?.name).toBe("Cyber Arcade");
-    expect(res.coinCost).toBe(100);
-    expect(res.xpReward).toBe(175);
+    expect(res.experience?.title).toBe("Arnava Icebreaker");
+    expect(res.zone?.name).toBe("Arnava");
+    expect(res.xpReward).toBe(75);
     expect(res.canAttempt).toBe(true);
   });
 

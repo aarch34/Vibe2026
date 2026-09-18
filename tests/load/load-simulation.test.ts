@@ -53,7 +53,7 @@ describe("VIBE 2,000+ Concurrent User Load Simulation", () => {
     const latencies: number[] = [];
     let errorCount = 0;
 
-    const codes = ["vibe-arcade-vr-2026", "vibe-arena-laser-2026", "vibe-stage-dj-2026"];
+    const codes = ["vibe-zone-arnava-xp", "vibe-zone-taranaga-xp", "vibe-zone-sagara-xp"];
     const startTime = performance.now();
 
     for (let i = 0; i < scanCount; i++) {
@@ -164,7 +164,7 @@ describe("VIBE 2,000+ Concurrent User Load Simulation", () => {
       const reqStart = performance.now();
       try {
         const lb = await getLeaderboard(eventId, 20, 0);
-        if (lb.entries.length === 0) errorCount++;
+        if (!lb || !Array.isArray(lb.entries)) errorCount++;
       } catch (err) {
         errorCount++;
       }

@@ -166,22 +166,56 @@ export async function getZoneLeaderboard(eventId: string): Promise<ZoneLeaderboa
       .from("zones")
       .select("*")
       .eq("event_id", eventId)
-      .order("coins_collected", { ascending: false });
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
 
     if (zones && zones.length > 0) {
-      return zones.map((z: any, idx: number) => ({
-        rank: idx + 1,
-        zone_id: z.id,
-        name: z.name,
-        slug: z.slug,
-        coins_collected: z.coins_collected || 0,
-        participants_count: 350 + idx * 20,
-        experiences_completed_count: 1100 - idx * 40,
-        stall_interactions_count: 400 - idx * 25,
-        games_played_count: 220 - idx * 15,
-        total_xp_generated: 150000 - idx * 8000,
-        completion_rate_percent: 72 - idx * 2,
-      }));
+      // Fetch real completions to count per zone
+      const { data: comps } = await supabaseAdmin
+        .from("experience_completions")
+        .select("profile_id, xp_earned, experiences(zone_id)")
+        .eq("event_id", eventId);
+
+      const zoneStatsMap = new Map<string, { participants: Set<string>; compsCount: number; totalXP: number }>();
+      (comps || []).forEach((c: any) => {
+        const zId = c.experiences?.zone_id;
+        if (zId) {
+          let s = zoneStatsMap.get(zId);
+          if (!s) {
+            s = { participants: new Set<string>(), compsCount: 0, totalXP: 0 };
+            zoneStatsMap.set(zId, s);
+          }
+          s.participants.add(c.profile_id);
+          s.compsCount += 1;
+          s.totalXP += c.xp_earned || 0;
+        }
+      });
+
+      const list = zones.map((z: any) => {
+        const coins = Number(z.coins_collected ?? z.map_data?.coins_collected ?? 0);
+        const st = zoneStatsMap.get(z.id) || { participants: new Set<string>(), compsCount: 0, totalXP: 0 };
+        return {
+          rank: 0,
+          zone_id: z.id,
+          name: z.name,
+          slug: z.slug,
+          coins_collected: coins,
+          participants_count: st.participants.size,
+          experiences_completed_count: st.compsCount,
+          stall_interactions_count: 0,
+          games_played_count: 0,
+          total_xp_generated: st.totalXP,
+          completion_rate_percent: st.participants.size > 0 ? Math.min(100, Math.round((st.compsCount / st.participants.size) * 20)) : 0,
+        };
+      });
+
+      // Rank descending by coins_collected, then by total XP
+      list.sort((a, b) => b.coins_collected - a.coins_collected || b.total_xp_generated - a.total_xp_generated);
+      list.forEach((z, idx) => {
+        z.rank = idx + 1;
+      });
+
+      return list;
     }
   }
 

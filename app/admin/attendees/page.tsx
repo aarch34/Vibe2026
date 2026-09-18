@@ -8,11 +8,11 @@ export default async function AdminAttendeesPage() {
   let initialAttendees: any[] = [];
 
   if (isUsingLiveSupabase() && supabaseAdmin) {
-    const [membersRes, walletsRes, compsRes] = await Promise.all([
+    const [profilesRes, walletsRes, compsRes, zonesRes] = await Promise.all([
       supabaseAdmin
-        .from("event_members")
-        .select("profile_id, profiles(id, display_name, vibe_id, college)")
-        .eq("event_id", eventId),
+        .from("profiles")
+        .select("id, display_name, vibe_id, college, created_at")
+        .order("created_at", { ascending: false }),
       supabaseAdmin
         .from("wallets")
         .select("profile_id, balance")
@@ -21,6 +21,9 @@ export default async function AdminAttendeesPage() {
         .from("experience_completions")
         .select("profile_id, xp_earned")
         .eq("event_id", eventId),
+      supabaseAdmin
+        .from("zones")
+        .select("id, name"),
     ]);
 
     const walletsMap = new Map<string, number>();
@@ -34,17 +37,18 @@ export default async function AdminAttendeesPage() {
       xpMap.set(c.profile_id, cur);
     });
 
-    initialAttendees = (membersRes.data || []).map((m: any) => {
-      const p = m.profiles;
-      const progress = xpMap.get(m.profile_id) || { totalXP: 0, count: 0 };
+    initialAttendees = (profilesRes.data || []).map((p: any) => {
+      const progress = xpMap.get(p.id) || { totalXP: 0, count: 0 };
       return {
         id: p.id,
-        displayName: p.display_name,
-        vibeId: p.vibe_id,
-        college: p.college,
-        coins: walletsMap.get(m.profile_id) || 0,
+        displayName: p.display_name || "VIBE Attendee",
+        vibeId: p.vibe_id || "VIBE-Attendee",
+        college: p.college || "Rotaract District 3192",
+        coins: walletsMap.get(p.id) || 0,
         totalXP: progress.totalXP,
         completionsCount: progress.count,
+        zoneName: "Arnava",
+        registeredAt: p.created_at,
       };
     });
   } else {
@@ -68,6 +72,7 @@ export default async function AdminAttendeesPage() {
         coins: wallet?.balance || 0,
         totalXP,
         completionsCount: userComps.length,
+        registeredAt: p.created_at,
       };
     });
   }
@@ -79,7 +84,7 @@ export default async function AdminAttendeesPage() {
           Attendee Directory & Ledger
         </h1>
         <p className="text-sm text-slate-400">
-          Search attendees, view live balances, and perform audited balance adjustments
+          Search all registered accounts, view live balances, and perform audited Coins & XP adjustments
         </p>
       </div>
 

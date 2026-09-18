@@ -110,16 +110,17 @@ export function QRScannerClient({
     }
   }
 
-  // Preset sample event QR codes for instant test convenience (matching official zones & bonus checkpoints)
+  // Preset official event QR codes for quick test & checkpoint discovery
   const sampleQRs = [
-    { label: "Arnava Icebreaker (50🪙)", code: "vibe-icebreaker-arnava", cost: 50, xp: 75 },
-    { label: "Taranaga Mystery (100🪙)", code: "vibe-mystery-taranaga", cost: 100, xp: 150 },
-    { label: "Sagara Final Wave (150🪙)", code: "vibe-final-wave-sagara", cost: 150, xp: 250 },
-    { label: "Pravaha Flow (75🪙)", code: "vibe-flow-pravaha", cost: 75, xp: 125 },
-    { label: "Hidden Tree QR (+150🪙)", code: "vibe-hidden-tree-01", cost: 0, xp: 50 },
-    { label: "Stage DJ Drop (75🪙)", code: "vibe-stage-dj-2026", cost: 75, xp: 125 },
-    { label: "VR Simulator (100🪙)", code: "vibe-arcade-vr-2026", cost: 100, xp: 175 },
-    { label: "Laser Tag (150🪙)", code: "vibe-arena-laser-2026", cost: 150, xp: 250 },
+    { label: "Arnava Checkpoint (+75 XP)", code: "vibe-zone-arnava-xp", cost: 0, xp: 75 },
+    { label: "Taranaga Rhythm (+75 XP)", code: "vibe-zone-taranaga-xp", cost: 0, xp: 75 },
+    { label: "Sagara Cipher (+100 XP)", code: "vibe-zone-sagara-xp", cost: 0, xp: 100 },
+    { label: "Pravaha Rapids (+75 XP)", code: "vibe-zone-pravaha-xp", cost: 0, xp: 75 },
+    { label: "Samudhra Glam (+75 XP)", code: "vibe-zone-samudhra-xp", cost: 0, xp: 75 },
+    { label: "Varuna Stage (+100 XP)", code: "vibe-zone-varuna-xp", cost: 0, xp: 100 },
+    { label: "Stall: Memory Match (+50 XP)", code: "vibe-stall-memory-xp", cost: 0, xp: 50 },
+    { label: "Stall: 360 Glam Rig (+50 XP)", code: "vibe-stall-glam-xp", cost: 0, xp: 50 },
+    { label: "Stall: Ring Toss (+50 XP)", code: "vibe-stall-ring-xp", cost: 0, xp: 50 },
   ];
 
   return (

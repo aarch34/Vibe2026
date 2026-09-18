@@ -127,7 +127,7 @@ class VibeMemoryDatabase {
         image_media_id: null,
         sort_order: 1,
         is_active: true,
-        coins_collected: 42850,
+        coins_collected: 0,
         map_data: { x: 120, y: 90, color: "#0284C7", icon: "Waves" },
       },
       {
@@ -139,7 +139,7 @@ class VibeMemoryDatabase {
         image_media_id: null,
         sort_order: 2,
         is_active: true,
-        coins_collected: 39450,
+        coins_collected: 0,
         map_data: { x: 280, y: 90, color: "#6366F1", icon: "Activity" },
       },
       {
@@ -151,7 +151,7 @@ class VibeMemoryDatabase {
         image_media_id: null,
         sort_order: 3,
         is_active: true,
-        coins_collected: 34200,
+        coins_collected: 0,
         map_data: { x: 200, y: 180, color: "#0EA5E9", icon: "Compass" },
       },
       {
@@ -163,7 +163,7 @@ class VibeMemoryDatabase {
         image_media_id: null,
         sort_order: 4,
         is_active: true,
-        coins_collected: 31800,
+        coins_collected: 0,
         map_data: { x: 90, y: 260, color: "#14B8A6", icon: "Zap" },
       },
       {
@@ -175,7 +175,7 @@ class VibeMemoryDatabase {
         image_media_id: null,
         sort_order: 5,
         is_active: true,
-        coins_collected: 28900,
+        coins_collected: 0,
         map_data: { x: 310, y: 260, color: "#8B5CF6", icon: "Users" },
       },
       {
@@ -187,7 +187,7 @@ class VibeMemoryDatabase {
         image_media_id: null,
         sort_order: 6,
         is_active: true,
-        coins_collected: 26400,
+        coins_collected: 0,
         map_data: { x: 200, y: 340, color: "#EC4899", icon: "Sparkles" },
       },
     ];
@@ -231,33 +231,58 @@ class VibeMemoryDatabase {
       // Additional Zone Experiences
       { id: "exp-arnava-1", event_id: eventId, zone_id: "z-arnava", sponsor_id: null, title: "Arnava Icebreaker", slug: "arnava-icebreaker", description: "Break the ice with fellow freshers through rapid cooperative wave tags.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
       { id: "exp-taranaga-1", event_id: eventId, zone_id: "z-taranaga", sponsor_id: "sp-2", title: "Taranaga Soundwave Sprint", slug: "taranaga-soundwave", description: "Follow the rhythmic tempo beats on the illuminated floor tiles.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      // Mini-Games (Free to play, modest XP)
+      { id: "e0000000-0000-0000-0000-000000000011", event_id: eventId, zone_id: "z-arnava", sponsor_id: null, title: "Rotaract Trivia Game", slug: "rotaract-game", description: "Rotary & District Trivia Challenge", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 20, coin_reward: 0, max_attempts: 999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "e0000000-0000-0000-0000-000000000012", event_id: eventId, zone_id: "z-taranaga", sponsor_id: null, title: "Minion VIBE Run", slug: "minion-run", description: "3-Lane Fast Reaction Arcade", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 25, coin_reward: 0, max_attempts: 999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "e0000000-0000-0000-0000-000000000013", event_id: eventId, zone_id: "z-sagara", sponsor_id: null, title: "Memory Match", slug: "memory-game", description: "Card Flip Visual Recall", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 20, coin_reward: 0, max_attempts: 999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "e0000000-0000-0000-0000-000000000014", event_id: eventId, zone_id: "z-pravaha", sponsor_id: null, title: "ROCCO Festival Quiz", slug: "vibe-quiz", description: "Lore, Music & Culture", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 20, coin_reward: 0, max_attempts: 999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      // Social Connect
+      { id: "e0000000-0000-0000-0000-000000000020", event_id: eventId, zone_id: "z-arnava", sponsor_id: null, title: "Instagram Friend Connect", slug: "insta-friend-connect", description: "Connect with fellow freshers on Instagram to become in-app friends and level up together.", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 25, coin_reward: 0, max_attempts: 9999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
     ];
     experiencesList.forEach((e) => this.experiences.set(e.id, e));
 
-    // 6. QR Codes
+    // 6. QR Codes (Official Zone Checkpoints & Stalls)
     const qrList: QRCodeRecord[] = [
-      { id: "qr-1", event_id: eventId, experience_id: "exp-1", code: "vibe-arcade-vr-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-2", event_id: eventId, experience_id: "exp-2", code: "vibe-arena-laser-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-3", event_id: eventId, experience_id: "exp-3", code: "vibe-stage-dj-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-2b", event_id: eventId, experience_id: "exp-2", code: "vibe-arnava-final-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-3b", event_id: eventId, experience_id: "exp-3", code: "vibe-taranaga-dj-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-4", event_id: eventId, experience_id: "exp-4", code: "vibe-sagara-riddle-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-5", event_id: eventId, experience_id: "exp-5", code: "vibe-samudhra-360-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-6", event_id: eventId, experience_id: "exp-6", code: "vibe-pravaha-rapids-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-7", event_id: eventId, experience_id: "exp-7", code: "vibe-varuna-spectacle-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      // Bonus QR codes (Section 17: Hidden QR codes & Stage challenge)
-      { id: "qr-bonus-hidden", event_id: eventId, experience_id: "exp-1", code: "vibe-hidden-easteregg-1", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
-      { id: "qr-bonus-stage", event_id: eventId, experience_id: "exp-7", code: "vibe-stage-challenge-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      // Zone Checkpoint QRs
+      { id: "qr-arnava", event_id: eventId, experience_id: "exp-arnava-1", code: "vibe-zone-arnava-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-taranaga", event_id: eventId, experience_id: "exp-taranaga-1", code: "vibe-zone-taranaga-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-sagara", event_id: eventId, experience_id: "exp-4", code: "vibe-zone-sagara-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-pravaha", event_id: eventId, experience_id: "exp-6", code: "vibe-zone-pravaha-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-samudhra", event_id: eventId, experience_id: "exp-5", code: "vibe-zone-samudhra-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-varuna", event_id: eventId, experience_id: "exp-7", code: "vibe-zone-varuna-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+
+      // Zone Activity Coin Collection QRs
+      { id: "qr-act-arnava", event_id: eventId, experience_id: "exp-2", code: "vibe-activity-arnava", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-act-taranaga", event_id: eventId, experience_id: "exp-3", code: "vibe-activity-taranaga", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-act-sagara", event_id: eventId, experience_id: "exp-4", code: "vibe-activity-sagara", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-act-pravaha", event_id: eventId, experience_id: "exp-6", code: "vibe-activity-pravaha", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-act-samudhra", event_id: eventId, experience_id: "exp-5", code: "vibe-activity-samudhra", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-act-varuna", event_id: eventId, experience_id: "exp-7", code: "vibe-activity-varuna", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+
+      // Quick Aliases
+      { id: "qr-alias-arnava", event_id: eventId, experience_id: "exp-arnava-1", code: "vibe-icebreaker-arnava", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-alias-taranaga", event_id: eventId, experience_id: "exp-taranaga-1", code: "vibe-mystery-taranaga", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-alias-sagara", event_id: eventId, experience_id: "exp-4", code: "vibe-final-wave-sagara", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-alias-pravaha", event_id: eventId, experience_id: "exp-6", code: "vibe-flow-pravaha", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-alias-tree", event_id: eventId, experience_id: "exp-5", code: "vibe-hidden-tree-01", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-alias-stage", event_id: eventId, experience_id: "exp-7", code: "vibe-stage-challenge-2026", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+
+      // Stalls QRs
+      { id: "qr-stall-1", event_id: eventId, experience_id: "exp-arnava-1", code: "vibe-stall-memory-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-stall-2", event_id: eventId, experience_id: "exp-5", code: "vibe-stall-glam-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-stall-3", event_id: eventId, experience_id: "exp-6", code: "vibe-stall-ring-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-stall-4", event_id: eventId, experience_id: "exp-taranaga-1", code: "vibe-stall-taco-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
+      { id: "qr-stall-5", event_id: eventId, experience_id: "exp-4", code: "vibe-stall-neon-xp", version: 1, expires_at: null, is_active: true, created_at: new Date().toISOString() },
     ];
     qrList.forEach((q) => this.qrCodes.set(q.code, q));
 
     // 7. Stalls (Section 10-14 of specification)
     const stallsList: Stall[] = [
-      { id: "stall-1", event_id: eventId, name: "🎮 Stall — Memory Match", slug: "stall-memory-match", description: "Match the hidden festival cards within 60 seconds.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
-      { id: "stall-2", event_id: eventId, name: "📸 Stall — 360 Glam Photo Rig", slug: "stall-glam-rig", description: "Capture your signature festival vibe on the spinning neon rig.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
-      { id: "stall-3", event_id: eventId, name: "🎯 Stall — Ring Toss Challenge", slug: "stall-ring-toss", description: "Test your precision ring aim against moving glow pegs.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
-      { id: "stall-4", event_id: eventId, name: "🌮 Stall — Taco Taste Odyssey", slug: "stall-taco-taste", description: "Sample the mystery spicy taco challenge and review your dish.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
-      { id: "stall-5", event_id: eventId, name: "🎨 Stall — Neon Face Art Studio", slug: "stall-neon-art", description: "Get painted with glowing ultraviolet tribal festival artwork.", entry_cost: 50, xp_reward: 100, coin_reward: 25, is_active: true, requires_photo: true },
+      { id: "stall-1", event_id: eventId, name: "🎮 Stall — Memory Match", slug: "stall-memory-match", description: "Match the hidden festival cards within 60 seconds.", entry_cost: 0, xp_reward: 50, coin_reward: 10, is_active: true, requires_photo: true },
+      { id: "stall-2", event_id: eventId, name: "📸 Stall — 360 Glam Photo Rig", slug: "stall-glam-rig", description: "Capture your signature festival vibe on the spinning neon rig.", entry_cost: 0, xp_reward: 50, coin_reward: 10, is_active: true, requires_photo: true },
+      { id: "stall-3", event_id: eventId, name: "🎯 Stall — Ring Toss Challenge", slug: "stall-ring-toss", description: "Test your precision ring aim against moving glow pegs.", entry_cost: 0, xp_reward: 50, coin_reward: 10, is_active: true, requires_photo: true },
+      { id: "stall-4", event_id: eventId, name: "🌮 Stall — Taco Taste Odyssey", slug: "stall-taco-taste", description: "Sample the mystery spicy taco challenge and review your dish.", entry_cost: 0, xp_reward: 50, coin_reward: 10, is_active: true, requires_photo: true },
+      { id: "stall-5", event_id: eventId, name: "🎨 Stall — Neon Face Art Studio", slug: "stall-neon-art", description: "Get painted with glowing ultraviolet tribal festival artwork.", entry_cost: 0, xp_reward: 50, coin_reward: 10, is_active: true, requires_photo: true },
     ];
     stallsList.forEach((s) => this.stalls.set(s.id, s));
 
@@ -288,40 +313,6 @@ class VibeMemoryDatabase {
       { id: "rwd-5", event_id: eventId, sponsor_id: null, name: "Limited Edition VIBE Streetwear T-Shirt", description: "Heavyweight festival cotton tee with custom fluorescent wave print.", image_media_id: null, coin_cost: 500, stock: 30, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
     ];
     rewardsList.forEach((r) => this.rewards.set(r.id, r));
-
-    // 11. Seed Users matching Section 1 & 28 of specification
-    this.createAttendeeProfile("usr-demo-1", "Aarcha U", "VIBE-2001", "BMS College of Engineering", "Rotaract Club of Bangalore", 3850, 6, 12, "@aarcha.u", "+91 98765 43210", "z-arnava");
-    this.createAttendeeProfile("usr-demo-2", "Rahul M", "VIBE-2002", "PES University", "Rotaract Club of Midtown", 3720, 5, 10, "@rahul.m", "+91 98765 43211", "z-taranaga");
-    this.createAttendeeProfile("usr-demo-3", "Ananya S", "VIBE-2003", "RVCE Bangalore", "Rotaract Club of Sagara Coast", 3550, 5, 9, "@ananya.s", "+91 98765 43212", "z-sagara");
-    this.createAttendeeProfile("usr-demo-4", "Kabir K", "VIBE-2004", "Christ University", "Rotaract Club of Indiranagar", 2900, 4, 7, "@kabir.k", "+91 98765 43213", "z-pravaha");
-
-    // 12. Seed Sample Stall Photo Submissions for Verification Queue
-    this.stallPhotoSubmissions.push(
-      {
-        id: "sub-1",
-        event_id: eventId,
-        profile_id: "prof-usr-demo-2",
-        stall_id: "stall-2",
-        photo_url: "/placeholder-stall-photo.jpg",
-        instagram_id: "@rahul.m",
-        status: "pending",
-        submitted_at: new Date(Date.now() - 300000).toISOString(),
-        reviewed_at: null,
-        reviewed_by: null,
-      },
-      {
-        id: "sub-2",
-        event_id: eventId,
-        profile_id: "prof-usr-demo-3",
-        stall_id: "stall-1",
-        photo_url: "/placeholder-stall-photo.jpg",
-        instagram_id: "@ananya.s",
-        status: "pending",
-        submitted_at: new Date(Date.now() - 600000).toISOString(),
-        reviewed_at: null,
-        reviewed_by: null,
-      }
-    );
   }
 
   createAttendeeProfile(
@@ -1034,11 +1025,17 @@ class VibeMemoryDatabase {
 
     // Award XP
     if (xpReward > 0) {
+      const gameUuidMap: Record<string, string> = {
+        rotaract_game: "e0000000-0000-0000-0000-000000000011",
+        minion_run: "e0000000-0000-0000-0000-000000000012",
+        memory_game: "e0000000-0000-0000-0000-000000000013",
+        vibe_quiz: "e0000000-0000-0000-0000-000000000014",
+      };
       this.completions.push({
         id: `comp-game-${Date.now()}`,
         event_id: eventId,
         profile_id: profileId,
-        experience_id: `game-${gameType}`,
+        experience_id: gameUuidMap[gameType] || `e0000000-0000-0000-0000-000000000011`,
         qr_code_id: null,
         attempt_number: 1,
         coin_spent: coinCost,
@@ -1239,12 +1236,12 @@ class VibeMemoryDatabase {
         name: zone.name,
         slug: zone.slug,
         coins_collected: zone.coins_collected || 0,
-        participants_count: visitors || 300,
-        experiences_completed_count: zoneComps.length || 850,
-        stall_interactions_count: stallInteractions,
-        games_played_count: gameInteractions,
-        total_xp_generated: totalXPGen || 120000,
-        completion_rate_percent: completionRate || 68,
+        participants_count: visitors,
+        experiences_completed_count: zoneComps.length,
+        stall_interactions_count: visitors > 0 ? Math.round(visitors * 0.5) : 0,
+        games_played_count: visitors > 0 ? Math.round(visitors * 0.3) : 0,
+        total_xp_generated: totalXPGen,
+        completion_rate_percent: completionRate,
       });
     });
 

@@ -237,3 +237,95 @@ export async function adminToggleEventFreezeAction(freeze: boolean) {
 
   return { success: true, isFrozen: freeze };
 }
+
+// 4. Adjust Attendee XP (with audit log)
+const adjustXpSchema = z.object({
+  targetProfileId: z.string().min(1),
+  amount: z.number().int(),
+  reason: z.string().min(3, "Reason must be provided for audit trails"),
+});
+
+export async function adminAdjustXpAction(rawInput: z.infer<typeof adjustXpSchema>) {
+  const parsed = adjustXpSchema.safeParse(rawInput);
+  if (!parsed.success) {
+    return { success: false, message: parsed.error.errors[0].message };
+  }
+
+  const { targetProfileId, amount, reason } = parsed.data;
+  const session = await getCurrentUserSession();
+
+  try {
+    if (isUsingLiveSupabase() && supabaseAdmin) {
+      // 1. Record experience completion with the XP adjustment
+      const { error: compErr } = await supabaseAdmin.from("experience_completions").insert({
+        event_id: session.eventId,
+        profile_id: targetProfileId,
+        experience_id: "e0000000-0000-0000-0000-000000000001",
+        attempt_number: 1,
+        coin_spent: 0,
+        xp_earned: amount,
+        coin_earned: 0,
+        metadata: {
+          type: "admin_xp_adjustment",
+          adjustment: amount,
+          reason,
+          adjusted_by: session.profile.display_name || "Admin",
+        },
+      });
+
+      if (compErr) {
+        return { success: false, message: compErr.message };
+      }
+
+      // 2. Record audit log
+      await supabaseAdmin.from("audit_logs").insert({
+        event_id: session.eventId,
+        actor_profile_id: session.profile.id,
+        action: "ADMIN_XP_ADJUSTMENT",
+        entity_type: "profile_xp",
+        entity_id: targetProfileId,
+        before_data: null,
+        after_data: { adjustment: amount, reason, adjustedBy: session.profile.display_name },
+      });
+
+      return { success: true, adjustment: amount };
+    }
+
+    // Mock store implementation
+    const compId = `comp-adj-${Date.now()}`;
+    mockDb.completions.push({
+      id: compId,
+      event_id: session.eventId,
+      profile_id: targetProfileId,
+      experience_id: "e0000000-0000-0000-0000-000000000001",
+      qr_code_id: null,
+      attempt_number: 1,
+      coin_spent: 0,
+      xp_earned: amount,
+      coin_earned: 0,
+      completed_at: new Date().toISOString(),
+      metadata: {
+        type: "admin_xp_adjustment",
+        adjustment: amount,
+        reason,
+        adjusted_by: session.profile.display_name,
+      },
+    });
+
+    mockDb.auditLogs.unshift({
+      id: `audit-xp-${Date.now()}`,
+      event_id: session.eventId,
+      actor_profile_id: session.profile.id,
+      action: "ADMIN_XP_ADJUSTMENT",
+      entity_type: "profile_xp",
+      entity_id: targetProfileId,
+      before_data: null,
+      after_data: { adjustment: amount, reason },
+      created_at: new Date().toISOString(),
+    });
+
+    return { success: true, adjustment: amount };
+  } catch (err: any) {
+    return { success: false, message: err.message || "Failed to adjust XP" };
+  }
+}

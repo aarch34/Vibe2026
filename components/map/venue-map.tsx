@@ -2,6 +2,8 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import confetti from "canvas-confetti";
 import {
   Gamepad2,
   Zap,
@@ -16,8 +18,11 @@ import {
   X,
   ChevronRight,
   QrCode,
+  Send,
+  Loader2,
 } from "lucide-react";
 import { Zone, Experience } from "@/types/database";
+import { sendCoinsToZoneAction } from "@/actions/zones/contribute";
 
 interface VenueMapProps {
   zones: Zone[];
@@ -32,7 +37,31 @@ export function VenueMap({
   userCompletions,
   assignedZoneId,
 }: VenueMapProps) {
+  const router = useRouter();
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
+  const [isCheering, setIsCheering] = useState(false);
+  const [cheerFeedback, setCheerFeedback] = useState<string | null>(null);
+
+  async function handleCheerZone(amount: number) {
+    if (!selectedZone || isCheering) return;
+    setIsCheering(true);
+    setCheerFeedback(null);
+    try {
+      const res = await sendCoinsToZoneAction({ zoneId: selectedZone.id, amount });
+      if (res.success) {
+        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+        setCheerFeedback(`🎉 Sent ${amount} VIBE to ${res.zoneName}! (+${res.xpEarned} XP)`);
+        setSelectedZone({ ...selectedZone, coins_collected: res.zoneTotalCoins });
+        router.refresh();
+      } else {
+        setCheerFeedback(`⚠️ ${res.message || "Could not send coins."}`);
+      }
+    } catch (err: any) {
+      setCheerFeedback(`⚠️ ${err.message || "Failed to send coins."}`);
+    } finally {
+      setIsCheering(false);
+    }
+  }
 
   const completedExpIds = new Set(userCompletions.map((c) => c.experience_id));
 
@@ -261,6 +290,34 @@ export function VenueMap({
               <p className="text-[10px] text-blue-300/80 mt-1">
                 💡 Coins spent on activities in this zone are added directly to its score!
               </p>
+
+              {/* Send Coins / Cheer Zone Controls */}
+              <div className="mt-2.5 p-3 rounded-xl bg-gradient-to-r from-blue-950/70 via-slate-950 to-indigo-950/70 border border-blue-500/30 space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-bold text-white flex items-center space-x-1.5">
+                    <Send className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Send Coins to {selectedZone.name}</span>
+                  </span>
+                  <span className="text-[10px] text-purple-300 font-mono">+XP on cheer</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  {[25, 50, 100].map((amt) => (
+                    <button
+                      key={amt}
+                      onClick={() => handleCheerZone(amt)}
+                      disabled={isCheering}
+                      className="flex-1 py-1.5 px-2 rounded-lg bg-blue-600/30 hover:bg-blue-600 border border-blue-400/40 hover:border-blue-400 text-xs font-bold text-white active:scale-95 transition-all flex items-center justify-center space-x-1 disabled:opacity-50"
+                    >
+                      <span>🪙 {amt}</span>
+                    </button>
+                  ))}
+                </div>
+                {cheerFeedback && (
+                  <p className="text-[11px] font-medium text-cyan-300 pt-0.5">
+                    {cheerFeedback}
+                  </p>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2 pt-1">
@@ -354,7 +411,7 @@ export function VenueMap({
                           )}
                         </div>
                         <span className="text-[10px] text-amber-400 block font-mono">
-                          🪙 {(zone.coins_collected || 0).toLocaleString()} VIBE
+                          🪙 {((zone.coins_collected !== undefined && zone.coins_collected !== null) ? zone.coins_collected : ((zone.map_data as any)?.coins_collected || 0)).toLocaleString()} VIBE
                         </span>
                       </div>
                     </div>
