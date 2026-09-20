@@ -128,6 +128,9 @@ export default function RegisterPage() {
               </label>
               <input
                 type="text"
+                name="name"
+                id="name"
+                autoComplete="name"
                 required
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -145,6 +148,9 @@ export default function RegisterPage() {
                 </label>
                 <input
                   type="tel"
+                  name="phone"
+                  id="phone"
+                  autoComplete="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="+91 98765 43210"
@@ -159,6 +165,9 @@ export default function RegisterPage() {
                 </label>
                 <input
                   type="email"
+                  name="email"
+                  id="email"
+                  autoComplete="email"
                   value={formData.email}
                   onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   placeholder="aarcha@example.com"
@@ -176,6 +185,8 @@ export default function RegisterPage() {
                 </label>
                 <input
                   type="text"
+                  name="club"
+                  id="club"
                   required
                   value={formData.club}
                   onChange={(e) => setFormData({ ...formData, club: e.target.value })}
@@ -191,6 +202,8 @@ export default function RegisterPage() {
                 </label>
                 <input
                   type="text"
+                  name="instagramId"
+                  id="instagramId"
                   value={formData.instagramId}
                   onChange={(e) => setFormData({ ...formData, instagramId: e.target.value })}
                   placeholder="@aarcha.u"
@@ -207,6 +220,8 @@ export default function RegisterPage() {
               </label>
               <input
                 type="text"
+                name="registrationId"
+                id="registrationId"
                 value={formData.registrationId}
                 onChange={(e) => setFormData({ ...formData, registrationId: e.target.value })}
                 placeholder="REG-2026-0042 (optional)"
@@ -256,7 +271,8 @@ export default function RegisterPage() {
             {/* Submit Button */}
             <div className="pt-4">
               <button
-                type="submit"
+                type="button"
+                onClick={handleSubmit}
                 disabled={isLoading}
                 className="w-full py-3.5 neo-btn-primary text-sm font-black uppercase tracking-wider space-x-2 cursor-pointer flex items-center justify-center"
               >

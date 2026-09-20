@@ -19,12 +19,14 @@ import {
   Moon,
 } from "lucide-react";
 import { formatCoins, cn } from "@/lib/utils";
+import { UserNav } from "@/components/auth/user-nav";
 
 interface TopHeaderProps {
   vibeId: string;
   coins: number;
   levelName: string;
   assignedZoneName?: string;
+  displayName?: string;
 }
 
 const NAV_LINKS = [
@@ -39,7 +41,7 @@ const NAV_LINKS = [
   { label: "Profile", href: "/app/profile", icon: User },
 ];
 
-export function TopHeader({ vibeId, coins, levelName, assignedZoneName }: TopHeaderProps) {
+export function TopHeader({ vibeId, coins, levelName, assignedZoneName, displayName }: TopHeaderProps) {
   const pathname = usePathname();
   const [isDark, setIsDark] = useState(false);
 
@@ -141,6 +143,9 @@ export function TopHeader({ vibeId, coins, levelName, assignedZoneName }: TopHea
           >
             {isDark ? <Sun className="w-4 h-4 text-secondary" /> : <Moon className="w-4 h-4 text-foreground" />}
           </button>
+
+          {/* User Nav / Avatar / Clerk UserButton */}
+          <UserNav vibeId={vibeId} displayName={displayName} />
         </div>
       </div>
     </header>

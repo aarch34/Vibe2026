@@ -12,7 +12,23 @@ export function VibeAuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <ClerkProvider publishableKey={publishableKey}>
+    <ClerkProvider
+      publishableKey={publishableKey}
+      signInUrl="/sign-in"
+      signUpUrl="/sign-up"
+      afterSignInUrl="/app"
+      afterSignUpUrl="/app"
+      appearance={{
+        variables: {
+          colorPrimary: "#f59e0b",
+          colorBackground: "#09090b",
+          colorText: "#f4f4f5",
+          colorInputBackground: "#18181b",
+          colorInputText: "#fafafa",
+          borderRadius: "0px",
+        },
+      }}
+    >
       {children}
     </ClerkProvider>
   );

@@ -55,6 +55,12 @@ export default function LandingPage() {
               Admin
             </Link>
             <Link
+              href="/sign-in"
+              className="text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block"
+            >
+              Sign In
+            </Link>
+            <Link
               href="/app"
               className="neo-btn-primary px-4 py-2 text-xs font-black uppercase tracking-wider"
             >

@@ -22,12 +22,18 @@ export async function getCurrentUserSession(
   let displayName = "VIBE Attendee";
   let userEmail: string | null = null;
 
+  let clerkRole: MemberRole | null = null;
+
   if (isClerkConfigured) {
     try {
       const { auth, currentUser } = await import("@clerk/nextjs/server");
-      const { userId } = await auth();
-      clerkUserId = userId;
+      const authData = auth();
+      clerkUserId = authData.userId;
       if (clerkUserId) {
+        const metadataRole = (authData.sessionClaims?.metadata as any)?.role;
+        if (metadataRole === "admin" || metadataRole === "volunteer" || metadataRole === "lead") {
+          clerkRole = metadataRole;
+        }
         const user = await currentUser();
         displayName = user?.firstName
           ? `${user.firstName} ${user.lastName || ""}`.trim()
@@ -142,7 +148,7 @@ export async function getCurrentUserSession(
           {
             event_id: eventId,
             profile_id: profile.id,
-            role: "attendee",
+            role: clerkRole || "attendee",
             status: "active",
           },
           { onConflict: "event_id,profile_id" }
@@ -153,7 +159,7 @@ export async function getCurrentUserSession(
     }
 
     // Default member if somehow null
-    const memberRole: MemberRole = member?.role || "attendee";
+    const memberRole: MemberRole = clerkRole || member?.role || "attendee";
 
     // 3. Ensure Initial Wallet Credit (if procedure exists)
     try {
