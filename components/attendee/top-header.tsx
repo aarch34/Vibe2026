@@ -10,7 +10,6 @@ import {
   Compass,
   QrCode,
   Trophy,
-  Gift,
   User,
   Gamepad2,
   Camera,
@@ -37,7 +36,6 @@ const NAV_LINKS = [
   { label: "Scan QR", href: "/app/scan", icon: QrCode },
   { label: "Leaderboard", href: "/app/leaderboard", icon: Trophy },
   { label: "Quests", href: "/app/quests", icon: Sparkles },
-  { label: "Rewards", href: "/app/rewards", icon: Gift },
   { label: "Profile", href: "/app/profile", icon: User },
 ];
 
@@ -67,10 +65,10 @@ export function TopHeader({ vibeId, coins, levelName, assignedZoneName, displayN
         {/* Brand Logo & VIBE ID */}
         <div className="flex items-center space-x-2.5">
           <Link href="/app" className="flex items-center space-x-1.5 group">
-            <span className="text-xl font-black tracking-wider text-foreground group-hover:text-primary transition-colors font-mono">
+            <span className="text-xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-cyan-400 group-hover:brightness-125 transition-all font-mono drop-shadow-[0_0_12px_rgba(255,42,133,0.35)]">
               VIBE
             </span>
-            <span className="text-[10px] uppercase tracking-widest font-black px-1.5 py-0.5 bg-primary text-primary-foreground border border-border shadow-[1px_1px_0px_var(--border)]">
+            <span className="text-[10px] uppercase tracking-widest font-black px-1.5 py-0.5 bg-gradient-to-r from-pink-500 to-purple-600 text-white border border-border shadow-[1px_1px_0px_var(--border)]">
               '26
             </span>
           </Link>
@@ -98,15 +96,10 @@ export function TopHeader({ vibeId, coins, levelName, assignedZoneName, displayN
                   "flex items-center space-x-1.5 px-3 py-1.5 text-xs font-black transition-all border-2",
                   isActive
                     ? "bg-primary text-primary-foreground border-border shadow-[2px_2px_0px_var(--border)]"
-                    : "text-foreground hover:bg-muted border-transparent hover:border-border"
+                    : "bg-card text-card-foreground border-border shadow-[2px_2px_0px_var(--border)] hover:bg-muted active:translate-x-[1px] active:translate-y-[1px]"
                 )}
               >
-                <Icon
-                  className={cn(
-                    "w-3.5 h-3.5",
-                    isActive ? "text-primary-foreground" : "text-muted-foreground"
-                  )}
-                />
+                <Icon className="w-3.5 h-3.5" />
                 <span>{link.label}</span>
               </Link>
             );
@@ -125,8 +118,9 @@ export function TopHeader({ vibeId, coins, levelName, assignedZoneName, displayN
 
           {/* Coins Pill */}
           <Link
-            href="/app/rewards"
-            className="flex items-center space-x-1.5 bg-secondary hover:brightness-105 active:translate-x-[1px] active:translate-y-[1px] transition-all border-2 border-border shadow-[2px_2px_0px_var(--border)] px-3 py-1 text-secondary-foreground font-black"
+            href="/app/profile"
+            title="View Wallet & Ledger"
+            className="flex items-center space-x-1.5 bg-secondary hover:brightness-105 active:translate-x-[1px] active:translate-y-[1px] transition-all border-2 border-border shadow-[2px_2px_0px_var(--border)] px-3 py-1 text-secondary-foreground font-black cursor-pointer"
           >
             <Coins className="w-4 h-4 text-secondary-foreground" />
             <span className="text-xs font-black tracking-tight font-mono">

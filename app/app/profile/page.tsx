@@ -84,10 +84,17 @@ export default async function ProfilePage() {
               </div>
 
               {/* Instagram Handle */}
-              <div className="flex items-center space-x-1 text-xs text-primary font-mono font-bold mt-0.5">
-                <Instagram className="w-3.5 h-3.5" />
+              <a
+                href={`https://instagram.com/${instaHandle.replace(/^@/, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                title={`Open @${instaHandle.replace(/^@/, "")} on Instagram`}
+                className="inline-flex items-center space-x-1.5 text-xs text-primary hover:underline font-mono font-bold mt-0.5 group cursor-pointer"
+              >
+                <Instagram className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                 <span>{instaHandle}</span>
-              </div>
+                <span className="text-[10px] opacity-70">↗</span>
+              </a>
 
               {/* Club & Assigned Zone */}
               <p className="text-xs text-muted-foreground font-bold mt-1 truncate">

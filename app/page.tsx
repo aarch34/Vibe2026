@@ -180,19 +180,6 @@ export default function LandingPage() {
           </div>
         </div>
 
-        {/* Partner & Sponsor Banner */}
-        <div className="pt-6 border-t-2 border-border w-full max-w-lg space-y-2">
-          <span className="text-[10px] uppercase font-black tracking-widest text-muted-foreground">
-            Official Event Partners
-          </span>
-          <div className="flex items-center justify-center space-x-6 text-xs font-black text-foreground">
-            <span>Red Bull</span>
-            <span>•</span>
-            <span>Spotify India</span>
-            <span>•</span>
-            <span>OnePlus</span>
-          </div>
-        </div>
       </main>
 
       {/* Footer */}

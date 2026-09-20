@@ -47,11 +47,11 @@ export async function logoutZonalStaffAction() {
 }
 
 export async function getZonalStaffSession(): Promise<ZonalStaffUser | null> {
-  const cookieStore = await cookies();
-  const cookie = cookieStore.get("vibe_zonal_auth");
-  if (!cookie?.value) return null;
-
   try {
+    const cookieStore = await cookies();
+    const cookie = cookieStore.get("vibe_zonal_auth");
+    if (!cookie?.value) return null;
+
     const session = JSON.parse(cookie.value);
     if (session.username && ZONAL_CREDENTIALS[session.username]) {
       return session;

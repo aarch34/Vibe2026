@@ -1,0 +1,11 @@
+{
+  "admin_staff_page_status": 200,
+  "has_zone_delegation_heading": false,
+  "has_all_6_zones": true,
+  "has_assign_staff_button": false,
+  "staff_portal_status": 200,
+  "staff_portal_has_award_duty_xp": true,
+  "staff_portal_has_duty_awards_tab": false,
+  "staff_portal_has_zone_arnava": true,
+  "attendee_redirect_to_signin": true
+}

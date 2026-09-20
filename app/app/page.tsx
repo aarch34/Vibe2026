@@ -253,7 +253,7 @@ export default async function AttendeeHomePage() {
           <div className="grid grid-cols-2 gap-3">
             {/* Metric 1: Spendable Coins */}
             <Link
-              href="/app/rewards"
+              href="/app/profile"
               className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all flex flex-col justify-between group"
             >
               <div className="flex items-center justify-between">
@@ -267,7 +267,7 @@ export default async function AttendeeHomePage() {
                   {formatCoins(walletSummary.wallet.balance)}
                 </span>
                 <p className="text-[10px] text-foreground font-black mt-0.5 flex items-center space-x-1">
-                  <span>Spendable Balance →</span>
+                  <span>View Wallet Ledger →</span>
                 </p>
               </div>
             </Link>

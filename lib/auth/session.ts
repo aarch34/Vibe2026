@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { Profile, EventMember, MemberRole } from "@/types/database";
 
@@ -13,6 +14,8 @@ export interface CurrentUserSession {
   member: EventMember;
   eventId: string;
   role: MemberRole;
+  staffZoneId?: string | null;
+  staffZoneSlug?: string | null;
 }
 
 export async function getCurrentUserSession(
@@ -45,7 +48,7 @@ export async function getCurrentUserSession(
     }
   }
 
-  // Check for test user cookie when Clerk is not configured or in development testing
+  // Check for attendee cookie when Clerk is in local development or registration flow
   if (!clerkUserId) {
     try {
       const { cookies } = await import("next/headers");
@@ -58,19 +61,20 @@ export async function getCurrentUserSession(
     }
   }
 
-  // Fallback default attendee for initial run
+  // If no user is authenticated, redirect to /sign-in immediately (No fake fallback)
   if (!clerkUserId) {
-    clerkUserId = "usr-demo-1";
-    displayName = "Aarav Sharma";
+    redirect("/sign-in");
   }
+
+  const validUserId: string = clerkUserId;
 
   const eventId = "a0000000-0000-0000-0000-000000000001";
 
-  // Check if profile exists in memory store first (e.g. newly registered attendee or demo attendee)
+  // Check if profile exists in memory store first (for local registration)
   const memProfile = Array.from(mockDb.profiles.values()).find(
     (p) => p.clerk_user_id === clerkUserId
   );
-  if (memProfile && (clerkUserId.startsWith("usr-reg-") || clerkUserId.startsWith("usr-demo-") || !isUsingLiveSupabase())) {
+  if (memProfile && (clerkUserId.startsWith("usr-reg-") || !isUsingLiveSupabase())) {
     let member = mockDb.eventMembers.get(`${eventId}:${memProfile.id}`);
     if (!member) {
       member = {
@@ -158,8 +162,39 @@ export async function getCurrentUserSession(
       member = newMember;
     }
 
-    // Default member if somehow null
-    const memberRole: MemberRole = clerkRole || member?.role || "attendee";
+    // Check if user is delegated as Zonal Staff/Head
+    let staffZoneId: string | null = null;
+    let staffZoneSlug: string | null = null;
+    let effectiveRole: MemberRole = clerkRole || member?.role || "attendee";
+
+    try {
+      const { data: staffData } = await supabaseAdmin
+        .from("staff_members")
+        .select(`
+          id,
+          role,
+          staff_zone_assignments (
+            zone_id,
+            zones (
+              slug
+            )
+          )
+        `)
+        .eq("event_id", eventId)
+        .eq("profile_id", profile.id)
+        .maybeSingle();
+
+      if (staffData) {
+        effectiveRole = (staffData.role as MemberRole) || "staff";
+        const asg = (staffData as any).staff_zone_assignments?.[0];
+        if (asg) {
+          staffZoneId = asg.zone_id;
+          staffZoneSlug = asg.zones?.slug || null;
+        }
+      }
+    } catch {
+      // Ignore if staff tables not present
+    }
 
     // 3. Ensure Initial Wallet Credit (if procedure exists)
     try {
@@ -179,12 +214,14 @@ export async function getCurrentUserSession(
         id: `em-${profile.id}`,
         event_id: eventId,
         profile_id: profile.id,
-        role: memberRole,
+        role: effectiveRole,
         status: "active",
         joined_at: new Date().toISOString(),
       },
       eventId,
-      role: memberRole,
+      role: effectiveRole,
+      staffZoneId,
+      staffZoneSlug,
     };
   }
 

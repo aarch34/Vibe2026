@@ -16,6 +16,8 @@ import {
   Trophy,
   Compass,
   HelpCircle,
+  Image as ImageIcon,
+  StopCircle,
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { completeExperienceAction } from "@/actions/experiences/complete";
@@ -42,6 +44,13 @@ export function QRScannerClient({
   const [completionResult, setCompletionResult] = useState<any>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  // Live Camera state
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [isCameraStarting, setIsCameraStarting] = useState(false);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const scannerRef = useRef<any>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
   // Auto-verify if code passed via URL
   useEffect(() => {
     const codeInQuery = searchParams.get("code");
@@ -49,6 +58,101 @@ export function QRScannerClient({
       handleVerifyCode(codeInQuery);
     }
   }, [searchParams]);
+
+  // Clean up camera on unmount
+  useEffect(() => {
+    return () => {
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(() => {});
+        scannerRef.current = null;
+      }
+    };
+  }, []);
+
+  async function startCamera() {
+    setErrorMsg(null);
+    setCameraError(null);
+    setIsCameraStarting(true);
+
+    try {
+      const { Html5Qrcode } = await import("html5-qrcode");
+
+      if (scannerRef.current) {
+        try {
+          await scannerRef.current.stop();
+        } catch {}
+        scannerRef.current = null;
+      }
+
+      const html5QrCode = new Html5Qrcode("html5-qr-video-region");
+      scannerRef.current = html5QrCode;
+
+      const qrConfig = {
+        fps: 12,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.0,
+      };
+
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        qrConfig,
+        (decodedText) => {
+          // Detected!
+          stopCamera();
+          handleVerifyCode(decodedText);
+        },
+        () => {
+          // Frame read callback (silent)
+        }
+      );
+
+      setIsCameraActive(true);
+    } catch (err: any) {
+      console.warn("Camera start failed:", err);
+      setCameraError(
+        err?.message?.includes("NotAllowedError") || err?.name === "NotAllowedError"
+          ? "Camera permission denied. Please allow camera access in your browser or upload a photo."
+          : "Could not open camera stream. Please use 'Upload Photo' or enter the token below."
+      );
+      setIsCameraActive(false);
+    } finally {
+      setIsCameraStarting(false);
+    }
+  }
+
+  async function stopCamera() {
+    if (scannerRef.current) {
+      try {
+        await scannerRef.current.stop();
+      } catch {}
+      scannerRef.current = null;
+    }
+    setIsCameraActive(false);
+  }
+
+  async function handleImageFileScan(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+    setErrorMsg(null);
+    setCameraError(null);
+    setIsVerifying(true);
+
+    try {
+      const { Html5Qrcode } = await import("html5-qrcode");
+      const html5QrCode = new Html5Qrcode("html5-qr-hidden-region");
+      const decodedText = await html5QrCode.scanFile(file, true);
+      handleVerifyCode(decodedText);
+    } catch (err: any) {
+      setErrorMsg(
+        "No valid QR code found in the uploaded image. Please ensure the code is clear or type the token below."
+      );
+    } finally {
+      setIsVerifying(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  }
 
   async function handleVerifyCode(codeToVerify: string) {
     if (!codeToVerify.trim()) return;
@@ -98,7 +202,7 @@ export function QRScannerClient({
           particleCount: 80,
           spread: 70,
           origin: { y: 0.6 },
-          colors: ["#3B82F6", "#06B6D4", "#F59E0B", "#8B5CF6"],
+          colors: ["#FF2A85", "#A855F7", "#00D2FF", "#10B981"],
         });
 
         router.refresh();
@@ -125,36 +229,112 @@ export function QRScannerClient({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      {/* Hidden container for file scan engine */}
+      <div id="html5-qr-hidden-region" className="hidden" />
+
       {/* Left Column: Viewfinder & Input */}
       <div className="lg:col-span-6 space-y-4">
-        {/* 1. Camera / Scanner Viewfinder Mockup */}
-        <div className="relative w-full aspect-[4/3] bg-card text-card-foreground border-2 border-border shadow-neo flex flex-col items-center justify-center p-4 text-center overflow-hidden">
-          {/* Animated Scanning Laser Line */}
-          <div className="absolute inset-x-8 top-10 bottom-10 border-2 border-primary/40 pointer-events-none">
-            <div className="w-full h-1 bg-primary shadow-[0_0_12px_var(--primary)] animate-bounce" />
-          </div>
+        {/* 1. Live Camera Scanner Viewfinder */}
+        <div className="relative w-full aspect-[4/3] bg-[#090816] text-card-foreground border-2 border-border shadow-neo flex flex-col items-center justify-center p-2 text-center overflow-hidden">
+          {/* Active Camera Video Target */}
+          <div
+            id="html5-qr-video-region"
+            className={`w-full h-full flex items-center justify-center ${
+              isCameraActive ? "block" : "hidden"
+            }`}
+          />
 
-          {/* Viewfinder Corner Accents */}
-          <div className="absolute top-4 left-4 w-5 h-5 border-t-4 border-l-4 border-foreground" />
-          <div className="absolute top-4 right-4 w-5 h-5 border-t-4 border-r-4 border-foreground" />
-          <div className="absolute bottom-4 left-4 w-5 h-5 border-b-4 border-l-4 border-foreground" />
-          <div className="absolute bottom-4 right-4 w-5 h-5 border-b-4 border-r-4 border-foreground" />
+          {/* Idle State / Controls when camera not streaming */}
+          {!isCameraActive && (
+            <div className="z-10 space-y-3 px-4 py-6">
+              <div className="w-14 h-14 bg-primary text-primary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] flex items-center justify-center mx-auto">
+                <Camera className="w-7 h-7" />
+              </div>
+              <div>
+                <h2 className="text-base font-black uppercase text-foreground font-mono">
+                  Live Event QR Scanner
+                </h2>
+                <p className="text-xs text-muted-foreground font-medium max-w-[260px] mx-auto mt-1">
+                  Point your device camera at zone signboards, game stalls, or badge QRs
+                </p>
+              </div>
 
-          <div className="z-10 space-y-2">
-            <div className="w-12 h-12 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center mx-auto">
-              <Camera className="w-6 h-6" />
+              {cameraError && (
+                <div className="p-2.5 bg-destructive/20 border border-destructive text-[11px] text-destructive-foreground font-bold">
+                  ⚠️ {cameraError}
+                </div>
+              )}
+
+              <div className="flex flex-col sm:flex-row gap-2 justify-center pt-1">
+                <button
+                  type="button"
+                  onClick={startCamera}
+                  disabled={isCameraStarting}
+                  className="neo-btn-primary py-2.5 px-4 text-xs font-black uppercase tracking-wider flex items-center justify-center space-x-2"
+                >
+                  {isCameraStarting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Starting Camera...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="w-4 h-4" />
+                      <span>Start Camera Scanner</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="neo-btn-card py-2.5 px-4 text-xs font-black uppercase tracking-wider flex items-center justify-center space-x-2 border-2 border-border shadow-[2px_2px_0px_var(--border)]"
+                >
+                  <ImageIcon className="w-4 h-4 text-accent" />
+                  <span>Upload Photo</span>
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  accept="image/*"
+                  onChange={handleImageFileScan}
+                  className="hidden"
+                />
+              </div>
             </div>
-            <h2 className="text-sm font-black uppercase text-foreground">Point at Zone Checkpoint</h2>
-            <p className="text-xs text-muted-foreground font-medium max-w-[240px]">
-              Scan physical QR signboards located across event zones
-            </p>
-          </div>
+          )}
+
+          {/* Active Overlay: Laser line and Stop button */}
+          {isCameraActive && (
+            <>
+              {/* Laser animation */}
+              <div className="absolute inset-x-8 top-12 bottom-12 border-2 border-primary/50 pointer-events-none z-20">
+                <div className="w-full h-1 bg-primary shadow-[0_0_12px_var(--primary)] animate-bounce" />
+              </div>
+              <div className="absolute bottom-3 inset-x-0 flex justify-center z-30">
+                <button
+                  type="button"
+                  onClick={stopCamera}
+                  className="neo-btn bg-destructive text-destructive-foreground border-2 border-border px-4 py-1.5 text-xs font-black uppercase flex items-center space-x-1.5 shadow-[2px_2px_0px_var(--border)]"
+                >
+                  <StopCircle className="w-4 h-4" />
+                  <span>Stop Camera</span>
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* Corner Accents */}
+          <div className="absolute top-3 left-3 w-4 h-4 border-t-2 border-l-2 border-accent pointer-events-none" />
+          <div className="absolute top-3 right-3 w-4 h-4 border-t-2 border-r-2 border-accent pointer-events-none" />
+          <div className="absolute bottom-3 left-3 w-4 h-4 border-b-2 border-l-2 border-accent pointer-events-none" />
+          <div className="absolute bottom-3 right-3 w-4 h-4 border-b-2 border-r-2 border-accent pointer-events-none" />
         </div>
 
         {/* 2. Manual Code Input */}
         <div className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3">
-          <label className="text-xs font-black uppercase tracking-wider text-foreground block">
-            Enter QR Code / Checkpoint Token
+          <label className="text-xs font-black uppercase tracking-wider text-foreground block font-mono">
+            Or Enter Checkpoint Token Manually
           </label>
           <div className="flex space-x-2">
             <input
@@ -179,8 +359,8 @@ export function QRScannerClient({
 
           {/* Quick Demo Pre-set Badges */}
           <div className="pt-3 border-t-2 border-border">
-            <span className="text-[10px] uppercase font-black tracking-wider text-muted-foreground block mb-2">
-              Quick Checkpoints (Tap to Test):
+            <span className="text-[10px] uppercase font-black tracking-wider text-muted-foreground block mb-2 font-mono">
+              Quick Test Checkpoints (Tap to Test):
             </span>
             <div className="flex flex-wrap gap-2">
               {sampleQRs.map((sample) => (
@@ -215,10 +395,10 @@ export function QRScannerClient({
           <div className="p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
             <div className="flex items-start justify-between">
               <div>
-                <span className="text-[10px] uppercase font-black tracking-wider bg-secondary text-secondary-foreground border border-border px-2 py-0.5 inline-block">
+                <span className="text-[10px] uppercase font-black tracking-wider bg-secondary text-secondary-foreground border border-border px-2 py-0.5 inline-block font-mono">
                   Checkpoint Detected • {verificationResult.zone?.name}
                 </span>
-                <h3 className="text-base sm:text-lg font-black text-foreground mt-2">
+                <h3 className="text-base sm:text-lg font-black text-foreground mt-2 font-mono">
                   {verificationResult.experience?.title}
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1 leading-relaxed font-medium">
@@ -236,7 +416,9 @@ export function QRScannerClient({
             {/* Mission Cost & Rewards Breakdown */}
             <div className="grid grid-cols-2 gap-2 p-3.5 bg-muted border-2 border-border">
               <div>
-                <span className="text-[10px] font-black uppercase text-muted-foreground block">Entry Cost</span>
+                <span className="text-[10px] font-black uppercase text-muted-foreground block">
+                  Entry Cost
+                </span>
                 <div className="flex items-center space-x-1.5 mt-0.5">
                   <Coins className="w-4 h-4 text-foreground" />
                   <span className="text-sm sm:text-base font-black font-mono text-foreground">
@@ -248,7 +430,9 @@ export function QRScannerClient({
               </div>
 
               <div>
-                <span className="text-[10px] font-black uppercase text-muted-foreground block">Reward</span>
+                <span className="text-[10px] font-black uppercase text-muted-foreground block">
+                  Reward
+                </span>
                 <div className="flex items-center space-x-1.5 mt-0.5">
                   <Sparkles className="w-4 h-4 text-primary" />
                   <span className="text-sm sm:text-base font-black font-mono text-foreground">
@@ -293,7 +477,7 @@ export function QRScannerClient({
                 </p>
                 <div className="text-[11px] text-muted-foreground flex items-center space-x-1.5 pt-1.5 border-t-2 border-border font-bold">
                   <span>💡</span>
-                  <span>Discover new zones (+50🪙) or complete free challenges to earn more coins.</span>
+                  <span>Discover new zones or complete free challenges to earn more coins.</span>
                 </div>
                 <Link
                   href="/app/map"
@@ -321,7 +505,7 @@ export function QRScannerClient({
                   <>
                     <Sparkles className="w-4 h-4" />
                     <span>
-                      CONFIRM & PLAY (
+                      CONFIRM & UNLOCK (
                       {verificationResult.coinCost > 0
                         ? `${verificationResult.coinCost} Coins`
                         : "Free"}
@@ -342,10 +526,10 @@ export function QRScannerClient({
             </div>
 
             <div>
-              <span className="text-[11px] font-black uppercase tracking-wider px-2 py-0.5 bg-primary text-primary-foreground border border-border inline-block">
+              <span className="text-[11px] font-black uppercase tracking-wider px-2 py-0.5 bg-primary text-primary-foreground border border-border inline-block font-mono">
                 Mission Accomplished!
               </span>
-              <h3 className="text-lg font-black text-foreground mt-2">
+              <h3 className="text-lg font-black text-foreground mt-2 font-mono">
                 {completionResult.experience_title}
               </h3>
               <p className="text-xs text-muted-foreground font-medium mt-1">
@@ -361,13 +545,17 @@ export function QRScannerClient({
 
             <div className="grid grid-cols-2 gap-2 p-3.5 bg-muted border-2 border-border">
               <div>
-                <span className="text-[10px] font-black uppercase text-muted-foreground">XP Earned</span>
-                <p className="text-base font-black font-mono text-foreground">
+                <span className="text-[10px] font-black uppercase text-muted-foreground">
+                  XP Earned
+                </span>
+                <p className="text-base font-black font-mono text-primary">
                   +{completionResult.xp_earned} XP
                 </p>
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase text-muted-foreground">New Coin Balance</span>
+                <span className="text-[10px] font-black uppercase text-muted-foreground">
+                  New Coin Balance
+                </span>
                 <p className="text-base font-black font-mono text-foreground">
                   {formatCoins(completionResult.balance_after)}
                 </p>
@@ -400,7 +588,7 @@ export function QRScannerClient({
         {/* Default Information & Checkpoint Guide when idle */}
         {!verificationResult && !completionResult && (
           <div className="p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3.5">
-            <div className="flex items-center space-x-2 text-sm font-black text-foreground uppercase">
+            <div className="flex items-center space-x-2 text-sm font-black text-foreground uppercase font-mono">
               <HelpCircle className="w-4 h-4 text-primary" />
               <h3>How Checkpoints Work</h3>
             </div>
@@ -410,7 +598,7 @@ export function QRScannerClient({
             <div className="space-y-2 pt-1 text-xs text-foreground font-bold">
               <div className="flex items-start space-x-2">
                 <span className="text-primary font-black">1.</span>
-                <span>Point your mobile camera at any signboard or type its token in the input box.</span>
+                <span>Tap "Start Camera Scanner" or upload a photo of any physical QR signboard.</span>
               </div>
               <div className="flex items-start space-x-2">
                 <span className="text-primary font-black">2.</span>

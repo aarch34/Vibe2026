@@ -4,88 +4,88 @@
 
 :root {
   --card: #ffffff;
-  --ring: #ff3333;
-  --input: #000000;
-  --muted: #f0f0f0;
-  --accent: #0066ff;
-  --border: #000000;
+  --ring: #d9146c;
+  --input: #1e1035;
+  --muted: #f3f0fc;
+  --accent: #0284c7;
+  --border: #1e1035;
   --radius: 0px;
-  --chart-1: #ff3333;
-  --chart-2: #ffff00;
-  --chart-3: #0066ff;
-  --chart-4: #00cc00;
-  --chart-5: #cc00cc;
+  --chart-1: #ff2a85;
+  --chart-2: #a855f7;
+  --chart-3: #00d2ff;
+  --chart-4: #10b981;
+  --chart-5: #f59e0b;
   --popover: #ffffff;
-  --primary: #ff3333;
-  --sidebar: #f0f0f0;
+  --primary: #d9146c;
+  --sidebar: #f3f0fc;
   --font-mono: 'Space Mono', monospace;
   --font-sans: 'DM Sans', sans-serif;
-  --secondary: #ffff00;
-  --background: #ffffff;
-  --foreground: #000000;
-  --destructive: #000000;
+  --secondary: #7e22ce;
+  --background: #fcfbfe;
+  --foreground: #120d26;
+  --destructive: #1e1035;
   --shadow-blur: 0px;
-  --shadow-color: hsl(0 0% 0%);
-  --sidebar-ring: #ff3333;
+  --shadow-color: hsl(265 60% 10%);
+  --sidebar-ring: #d9146c;
   --shadow-spread: 0px;
   --shadow-opacity: 1;
-  --sidebar-accent: #0066ff;
-  --sidebar-border: #000000;
-  --card-foreground: #000000;
+  --sidebar-accent: #0284c7;
+  --sidebar-border: #1e1035;
+  --card-foreground: #120d26;
   --shadow-offset-x: 4px;
   --shadow-offset-y: 4px;
-  --sidebar-primary: #ff3333;
-  --muted-foreground: #333333;
+  --sidebar-primary: #d9146c;
+  --muted-foreground: #635e80;
   --accent-foreground: #ffffff;
-  --popover-foreground: #000000;
+  --popover-foreground: #120d26;
   --primary-foreground: #ffffff;
-  --sidebar-foreground: #000000;
-  --secondary-foreground: #000000;
+  --sidebar-foreground: #120d26;
+  --secondary-foreground: #ffffff;
   --destructive-foreground: #ffffff;
   --sidebar-accent-foreground: #ffffff;
   --sidebar-primary-foreground: #ffffff;
 }
 
 .dark {
-  --card: #333333;
-  --ring: #ff6666;
+  --card: #121026;
+  --ring: #ff2a85;
   --input: #ffffff;
-  --muted: #1a1a1a;
-  --accent: #3399ff;
-  --border: #ffffff;
+  --muted: #1c1838;
+  --accent: #00d2ff;
+  --border: #3b336a;
   --radius: 0px;
-  --chart-1: #ff6666;
-  --chart-2: #ffff33;
-  --chart-3: #3399ff;
-  --chart-4: #33cc33;
-  --chart-5: #cc33cc;
-  --popover: #333333;
-  --primary: #ff6666;
-  --sidebar: #000000;
-  --secondary: #ffff33;
-  --background: #000000;
+  --chart-1: #ff2a85;
+  --chart-2: #a855f7;
+  --chart-3: #00d2ff;
+  --chart-4: #10b981;
+  --chart-5: #f59e0b;
+  --popover: #121026;
+  --primary: #ff2a85;
+  --sidebar: #090816;
+  --secondary: #a855f7;
+  --background: #090816;
   --foreground: #ffffff;
-  --destructive: #ffffff;
+  --destructive: #ff3366;
   --shadow-blur: 0px;
-  --shadow-color: hsl(0 0% 100% / 0.8);
-  --sidebar-ring: #ff6666;
+  --shadow-color: hsl(270 50% 5%);
+  --sidebar-ring: #ff2a85;
   --shadow-spread: 0px;
   --shadow-opacity: 1;
-  --sidebar-accent: #3399ff;
-  --sidebar-border: #ffffff;
+  --sidebar-accent: #00d2ff;
+  --sidebar-border: #3b336a;
   --card-foreground: #ffffff;
   --shadow-offset-x: 4px;
   --shadow-offset-y: 4px;
-  --sidebar-primary: #ff6666;
-  --muted-foreground: #cccccc;
-  --accent-foreground: #000000;
+  --sidebar-primary: #ff2a85;
+  --muted-foreground: #a39ebf;
+  --accent-foreground: #090816;
   --popover-foreground: #ffffff;
-  --primary-foreground: #000000;
+  --primary-foreground: #ffffff;
   --sidebar-foreground: #ffffff;
-  --secondary-foreground: #000000;
-  --destructive-foreground: #000000;
-  --sidebar-accent-foreground: #000000;
-  --sidebar-primary-foreground: #000000;
+  --secondary-foreground: #ffffff;
+  --destructive-foreground: #ffffff;
+  --sidebar-accent-foreground: #090816;
+  --sidebar-primary-foreground: #ffffff;
 }
 
 @theme inline {
@@ -205,7 +205,7 @@ body {
   box-shadow: 1px 1px 0px var(--border);
 }
 
-/* Primary Button (Vibrant Red) */
+/* Primary Button (Electric Neon Pink) */
 .neo-btn-primary {
   background-color: var(--primary);
   color: var(--primary-foreground);
@@ -214,14 +214,14 @@ body {
 }
 .neo-btn-primary:hover {
   box-shadow: 6px 6px 0px var(--border);
-  filter: brightness(1.08);
+  filter: brightness(1.1);
 }
 .neo-btn-primary:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0px var(--border);
 }
 
-/* Secondary Button (Vibrant Neo Yellow) - Crisp dark text */
+/* Secondary Button (Electric Neon Purple) */
 .neo-btn-secondary {
   background-color: var(--secondary);
   color: var(--secondary-foreground);
@@ -230,14 +230,14 @@ body {
 }
 .neo-btn-secondary:hover {
   box-shadow: 6px 6px 0px var(--border);
-  filter: brightness(1.05);
+  filter: brightness(1.1);
 }
 .neo-btn-secondary:active {
   transform: translate(2px, 2px);
   box-shadow: 1px 1px 0px var(--border);
 }
 
-/* Accent Button (Electric Blue) */
+/* Accent Button (Electric Neon Cyan/Blue) */
 .neo-btn-accent {
   background-color: var(--accent);
   color: var(--accent-foreground);

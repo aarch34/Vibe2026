@@ -18,6 +18,7 @@ import {
   AlertCircle,
   Clock,
   Flame,
+  Award,
 } from "lucide-react";
 import { Zone, Experience } from "@/types/database";
 import { formatCoins, formatXP } from "@/lib/utils";
@@ -26,6 +27,7 @@ import {
   searchAttendeeForCheckinAction,
   checkinAttendeeAtZoneAction,
 } from "@/actions/staff/checkin";
+import { AwardDutyModal } from "@/components/staff/award-duty-modal";
 
 interface StaffDashboardClientProps {
   assignedZone: Zone;
@@ -62,8 +64,10 @@ export function StaffDashboardClient({
   activityCode,
   activityQrDataUrl,
 }: StaffDashboardClientProps) {
-  const [activeTab, setActiveTab] = useState<"qr" | "checkin" | "feed">("qr");
+  const [activeTab, setActiveTab] = useState<"qr" | "checkin" | "duty" | "feed">("qr");
   const [selectedQrType, setSelectedQrType] = useState<"activity" | "checkpoint">("activity");
+  const [isAwardModalOpen, setIsAwardModalOpen] = useState(false);
+  const [dutyAwardsList, setDutyAwardsList] = useState<any[]>([]);
 
   // Search & check-in state
   const [searchQuery, setSearchQuery] = useState("");
@@ -171,6 +175,14 @@ export function StaffDashboardClient({
         </div>
 
         <div className="flex items-center flex-wrap gap-2.5">
+          <button
+            type="button"
+            onClick={() => setIsAwardModalOpen(true)}
+            className="neo-btn-primary px-3.5 py-2 text-xs font-black flex items-center space-x-1.5 cursor-pointer bg-amber-500 text-black border-2 border-black shadow-[2px_2px_0px_#000]"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-black" />
+            <span>Award Duty XP</span>
+          </button>
           <Link
             href="/staff/stalls"
             className="neo-btn-secondary px-3.5 py-2 text-xs font-black flex items-center space-x-1.5"
@@ -268,6 +280,18 @@ export function StaffDashboardClient({
         >
           <Users className="w-4 h-4" />
           <span>Participant Check-in (+75 XP)</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("duty")}
+          className={`px-4 py-2.5 text-xs font-black transition-all flex items-center space-x-2 border-2 border-b-0 ${
+            activeTab === "duty"
+              ? "bg-amber-500 text-black border-border shadow-[2px_-2px_0px_var(--border)]"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Sparkles className="w-4 h-4" />
+          <span>Volunteer Duty XP ({dutyAwardsList.length})</span>
         </button>
 
         <button
@@ -583,6 +607,90 @@ export function StaffDashboardClient({
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB 4: VOLUNTEER DUTY AWARDS */}
+      {activeTab === "duty" && (
+        <div className="space-y-6">
+          <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center space-x-2 text-amber-400 mb-1">
+                <Sparkles className="w-4 h-4" />
+                <span className="text-xs font-mono font-bold uppercase">Duty Reward Disbursement</span>
+              </div>
+              <h2 className="text-xl font-black text-foreground font-mono uppercase tracking-tight">
+                Authorize Volunteer & Task XP
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1 max-w-xl font-mono">
+                Award verified XP and Coins to volunteers for crowd control, stage management, stall hosting,
+                and logistics. Each award is logged to the District Admin audit trail.
+              </p>
+            </div>
+
+            <button
+              onClick={() => setIsAwardModalOpen(true)}
+              className="neo-btn-primary px-5 py-3 text-xs font-mono font-black uppercase flex items-center justify-center space-x-2 bg-amber-500 text-black border-2 border-black shadow-[4px_4px_0px_#000]"
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>+ Issue Duty Award</span>
+            </button>
+          </div>
+
+          {/* Recent Duty Awards List */}
+          <div className="p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3">
+            <h3 className="text-xs font-black text-foreground font-mono flex items-center space-x-2 uppercase">
+              <Award className="w-4 h-4 text-amber-500" />
+              <span>Recent Duty Awards Issued at {assignedZone.name} Station</span>
+            </h3>
+
+            {dutyAwardsList.length === 0 ? (
+              <div className="p-8 text-center bg-muted border-2 border-border">
+                <p className="text-xs text-muted-foreground font-bold font-mono mb-2">
+                  No volunteer duty rewards issued yet today.
+                </p>
+                <button
+                  onClick={() => setIsAwardModalOpen(true)}
+                  className="px-4 py-2 bg-amber-500 text-black text-xs font-mono font-bold uppercase border-2 border-black shadow-[2px_2px_0px_#000]"
+                >
+                  Issue First Award →
+                </button>
+              </div>
+            ) : (
+              <div className="divide-y-2 divide-border">
+                {dutyAwardsList.map((award, idx) => (
+                  <div key={award.id || idx} className="py-3 flex items-center justify-between font-mono text-xs">
+                    <div>
+                      <div className="font-bold text-foreground flex items-center space-x-2">
+                        <span>{award.recipientName}</span>
+                        <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                          {award.dutyCategory}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{award.description}</p>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-black text-amber-400">+{award.xpAwarded} XP</div>
+                      <div className="text-[11px] text-cyan-400 font-bold">+{award.coinsAwarded} Coins</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Award Duty Modal */}
+      {isAwardModalOpen && (
+        <AwardDutyModal
+          zoneId={assignedZone.id}
+          zoneName={assignedZone.name}
+          onClose={() => setIsAwardModalOpen(false)}
+          onSuccess={(newAward) => {
+            setDutyAwardsList((prev) => [newAward, ...prev]);
+            setActiveTab("duty");
+          }}
+        />
       )}
     </div>
   );

@@ -66,6 +66,7 @@ export interface Zone {
   name: string;
   slug: string;
   description: string | null;
+  tagline?: string | null;
   image_media_id: string | null;
   map_data: {
     x: number;
@@ -345,3 +346,39 @@ export interface LeaderboardEntry {
   level_order: number;
   completions_count: number;
 }
+
+export type ZonalStaffType = "zonal_head" | "zonal_staff";
+
+export interface StaffMember {
+  id: string;
+  event_id: string;
+  profile_id: string;
+  role: MemberRole;
+  created_at: string;
+}
+
+export interface StaffZoneAssignment {
+  id: string;
+  staff_member_id: string;
+  zone_id: string;
+  staff_type: ZonalStaffType;
+  custom_passcode?: string | null;
+  assigned_by?: string | null;
+  is_active: boolean;
+  created_at: string;
+  updated_at?: string;
+}
+
+export interface DutyReward {
+  id: string;
+  event_id: string;
+  zone_id: string;
+  staff_profile_id: string;
+  recipient_profile_id: string;
+  duty_category: string;
+  description: string;
+  xp_awarded: number;
+  coins_awarded: number;
+  created_at: string;
+}
+

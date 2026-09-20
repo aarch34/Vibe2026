@@ -153,9 +153,14 @@ export function DualLeaderboardClient({
                     <p className="text-[10px] font-mono font-black text-primary">
                       {formatXP(top3[1].total_xp)}
                     </p>
-                    <span className="text-[9px] text-muted-foreground block truncate font-mono font-bold">
+                    <a
+                      href={`https://instagram.com/${(top3[1].instagram_id || "rotaract3192").replace(/^@/, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[9px] text-muted-foreground hover:text-primary hover:underline block truncate font-mono font-bold cursor-pointer"
+                    >
                       {top3[1].instagram_id || "@user"}
-                    </span>
+                    </a>
                   </div>
 
                   {/* 1st Place */}
@@ -170,9 +175,14 @@ export function DualLeaderboardClient({
                     <p className="text-[11px] font-mono font-black text-primary">
                       {formatXP(top3[0].total_xp)}
                     </p>
-                    <span className="text-[9px] text-secondary-foreground block truncate font-mono font-bold">
+                    <a
+                      href={`https://instagram.com/${(top3[0].instagram_id || "rotaract3192").replace(/^@/, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[9px] text-secondary-foreground hover:underline block truncate font-mono font-bold cursor-pointer"
+                    >
                       {top3[0].instagram_id || "@champ"}
-                    </span>
+                    </a>
                   </div>
 
                   {/* 3rd Place */}
@@ -186,9 +196,14 @@ export function DualLeaderboardClient({
                     <p className="text-[10px] font-mono font-black text-primary">
                       {formatXP(top3[2].total_xp)}
                     </p>
-                    <span className="text-[9px] text-muted-foreground block truncate font-mono font-bold">
+                    <a
+                      href={`https://instagram.com/${(top3[2].instagram_id || "rotaract3192").replace(/^@/, "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[9px] text-muted-foreground hover:text-primary hover:underline block truncate font-mono font-bold cursor-pointer"
+                    >
                       {top3[2].instagram_id || "@user"}
-                    </span>
+                    </a>
                   </div>
                 </div>
               </div>
@@ -198,43 +213,42 @@ export function DualLeaderboardClient({
             <div className="p-4 bg-muted text-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] space-y-1 text-xs">
               <div className="flex items-center space-x-1.5 font-black text-foreground font-mono">
                 <Info className="w-4 h-4 text-primary" />
-                <span>Ranking Principle: XP Measures Journey</span>
+                <span>OFFICIAL TIE-BREAKER PROTOCOL</span>
               </div>
-              <p className="text-[11px] text-muted-foreground font-bold leading-relaxed">
-                Rankings are strictly determined by accumulated XP. Spending coins will never reduce your leaderboard standing.
+              <p className="text-muted-foreground font-bold text-[11px]">
+                Ties broken deterministically: (1) Total XP → (2) Unique Experiences
+                Completed → (3) Earliest Completion Timestamp.
               </p>
             </div>
           </div>
 
           {/* Right Column: Full Ranked List with Handle, Club, Zone */}
           <div className="lg:col-span-7 space-y-2">
-            <div className="flex items-center justify-between px-1 pb-1">
-              <h3 className="text-xs font-black text-foreground uppercase tracking-wider font-mono">
-                Full Rankings ({entries.length} Attendees)
-              </h3>
-              <span className="text-[11px] text-primary font-mono font-black">● Real-time</span>
+            <div className="flex items-center justify-between text-xs font-mono font-black text-muted-foreground uppercase px-3 py-1">
+              <span>Rank & Attendee</span>
+              <span>Score (XP / VIBE)</span>
             </div>
 
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {entries.map((entry) => {
                 const isCurrentUser = entry.profile_id === currentProfileId;
 
                 return (
                   <div
                     key={entry.profile_id}
-                    className={`p-3 sm:p-3.5 border-2 border-border flex items-center justify-between transition-colors ${
+                    className={`p-3.5 border-2 border-border flex items-center justify-between transition-all ${
                       isCurrentUser
-                        ? "bg-secondary text-secondary-foreground shadow-neo font-black"
-                        : "bg-card text-card-foreground shadow-[2px_2px_0px_var(--border)] hover:bg-muted"
+                        ? "bg-primary/10 border-primary shadow-neo"
+                        : "bg-card text-card-foreground shadow-[2px_2px_0px_var(--border)]"
                     }`}
                   >
-                    <div className="flex items-center space-x-3">
-                      <span className="w-6 text-center font-mono font-black text-xs text-muted-foreground">
+                    <div className="flex items-center space-x-3 min-w-0">
+                      <div className="w-8 h-8 bg-muted border border-border flex items-center justify-center font-mono font-black text-xs shrink-0 text-foreground">
                         #{entry.rank}
-                      </span>
-                      <div className="space-y-0.5">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs sm:text-sm font-black text-foreground">
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center space-x-1.5">
+                          <span className="text-xs font-black text-foreground truncate">
                             {entry.display_name}
                           </span>
                           {isCurrentUser && (
@@ -243,14 +257,19 @@ export function DualLeaderboardClient({
                             </span>
                           )}
                           {entry.instagram_id && (
-                            <span className="text-[10px] text-primary font-mono font-bold flex items-center space-x-0.5">
+                            <a
+                              href={`https://instagram.com/${entry.instagram_id.replace(/^@/, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-[10px] text-primary hover:underline font-mono font-bold flex items-center space-x-0.5 cursor-pointer"
+                            >
                               <Instagram className="w-2.5 h-2.5" />
                               <span>{entry.instagram_id}</span>
-                            </span>
+                            </a>
                           )}
                         </div>
 
-                        <div className="flex items-center space-x-2 text-[10px] text-muted-foreground font-bold">
+                        <div className="flex items-center space-x-2 text-[10px] text-muted-foreground font-bold mt-0.5">
                           <span>{entry.club || "Rotaract Club"}</span>
                           <span>•</span>
                           <span className="text-primary font-black">

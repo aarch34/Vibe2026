@@ -24,7 +24,16 @@ export async function POST(req: NextRequest) {
       ? (instagramId.startsWith("@") ? instagramId.trim() : `@${instagramId.trim()}`)
       : `@${name.toLowerCase().replace(/\s+/g, ".")}`;
 
-    const newUserId = `usr-reg-${Date.now()}`;
+    let newUserId = `usr-reg-${Date.now()}`;
+    try {
+      const { auth } = await import("@clerk/nextjs/server");
+      const authData = auth();
+      if (authData.userId) {
+        newUserId = authData.userId;
+      }
+    } catch {
+      // Clerk not active or dev mode
+    }
     const vibeId = `VIBE-${Math.floor(1000 + Math.random() * 9000)}`;
 
     // Pick zone if not specified: round-robin or default to Arnava
@@ -46,11 +55,6 @@ export async function POST(req: NextRequest) {
               display_name: name.trim(),
               college: club || "Rotaract District 3192",
               club: club || "Rotaract Member",
-              phone: phone || null,
-              email: email || null,
-              instagram_id: cleanInsta,
-              registration_id: registrationId || `REG-${Date.now().toString().slice(-6)}`,
-              assigned_zone_id: chosenZone,
             },
             { onConflict: "clerk_user_id" }
           )
@@ -60,7 +64,12 @@ export async function POST(req: NextRequest) {
         if (error) {
           throw new Error(error.message);
         }
-        profile = newProfile;
+        profile = {
+          ...newProfile,
+          instagram_id: cleanInsta,
+          assigned_zone_id: chosenZone,
+        };
+        mockDb.profiles.set(newProfile.id, profile);
 
         await supabaseAdmin.from("event_members").upsert(
           {

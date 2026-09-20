@@ -32,6 +32,7 @@ export default async function AdminLayout({
 
   const navItems = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { label: "Staff Delegation", href: "/admin/staff", icon: UserCheck },
     { label: "Zones", href: "/admin/zones", icon: MapPin },
     { label: "Experiences", href: "/admin/experiences", icon: Sparkles },
     { label: "QR Codes", href: "/admin/qr", icon: QrCode },
@@ -39,6 +40,7 @@ export default async function AdminLayout({
     { label: "Rewards", href: "/admin/rewards", icon: Gift },
     { label: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
   ];
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row">

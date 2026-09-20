@@ -2,33 +2,40 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import confetti from "canvas-confetti";
 import {
-  Gamepad2,
-  Zap,
-  Music,
-  Coffee,
-  Camera,
-  Utensils,
-  Lock,
+  Compass,
+  MapPin,
   CheckCircle2,
-  Coins,
+  Lock,
+  QrCode,
   Sparkles,
+  Trophy,
   X,
   ChevronRight,
-  QrCode,
-  Send,
-  Loader2,
+  Flame,
+  Waves,
 } from "lucide-react";
-import { Zone, Experience } from "@/types/database";
-import { sendCoinsToZoneAction } from "@/actions/zones/contribute";
+import { Zone, Experience, ExperienceCompletion } from "@/types/database";
 
 interface VenueMapProps {
   zones: Zone[];
   experiences: Experience[];
-  userCompletions: { experience_id: string }[];
+  userCompletions: ExperienceCompletion[];
   assignedZoneId?: string | null;
+}
+
+const ZONE_TAGLINES: Record<string, string> = {
+  arnava: "Rising Tide",
+  taranaga: "Electric Ripple",
+  sagara: "Deep Ocean",
+  pravaha: "Relentless Flow",
+  samudhra: "Endless Horizon",
+  varuna: "Ocean Sovereign",
+};
+
+function getZoneTagline(zone: Zone): string {
+  const slugKey = (zone.slug || zone.name || "").replace(/^z-/, "").toLowerCase();
+  return zone.tagline || ZONE_TAGLINES[slugKey] || "Oceanic Zone";
 }
 
 export function VenueMap({
@@ -37,31 +44,7 @@ export function VenueMap({
   userCompletions,
   assignedZoneId,
 }: VenueMapProps) {
-  const router = useRouter();
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
-  const [isCheering, setIsCheering] = useState(false);
-  const [cheerFeedback, setCheerFeedback] = useState<string | null>(null);
-
-  async function handleCheerZone(amount: number) {
-    if (!selectedZone || isCheering) return;
-    setIsCheering(true);
-    setCheerFeedback(null);
-    try {
-      const res = await sendCoinsToZoneAction({ zoneId: selectedZone.id, amount });
-      if (res.success) {
-        confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
-        setCheerFeedback(`🎉 Sent ${amount} VIBE to ${res.zoneName}! (+${res.xpEarned} XP)`);
-        setSelectedZone({ ...selectedZone, coins_collected: res.zoneTotalCoins });
-        router.refresh();
-      } else {
-        setCheerFeedback(`⚠️ ${res.message || "Could not send coins."}`);
-      }
-    } catch (err: any) {
-      setCheerFeedback(`⚠️ ${err.message || "Failed to send coins."}`);
-    } finally {
-      setIsCheering(false);
-    }
-  }
 
   const completedExpIds = new Set(userCompletions.map((c) => c.experience_id));
 
@@ -71,11 +54,19 @@ export function VenueMap({
     if (zone.slug) {
       if (assignedZoneId === zone.slug) return true;
       if (assignedZoneId === `z-${zone.slug}`) return true;
-      if (assignedZoneId.replace(/^z-/, "").toLowerCase() === zone.slug.replace(/^z-/, "").toLowerCase()) return true;
+      if (
+        assignedZoneId.replace(/^z-/, "").toLowerCase() ===
+        zone.slug.replace(/^z-/, "").toLowerCase()
+      )
+        return true;
     }
     if (zone.name) {
       if (assignedZoneId.toLowerCase() === zone.name.toLowerCase()) return true;
-      if (assignedZoneId.replace(/^z-/, "").toLowerCase() === zone.name.toLowerCase()) return true;
+      if (
+        assignedZoneId.replace(/^z-/, "").toLowerCase() ===
+        zone.name.toLowerCase()
+      )
+        return true;
     }
     return false;
   }
@@ -86,20 +77,11 @@ export function VenueMap({
     if (zoneExps.length === 0) return "available";
 
     const completedInZone = zoneExps.filter((e) => completedExpIds.has(e.id));
-    if (completedInZone.length === zoneExps.length) return "completed";
+    if (completedInZone.length === zoneExps.length && zoneExps.length > 0)
+      return "completed";
     if (completedInZone.length > 0) return "in_progress";
     return "available";
   }
-
-  const iconMap: Record<string, any> = {
-    Gamepad2,
-    Zap,
-    Music,
-    Coffee,
-    Camera,
-    Utensils,
-    Lock,
-  };
 
   const selectedZoneExperiences = selectedZone
     ? experiences.filter((e) => e.zone_id === selectedZone.id)
@@ -109,26 +91,82 @@ export function VenueMap({
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       {/* Venue Map Container (Left on PC) */}
       <div className="lg:col-span-7 space-y-2">
-        <div className="relative w-full aspect-[4/4] sm:aspect-[4/3.6] lg:aspect-auto lg:h-[540px] bg-gradient-to-b from-slate-950 via-[#0B1120] to-slate-950 border-2 border-border shadow-neo p-2 overflow-hidden flex flex-col justify-between">
+        <div className="relative w-full aspect-[4/4] sm:aspect-[4/3.6] lg:aspect-auto lg:h-[560px] bg-gradient-to-b from-[#090816] via-[#120E26] to-[#090816] border-2 border-border shadow-neo p-3 overflow-hidden flex flex-col justify-between rounded-none">
+          {/* Header overlay */}
+          <div className="flex items-center justify-between z-10 px-2 pt-1">
+            <div className="flex items-center space-x-2">
+              <span className="w-2.5 h-2.5 bg-accent rounded-full animate-ping" />
+              <span className="text-[11px] font-mono font-black text-foreground tracking-wider uppercase">
+                Interactive Zone Radar
+              </span>
+            </div>
+            <span className="text-[10px] font-mono font-bold text-muted-foreground bg-card/80 px-2 py-0.5 border border-border">
+              Tap any zone to explore
+            </span>
+          </div>
+
           {/* SVG Venue Grid & Connecting Pathways */}
           <svg
             viewBox="0 0 400 420"
-            className="w-full h-full"
+            className="w-full h-full my-auto"
             style={{ touchAction: "manipulation" }}
           >
             <defs>
               <radialGradient id="venueGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#1E3A8A" stopOpacity="0.35" />
-                <stop offset="100%" stopColor="#070B14" stopOpacity="0" />
+                <stop offset="0%" stopColor="#9333EA" stopOpacity="0.25" />
+                <stop offset="60%" stopColor="#00D2FF" stopOpacity="0.10" />
+                <stop offset="100%" stopColor="#090816" stopOpacity="0" />
               </radialGradient>
-              <linearGradient id="pathGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.4" />
-                <stop offset="100%" stopColor="#06B6D4" stopOpacity="0.4" />
+              <linearGradient
+                id="pathGradient"
+                x1="0%"
+                y1="0%"
+                x2="100%"
+                y2="100%"
+              >
+                <stop offset="0%" stopColor="#FF2A85" stopOpacity="0.6" />
+                <stop offset="50%" stopColor="#A855F7" stopOpacity="0.6" />
+                <stop offset="100%" stopColor="#00D2FF" stopOpacity="0.6" />
               </linearGradient>
+              <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
             </defs>
 
             {/* Background Ambient Glow */}
             <rect width="400" height="420" fill="url(#venueGlow)" />
+
+            {/* Circular Radar Grid Rings */}
+            <circle
+              cx="200"
+              cy="200"
+              r="160"
+              fill="none"
+              stroke="#2E2854"
+              strokeWidth="1"
+              strokeDasharray="3 6"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="105"
+              fill="none"
+              stroke="#2E2854"
+              strokeWidth="1"
+              strokeDasharray="2 4"
+            />
+            <circle
+              cx="200"
+              cy="200"
+              r="50"
+              fill="none"
+              stroke="#3B336A"
+              strokeWidth="1"
+            />
 
             {/* Connecting Pathway Lines */}
             <path
@@ -136,19 +174,19 @@ export function VenueMap({
               fill="none"
               stroke="url(#pathGradient)"
               strokeWidth="2.5"
-              strokeDasharray="4 4"
+              strokeDasharray="5 5"
               className="animate-pulse"
             />
 
-            {/* Central Main Stage Marker */}
+            {/* Central Sagara / Arena Marker */}
             <circle
               cx="200"
               cy="180"
-              r="42"
-              fill="#1E1B4B"
-              stroke="#6366F1"
-              strokeWidth="1.5"
-              strokeOpacity="0.5"
+              r="46"
+              fill="#141130"
+              stroke="#A855F7"
+              strokeWidth="2"
+              strokeOpacity="0.8"
             />
 
             {/* Interactive Zone Nodes */}
@@ -157,36 +195,37 @@ export function VenueMap({
               const x = zone.map_data?.x || 200;
               const y = zone.map_data?.y || 200;
               const isSelected = selectedZone?.id === zone.id;
+              const isUserZone = isAssignedZone(zone);
 
-              let strokeColor = "#3B82F6";
-              let fillColor = "#0F172A";
+              let strokeColor = "#00D2FF"; // Neon Blue/Cyan default
+              let fillColor = "#141130";
 
               if (status === "completed") {
-                strokeColor = "#10B981";
+                strokeColor = "#10B981"; // Emerald
                 fillColor = "#064E3B";
               } else if (status === "in_progress") {
-                strokeColor = "#F59E0B";
-                fillColor = "#451A03";
+                strokeColor = "#FF2A85"; // Neon Pink
+                fillColor = "#4A0E2E";
               }
 
               return (
                 <g
                   key={zone.id}
-                  className="cursor-pointer transition-transform duration-200"
+                  className="cursor-pointer transition-transform duration-200 group"
                   onClick={() => setSelectedZone(zone)}
                 >
                   {/* Outer halo when user's assigned zone */}
-                  {isAssignedZone(zone) && (
+                  {isUserZone && (
                     <circle
                       cx={x}
                       cy={y}
-                      r="31"
+                      r="33"
                       fill="none"
-                      stroke="#F59E0B"
+                      stroke="#FF2A85"
                       strokeWidth="2"
-                      strokeDasharray="4 2"
+                      strokeDasharray="4 3"
                       className="animate-spin"
-                      style={{ animationDuration: "12s" }}
+                      style={{ animationDuration: "10s" }}
                     />
                   )}
 
@@ -195,13 +234,13 @@ export function VenueMap({
                     <circle
                       cx={x}
                       cy={y}
-                      r="35"
+                      r="37"
                       fill="none"
-                      stroke="#60A5FA"
+                      stroke="#00D2FF"
                       strokeWidth="2.5"
                       strokeDasharray="3 3"
                       className="animate-spin"
-                      style={{ animationDuration: "8s" }}
+                      style={{ animationDuration: "6s" }}
                     />
                   )}
 
@@ -209,21 +248,22 @@ export function VenueMap({
                   <circle
                     cx={x}
                     cy={y}
-                    r="26"
+                    r="27"
                     fill={fillColor}
                     stroke={strokeColor}
-                    strokeWidth={isSelected ? "3" : "2"}
+                    strokeWidth={isSelected ? "3.5" : "2"}
+                    filter={isSelected ? "url(#neonGlow)" : undefined}
                     className="transition-all hover:scale-110 active:scale-95"
                   />
 
-                  {/* Zone Number / Status */}
+                  {/* Zone Number */}
                   <text
                     x={x}
-                    y={y - 2}
+                    y={y - 3}
                     textAnchor="middle"
                     fill="#FFFFFF"
-                    fontSize="10"
-                    fontWeight="bold"
+                    fontSize="11"
+                    fontWeight="900"
                     fontFamily="monospace"
                   >
                     Z{zone.sort_order}
@@ -232,11 +272,12 @@ export function VenueMap({
                   {/* Zone Name Label */}
                   <text
                     x={x}
-                    y={y + 12}
+                    y={y + 11}
                     textAnchor="middle"
-                    fill={status === "completed" ? "#34D399" : "#94A3B8"}
-                    fontSize="8"
-                    fontWeight="600"
+                    fill={status === "completed" ? "#34D399" : "#00D2FF"}
+                    fontSize="8.5"
+                    fontWeight="800"
+                    fontFamily="sans-serif"
                   >
                     {zone.name.split(" ")[0]}
                   </text>
@@ -246,18 +287,22 @@ export function VenueMap({
           </svg>
 
           {/* Status Legend */}
-          <div className="bg-card/95 backdrop-blur-md border-2 border-border shadow-[2px_2px_0px_var(--border)] py-1.5 px-3 flex items-center justify-around text-[10px] font-black text-foreground font-mono">
+          <div className="bg-card/90 backdrop-blur-md border-2 border-border shadow-[2px_2px_0px_var(--border)] py-2 px-3 flex items-center justify-around text-[10px] font-black text-foreground font-mono">
             <div className="flex items-center space-x-1.5">
-              <span className="w-2.5 h-2.5 bg-primary border border-border" />
+              <span className="w-2.5 h-2.5 bg-[#10B981] border border-border" />
               <span>Completed</span>
             </div>
             <div className="flex items-center space-x-1.5">
-              <span className="w-2.5 h-2.5 bg-secondary border border-border" />
+              <span className="w-2.5 h-2.5 bg-[#FF2A85] border border-border" />
               <span>In Progress</span>
             </div>
             <div className="flex items-center space-x-1.5">
-              <span className="w-2.5 h-2.5 bg-muted border border-border" />
+              <span className="w-2.5 h-2.5 bg-[#00D2FF] border border-border" />
               <span>Available</span>
+            </div>
+            <div className="flex items-center space-x-1.5">
+              <span className="text-[#FF2A85] text-xs">⭐</span>
+              <span>YOUR ZONE</span>
             </div>
           </div>
         </div>
@@ -269,7 +314,7 @@ export function VenueMap({
           <div className="p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4 relative">
             <button
               onClick={() => setSelectedZone(null)}
-              className="absolute top-4 right-4 p-1.5 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] hover:bg-muted active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
+              className="absolute top-4 right-4 p-1.5 bg-muted text-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] hover:bg-card active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
               aria-label="Close"
             >
               <X className="w-4 h-4" />
@@ -278,170 +323,161 @@ export function VenueMap({
             <div>
               <div className="flex items-center space-x-2">
                 <span className="text-[10px] uppercase font-black text-primary tracking-wider font-mono">
-                  Zone {selectedZone.sort_order} Inspector
+                  Zone {selectedZone.sort_order} Radar
                 </span>
                 {isAssignedZone(selectedZone) && (
-                  <span className="text-[10px] font-black text-secondary-foreground bg-secondary border-2 border-border shadow-[1px_1px_0px_var(--border)] px-2 py-0.5">
+                  <span className="text-[10px] font-black text-primary-foreground bg-primary border-2 border-border shadow-[1px_1px_0px_var(--border)] px-2 py-0.5">
                     YOUR ZONE ⭐
                   </span>
                 )}
               </div>
-              <h3 className="text-lg font-black text-foreground mt-0.5 font-mono">
-                {selectedZone.name}
+              <h3 className="text-xl font-black text-foreground mt-0.5 font-mono flex items-center gap-2">
+                <span>{selectedZone.name}</span>
+                <span className="text-xs font-mono font-bold text-muted-foreground px-2 py-0.5 bg-muted border border-border">
+                  {getZoneTagline(selectedZone)}
+                </span>
               </h3>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed font-bold">
+              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed font-medium">
                 {selectedZone.description}
               </p>
 
-              {/* Zone Championship Score Pill */}
-              <div className="mt-2.5 p-2.5 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-between text-xs font-bold">
-                <span className="text-[11px] text-muted-foreground">
-                  Zone Battle Standing:
-                </span>
-                <span className="font-mono font-black text-primary">
-                  🪙 {(selectedZone.coins_collected || 0).toLocaleString()} VIBE Collected
-                </span>
-              </div>
-              <p className="text-[10px] text-muted-foreground mt-1 font-bold">
-                💡 Coins spent on activities in this zone are added directly to its score!
-              </p>
-
-              {/* Send Coins / Cheer Zone Controls */}
-              <div className="mt-2.5 p-3 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] space-y-2">
-                <div className="flex items-center justify-between text-xs font-bold">
-                  <span className="font-black text-foreground flex items-center space-x-1.5 font-mono">
-                    <Send className="w-3.5 h-3.5 text-primary" />
-                    <span>Send Coins to {selectedZone.name}</span>
-                  </span>
-                  <span className="text-[10px] text-primary font-mono font-bold">+XP on cheer</span>
-                </div>
+              {/* Zone Battle Standing Badge */}
+              <div className="mt-3 p-3 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-between text-xs font-bold">
                 <div className="flex items-center space-x-2">
-                  {[25, 50, 100].map((amt) => (
-                    <button
-                      key={amt}
-                      onClick={() => handleCheerZone(amt)}
-                      disabled={isCheering}
-                      className="neo-btn-secondary flex-1 py-1.5 px-2 text-xs font-black active:scale-95 disabled:opacity-50 cursor-pointer"
-                    >
-                      <span>🪙 {amt}</span>
-                    </button>
-                  ))}
+                  <Trophy className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-[11px] text-muted-foreground">
+                    Zone Battle Score:
+                  </span>
                 </div>
-                {cheerFeedback && (
-                  <p className="text-[11px] font-medium text-cyan-300 pt-0.5">
-                    {cheerFeedback}
-                  </p>
-                )}
+                <span className="font-mono font-black text-primary text-sm">
+                  🪙 {(selectedZone.coins_collected || 0).toLocaleString()} VIBE
+                </span>
               </div>
             </div>
 
-            <div className="space-y-2 pt-1">
-              <h4 className="text-xs font-black text-foreground uppercase tracking-wider font-mono">
-                Missions & Experiences ({selectedZoneExperiences.length})
-              </h4>
+            {/* Missions & Experiences */}
+            <div className="space-y-2.5 pt-1">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-black text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-accent" />
+                  <span>Missions & Experiences ({selectedZoneExperiences.length})</span>
+                </h4>
+                <span className="text-[10px] text-muted-foreground font-mono font-bold">
+                  {selectedZoneExperiences.filter((e) => completedExpIds.has(e.id)).length} / {selectedZoneExperiences.length} Done
+                </span>
+              </div>
 
-              {selectedZoneExperiences.map((exp) => {
-                const isCompleted = completedExpIds.has(exp.id);
+              {selectedZoneExperiences.length === 0 ? (
+                <div className="p-4 bg-muted border-2 border-border text-center text-xs text-muted-foreground font-bold">
+                  No active missions found for this zone right now.
+                </div>
+              ) : (
+                selectedZoneExperiences.map((exp) => {
+                  const isCompleted = completedExpIds.has(exp.id);
 
-                return (
-                  <div
-                    key={exp.id}
-                    className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-between"
-                  >
-                    <div className="space-y-0.5 flex-1 pr-3">
-                      <div className="flex items-center space-x-1.5">
-                        <h5 className="text-xs font-black text-foreground font-mono">
-                          {exp.title}
-                        </h5>
-                        {isCompleted && (
-                          <CheckCircle2 className="w-3.5 h-3.5 text-primary" />
-                        )}
-                      </div>
-                      <div className="flex items-center space-x-2 text-[10px] font-mono">
-                        {exp.coin_cost > 0 ? (
-                          <span className="text-primary font-black">
-                            {exp.coin_cost} Coins
-                          </span>
-                        ) : (
-                          <span className="text-foreground font-black bg-muted px-1 border border-border">Free</span>
-                        )}
-                        <span className="text-secondary-foreground font-black bg-secondary px-1 border border-border">
-                          +{exp.xp_reward} XP
-                        </span>
-                      </div>
-                    </div>
-
-                    <Link
-                      href={`/app/scan?code=vibe-${exp.slug}`}
-                      className="neo-btn-primary px-3 py-1.5 text-xs font-black uppercase tracking-wider flex items-center space-x-1 shrink-0"
+                  return (
+                    <div
+                      key={exp.id}
+                      className={`p-3.5 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-between transition-all ${
+                        isCompleted ? "opacity-80 bg-muted/40" : ""
+                      }`}
                     >
-                      <QrCode className="w-3.5 h-3.5" />
-                      <span>Scan</span>
-                    </Link>
-                  </div>
-                );
-              })}
+                      <div className="space-y-1 flex-1 pr-3">
+                        <div className="flex items-center space-x-1.5">
+                          <h5 className="text-xs font-black text-foreground font-mono">
+                            {exp.title}
+                          </h5>
+                          {isCompleted && (
+                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          )}
+                        </div>
+                        <p className="text-[11px] text-muted-foreground line-clamp-1">
+                          {exp.description}
+                        </p>
+                        <div className="flex items-center space-x-2 text-[10px] font-mono pt-0.5">
+                          {exp.coin_cost > 0 ? (
+                            <span className="text-primary font-black">
+                              🪙 {exp.coin_cost} Coins
+                            </span>
+                          ) : (
+                            <span className="text-foreground font-black bg-muted px-1.5 py-0.5 border border-border">
+                              Free
+                            </span>
+                          )}
+                          <span className="text-primary-foreground font-black bg-primary px-1.5 py-0.5 border border-border">
+                            +{exp.xp_reward} XP
+                          </span>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/app/scan?code=vibe-${exp.slug}`}
+                        className="neo-btn-primary px-3 py-2 text-xs font-black uppercase tracking-wider flex items-center space-x-1 shrink-0"
+                      >
+                        <QrCode className="w-3.5 h-3.5" />
+                        <span>Scan</span>
+                      </Link>
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         ) : (
           <div className="p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3">
             <div>
-              <h3 className="text-sm font-black text-foreground font-mono">
-                Six Official Zones Directory
+              <div className="flex items-center space-x-2 text-primary">
+                <Compass className="w-4 h-4" />
+                <span className="text-xs font-mono font-black uppercase tracking-wider">
+                  Select a Zone to Inspect
+                </span>
+              </div>
+              <h3 className="text-base font-black text-foreground font-mono mt-1">
+                Six Official Oceanic Zones
               </h3>
-              <p className="text-xs text-muted-foreground font-bold mt-0.5">
-                Select any zone on the map or click below to inspect available missions and live zone scores.
+              <p className="text-xs text-muted-foreground mt-1">
+                Tap on any zone radar circle or select from the directory below to view missions and track championship scores.
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2 pt-1">
-              {zones.map((zone) => {
-                const status = getZoneStatus(zone.id);
-                const zoneExps = experiences.filter((e) => e.zone_id === zone.id);
-                const isUserZone = isAssignedZone(zone);
+            <div className="grid grid-cols-1 gap-2 pt-1">
+              {zones.map((z) => {
+                const isUser = isAssignedZone(z);
+                const status = getZoneStatus(z.id);
 
                 return (
                   <button
-                    key={zone.id}
-                    onClick={() => setSelectedZone(zone)}
-                    className={`w-full text-left p-3 border-2 border-border shadow-[2px_2px_0px_var(--border)] transition-all flex items-center justify-between group active:translate-x-[1px] active:translate-y-[1px] cursor-pointer ${
-                      isUserZone
-                        ? "bg-secondary text-secondary-foreground font-black"
-                        : "bg-card text-card-foreground hover:bg-muted font-bold"
-                    }`}
+                    key={z.id}
+                    onClick={() => setSelectedZone(z)}
+                    className="w-full text-left p-2.5 bg-muted hover:bg-card border-2 border-border shadow-[2px_2px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px] flex items-center justify-between transition-all cursor-pointer group"
                   >
                     <div className="flex items-center space-x-2.5">
-                      <span className="w-7 h-7 bg-primary text-primary-foreground border-2 border-border shadow-[1px_1px_0px_var(--border)] font-mono text-[11px] font-black flex items-center justify-center">
-                        Z{zone.sort_order}
+                      <span className="w-6 h-6 bg-card border border-border flex items-center justify-center font-mono font-black text-[11px] text-foreground">
+                        Z{z.sort_order}
                       </span>
                       <div>
                         <div className="flex items-center space-x-1.5">
-                          <span className="text-xs font-black text-foreground">
-                            {zone.name}
+                          <span className="text-xs font-black text-foreground font-mono group-hover:text-primary transition-colors">
+                            {z.name}
                           </span>
-                          {isUserZone && (
-                            <span className="text-[9px] font-black text-primary-foreground bg-primary px-1.5 py-0.5 border border-border">
-                              YOUR ZONE
+                          {isUser && (
+                            <span className="text-[9px] font-black bg-primary text-primary-foreground px-1 py-0.2 border border-border">
+                              YOU
                             </span>
                           )}
                         </div>
-                        <span className="text-[10px] text-primary block font-mono font-black">
-                          🪙 {((zone.coins_collected !== undefined && zone.coins_collected !== null) ? zone.coins_collected : ((zone.map_data as any)?.coins_collected || 0)).toLocaleString()} VIBE
+                        <span className="text-[10px] text-muted-foreground font-mono block">
+                          {getZoneTagline(z)}
                         </span>
                       </div>
                     </div>
 
-                    <span
-                      className={`text-[10px] font-black px-2 py-0.5 border-2 border-border capitalize ${
-                        status === "completed"
-                          ? "bg-primary text-primary-foreground shadow-[1px_1px_0px_var(--border)]"
-                          : status === "in_progress"
-                          ? "bg-secondary text-secondary-foreground shadow-[1px_1px_0px_var(--border)]"
-                          : "bg-muted text-muted-foreground"
-                      }`}
-                    >
-                      {status.replace("_", " ")}
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-[11px] font-mono font-black text-primary">
+                        🪙 {(z.coins_collected || 0).toLocaleString()}
+                      </span>
+                      <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:translate-x-0.5 transition-transform" />
+                    </div>
                   </button>
                 );
               })}

@@ -54,11 +54,11 @@ export async function logoutAdminAction() {
 }
 
 export async function getAdminSession(): Promise<AdminUser | null> {
-  const cookieStore = await cookies();
-  const cookie = cookieStore.get("vibe_admin_auth");
-  if (!cookie?.value) return null;
-
   try {
+    const cookieStore = await cookies();
+    const cookie = cookieStore.get("vibe_admin_auth");
+    if (!cookie?.value) return null;
+
     const session = JSON.parse(cookie.value);
     if (session.role === "admin" && (session.username === "jk" || session.username === "gunjan")) {
       return session;
