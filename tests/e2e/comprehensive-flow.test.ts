@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, beforeEach } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from "vitest";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -167,9 +167,9 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
     const html = await res.text();
 
     expect(html).toContain("Rotaract Game");
+    expect(html).toContain("Flappy ROCCO");
     expect(html).toContain("Minion VIBE Run");
     expect(html).toContain("Memory Match");
-    expect(html).toContain("VIBE Festival Quiz");
     expect(html).toContain("Play Now");
   });
 
@@ -196,7 +196,9 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
   // 8. VOLUNTEER PHOTO VERIFICATION QUEUE
   // ----------------------------------------------------------------
   it("Step 8: Volunteer Verification Queue loads for staff", async () => {
-    const staffRes = await fetch(`${BASE_URL}/staff/stalls`);
+    const staffRes = await fetch(`${BASE_URL}/staff/stalls`, {
+      headers: { Cookie: "vibe_staff_station=station-stall-photos" },
+    });
     expect(staffRes.status).toBe(200);
     const staffHtml = await staffRes.text();
 
@@ -238,5 +240,41 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
     expect(html).toContain("Player Statistics");
     expect(html).toContain("Digital Passport");
     expect(html).toContain("Wallet Ledger");
+  });
+
+  afterAll(async () => {
+    if (registeredProfileId) {
+      try {
+        const fs = await import("fs");
+        const path = await import("path");
+        const { createClient } = await import("@supabase/supabase-js");
+        const envPath = path.resolve(process.cwd(), ".env.local");
+        if (fs.existsSync(envPath)) {
+          const envContent = fs.readFileSync(envPath, "utf8");
+          const envVars: Record<string, string> = {};
+          for (const line of envContent.split("\n")) {
+            const trimmed = line.trim();
+            if (!trimmed || trimmed.startsWith("#")) continue;
+            const eqIdx = trimmed.indexOf("=");
+            if (eqIdx !== -1) {
+              const k = trimmed.slice(0, eqIdx).trim();
+              let v = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
+              envVars[k] = v;
+            }
+          }
+          const url = envVars["NEXT_PUBLIC_SUPABASE_URL"];
+          const key = envVars["SUPABASE_SERVICE_ROLE_KEY"];
+          if (url && key) {
+            const client = createClient(url, key);
+            await client.from("wallet_transactions").delete().eq("profile_id", registeredProfileId);
+            await client.from("wallets").delete().eq("profile_id", registeredProfileId);
+            await client.from("event_members").delete().eq("profile_id", registeredProfileId);
+            await client.from("profiles").delete().eq("id", registeredProfileId);
+          }
+        }
+      } catch (e: any) {
+        // ignore cleanup error
+      }
+    }
   });
 });

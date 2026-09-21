@@ -280,7 +280,7 @@ export interface StallPhotoSubmission {
   reviewed_by: string | null;
 }
 
-export type GameType = "rotaract_game" | "minion_run" | "memory_game" | "vibe_quiz";
+export type GameType = "rotaract_game" | "minion_run" | "memory_game" | "vibe_quiz" | "flappy_rocco";
 
 export interface GameSession {
   id: string;

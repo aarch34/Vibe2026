@@ -32,13 +32,8 @@ values
   ('b0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000001', '👑 VIBE Legend', 2500, null, 6)
 on conflict (id) do nothing;
 
--- 3. Sponsors
-insert into sponsors (id, event_id, name, description)
-values
-  ('c0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'Red Bull', 'Gives you wings for high energy party zones!'),
-  ('c0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'Spotify India', 'Official Sound & DJ Experience Partner'),
-  ('c0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 'OnePlus', 'Never Settle Experience Hub')
-on conflict (id) do nothing;
+-- 3. Sponsors (Zero fake sponsors; managed dynamically via Admin Portal)
+-- insert into sponsors ... (empty by default)
 
 -- 4. 7 Event Zones
 insert into zones (id, event_id, name, slug, description, sort_order, map_data)
@@ -60,13 +55,13 @@ values
   -- Easy Challenge (50 Coins, +75 XP)
   ('e0000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000006', null, 'Spicy Taco Blitz Challenge', 'exp-taco-blitz', 'Taste-test the mystery spicy taco challenge and earn foodie prestige.', 50, 75, 20, 1, 0),
   -- Standard Challenge (75 Coins, +125 XP)
-  ('e0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000003', 'c0000000-0000-0000-0000-000000000002', 'DJ Drop Dance Face-off', 'exp-dj-drop', 'Step onto the interactive sound-floor and dance with the live DJ mix.', 75, 125, 30, 2, 600),
+  ('e0000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000003', null, 'DJ Drop Dance Face-off', 'exp-dj-drop', 'Step onto the interactive sound-floor and dance with the live DJ mix.', 75, 125, 30, 2, 600),
   -- Major Experience (100 Coins, +175 XP)
-  ('e0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000003', 'VR Cyber Flight Simulator', 'exp-vr-flight', 'Take the cockpit in a supersonic VR race through neo-Bangalore!', 100, 175, 35, 2, 300),
+  ('e0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000001', null, 'VR Cyber Flight Simulator', 'exp-vr-flight', 'Take the cockpit in a supersonic VR race through neo-Bangalore!', 100, 175, 35, 2, 300),
   -- Premium Experience (150 Coins, +250 XP)
-  ('e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000002', 'c0000000-0000-0000-0000-000000000001', 'Neon Laser Tag Showdown', 'exp-laser-tag', 'Tactical 3v3 neon combat. Tag your rivals and capture the arena node.', 150, 250, 50, 1, 0),
+  ('e0000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000002', null, 'Neon Laser Tag Showdown', 'exp-laser-tag', 'Tactical 3v3 neon combat. Tag your rivals and capture the arena node.', 150, 250, 50, 1, 0),
   -- Creator Experience (75 Coins, +125 XP)
-  ('e0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000005', 'c0000000-0000-0000-0000-000000000003', '360 Glow Reel Booth', 'exp-360-reels', 'Step into the rotating 360 camera platform with neon light trails.', 75, 125, 25, 2, 600),
+  ('e0000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000005', null, '360 Glow Reel Booth', 'exp-360-reels', 'Step into the rotating 360 camera platform with neon light trails.', 75, 125, 25, 2, 600),
   -- Mystery Secret Challenge (100 Coins, +500 XP)
   ('e0000000-0000-0000-0000-000000000007', 'a0000000-0000-0000-0000-000000000001', 'd0000000-0000-0000-0000-000000000007', null, 'Cipher of District 3192', 'exp-vault-cipher', 'Solve the 3-part cipher concealed inside the secret vault.', 100, 500, 100, 1, 0)
 on conflict (event_id, slug) do nothing;
@@ -102,13 +97,12 @@ values
   ('20000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001', 'Secret Cipher Cracker', 'Conquer the Cipher of District 3192.', 'specific_experience', '{"experience_id": "e0000000-0000-0000-0000-000000000007"}'::jsonb)
 on conflict (id) do nothing;
 
--- 9. Reward Store (Tiers: 100, 150, 250, 300, 500, 750)
+-- 9. Reward Store (Tiers: 100, 150, 300, 500, 750 — Zero fake sponsors)
 insert into rewards (id, event_id, sponsor_id, name, description, coin_cost, stock, redemption_limit)
 values
   ('30000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', null, 'Official VIBE Sticker Pack', 'High-gloss holographic vinyl sticker pack for laptop & phone.', 100, 200, 1),
   ('30000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', null, 'Commemorative District 3192 Enamel Pin', 'Exclusive metal collector badge with rotaract freshers insignia.', 150, 150, 1),
-  ('30000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000001', 'Red Bull VIP Food & Drink Coupon', '20% discount coupon redeemable across all festival food bazaar counters.', 250, 100, 2),
-  ('30000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000002', 'Mystery Festival Gift Box', 'Curated box containing headphones, wristbands and surprise swag.', 300, 50, 1),
+  ('30000000-0000-0000-0000-000000000004', 'a0000000-0000-0000-0000-000000000001', null, 'Mystery Festival Gift Box', 'Curated box containing headphones, wristbands and surprise swag.', 300, 50, 1),
   ('30000000-0000-0000-0000-000000000005', 'a0000000-0000-0000-0000-000000000001', null, 'Limited-Edition VIBE T-Shirt', 'Official festival streetwear heavyweight tee with neon screenprint.', 500, 30, 1),
-  ('30000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000001', 'c0000000-0000-0000-0000-000000000003', 'VIP All-Access & After-Party Pass', 'Backstage artist lounge access + premium after-party entry.', 750, 10, 1)
+  ('30000000-0000-0000-0000-000000000006', 'a0000000-0000-0000-0000-000000000001', null, 'VIP All-Access & After-Party Pass', 'Backstage artist lounge access + premium after-party entry.', 750, 10, 1)
 on conflict (id) do nothing;

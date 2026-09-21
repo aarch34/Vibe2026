@@ -10,10 +10,11 @@ const GAME_EXPERIENCE_IDS: Record<string, string> = {
   minion_run: "e0000000-0000-0000-0000-000000000012",
   memory_game: "e0000000-0000-0000-0000-000000000013",
   vibe_quiz: "e0000000-0000-0000-0000-000000000014",
+  flappy_rocco: "e0000000-0000-0000-0000-000000000015",
 };
 
 const playGameOverSchema = z.object({
-  gameType: z.enum(["rotaract_game", "minion_run", "memory_game", "vibe_quiz"]),
+  gameType: z.enum(["rotaract_game", "minion_run", "memory_game", "vibe_quiz", "flappy_rocco"]),
   score: z.number().min(0),
   maxScore: z.number().min(1),
   coinCost: z.number().min(0).default(0),

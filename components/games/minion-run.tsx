@@ -172,7 +172,8 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
     setIsSubmitting(true);
 
     const isHighScore = finalScore >= 120 && finalLives > 0;
-    const xpPayout = isHighScore ? 25 : 15;
+    const isQualified = finalScore >= 30; // Minimum 30 points to earn XP
+    const xpPayout = isHighScore ? 25 : isQualified ? 15 : 0;
     const coinPayout = isHighScore ? 10 : 0;
 
     try {
@@ -367,21 +368,29 @@ export function MinionRun({ userBalance, onFinished }: MinionRunProps) {
             <p className="text-xs text-foreground/80 mt-1">
               {isHighScore
                 ? "🎉 High Score achieved! Bonus coins and double XP awarded!"
-                : "Good run! Dodge those waves and aim for ≥ 120 points for the bonus!"}
+                : score >= 30
+                ? "Good run! Dodge those waves and aim for ≥ 120 points for the bonus!"
+                : "You must score at least 30 points to earn XP. Dodge waves and collect items!"}
             </p>
           </div>
+
+          {score < 30 && (
+            <div className="p-2 bg-amber-950/80 border border-amber-500/40 text-amber-300 text-[11px] font-mono font-bold max-w-xs mx-auto">
+              ⚠️ Score ≥ 30 pts required to earn XP!
+            </div>
+          )}
 
           {/* Reward Breakdown */}
           <div className="grid grid-cols-2 gap-2 p-3.5 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] text-xs font-mono">
             <div>
               <span className="text-[10px] text-muted-foreground block font-bold uppercase">XP Earned</span>
-              <span className="text-purple-600 dark:text-purple-300 font-black text-sm">
-                +{isHighScore ? 25 : 15} XP
+              <span className={score >= 30 ? "text-purple-600 dark:text-purple-300 font-black text-sm" : "text-muted-foreground font-black text-sm"}>
+                +{isHighScore ? 25 : score >= 30 ? 15 : 0} XP
               </span>
             </div>
             <div>
               <span className="text-[10px] text-muted-foreground block font-bold uppercase">Coins Earned</span>
-              <span className="text-amber-500 dark:text-amber-400 font-black text-sm">
+              <span className={isHighScore ? "text-amber-500 dark:text-amber-400 font-black text-sm" : "text-muted-foreground font-black text-sm"}>
                 +{isHighScore ? 10 : 0} VIBE
               </span>
             </div>

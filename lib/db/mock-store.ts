@@ -108,12 +108,8 @@ class VibeMemoryDatabase {
       { id: "lvl-6", event_id: eventId, name: "👑 VIBE Legend", min_xp: 2500, max_xp: null, badge_media_id: null, sort_order: 6 },
     ];
 
-    // 3. Sponsors
-    const sponsorsList: Sponsor[] = [
-      { id: "sp-1", event_id: eventId, name: "Red Bull", logo_media_id: null, description: "Official Energy Partner for high-octane zones", is_active: true, created_at: new Date().toISOString() },
-      { id: "sp-2", event_id: eventId, name: "Spotify India", logo_media_id: null, description: "Official Sound & DJ Experience Partner", is_active: true, created_at: new Date().toISOString() },
-      { id: "sp-3", event_id: eventId, name: "OnePlus", logo_media_id: null, description: "Never Settle Experience Hub", is_active: true, created_at: new Date().toISOString() },
-    ];
+    // 3. Sponsors (Zero fake sponsors; added dynamically via admin portal)
+    const sponsorsList: Sponsor[] = [];
     sponsorsList.forEach((s) => this.sponsors.set(s.id, s));
 
     // 4. THE SIX OFFICIAL ZONES (Section 2 & 5 of specification)
@@ -221,21 +217,22 @@ class VibeMemoryDatabase {
 
     // 5. Zone Experiences
     const experiencesList: Experience[] = [
-      { id: "exp-1", event_id: eventId, zone_id: "z-arcade", sponsor_id: "sp-3", title: "VR Cyber Flight Simulator", slug: "exp-vr-flight", description: "Take the cockpit in a supersonic VR race through neo-Bangalore!", image_media_id: null, video_media_id: null, coin_cost: 100, xp_reward: 175, coin_reward: 35, max_attempts: 2, cooldown_seconds: 300, starts_at: null, ends_at: null, is_active: true },
-      { id: "exp-2", event_id: eventId, zone_id: "z-arnava", sponsor_id: "sp-1", title: "Arnava Final Wave", slug: "arnava-final-wave", description: "Conquer the ultimate physical obstacle course and secure legendary points.", image_media_id: null, video_media_id: null, coin_cost: 150, xp_reward: 250, coin_reward: 50, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
-      { id: "exp-3", event_id: eventId, zone_id: "z-taranaga", sponsor_id: "sp-2", title: "Taranaga Beat Drop Clash", slug: "taranaga-beat-drop", description: "Step onto the live DJ soundstage for a head-to-head dance confrontation.", image_media_id: null, video_media_id: null, coin_cost: 75, xp_reward: 125, coin_reward: 25, max_attempts: 2, cooldown_seconds: 600, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-1", event_id: eventId, zone_id: "z-arcade", sponsor_id: null, title: "VR Cyber Flight Simulator", slug: "exp-vr-flight", description: "Take the cockpit in a supersonic VR race through neo-Bangalore!", image_media_id: null, video_media_id: null, coin_cost: 100, xp_reward: 175, coin_reward: 35, max_attempts: 2, cooldown_seconds: 300, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-2", event_id: eventId, zone_id: "z-arnava", sponsor_id: null, title: "Arnava Final Wave", slug: "arnava-final-wave", description: "Conquer the ultimate physical obstacle course and secure legendary points.", image_media_id: null, video_media_id: null, coin_cost: 150, xp_reward: 250, coin_reward: 50, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-3", event_id: eventId, zone_id: "z-taranaga", sponsor_id: null, title: "Taranaga Beat Drop Clash", slug: "taranaga-beat-drop", description: "Step onto the live DJ soundstage for a head-to-head dance confrontation.", image_media_id: null, video_media_id: null, coin_cost: 75, xp_reward: 125, coin_reward: 25, max_attempts: 2, cooldown_seconds: 600, starts_at: null, ends_at: null, is_active: true },
       { id: "exp-4", event_id: eventId, zone_id: "z-sagara", sponsor_id: null, title: "Sagara Deep Dive Riddle", slug: "sagara-riddle", description: "Unravel three aquatic riddles to reveal the forgotten sea crest.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
-      { id: "exp-5", event_id: eventId, zone_id: "z-samudhra", sponsor_id: "sp-3", title: "Samudhra Creator 360", slug: "samudhra-creator", description: "Step into the rotating 360 glam camera platform with ocean light trails.", image_media_id: null, video_media_id: null, coin_cost: 75, xp_reward: 125, coin_reward: 25, max_attempts: 2, cooldown_seconds: 600, starts_at: null, ends_at: null, is_active: true },
-      { id: "exp-6", event_id: eventId, zone_id: "z-pravaha", sponsor_id: "sp-1", title: "Pravaha Agility Rapids", slug: "pravaha-rapids", description: "Sprint through laser hurdles in this timed reflex agility sprint.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
-      { id: "exp-7", event_id: eventId, zone_id: "z-varuna", sponsor_id: "sp-1", title: "Varuna Grand Spectacle", slug: "varuna-spectacle", description: "The festival mainstage midnight challenge with live crowd cheering.", image_media_id: null, video_media_id: null, coin_cost: 150, xp_reward: 250, coin_reward: 50, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-5", event_id: eventId, zone_id: "z-samudhra", sponsor_id: null, title: "Samudhra Creator 360", slug: "samudhra-creator", description: "Step into the rotating 360 glam camera platform with ocean light trails.", image_media_id: null, video_media_id: null, coin_cost: 75, xp_reward: 125, coin_reward: 25, max_attempts: 2, cooldown_seconds: 600, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-6", event_id: eventId, zone_id: "z-pravaha", sponsor_id: null, title: "Pravaha Agility Rapids", slug: "pravaha-rapids", description: "Sprint through laser hurdles in this timed reflex agility sprint.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-7", event_id: eventId, zone_id: "z-varuna", sponsor_id: null, title: "Varuna Grand Spectacle", slug: "varuna-spectacle", description: "The festival mainstage midnight challenge with live crowd cheering.", image_media_id: null, video_media_id: null, coin_cost: 150, xp_reward: 250, coin_reward: 50, max_attempts: 1, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
       // Additional Zone Experiences
       { id: "exp-arnava-1", event_id: eventId, zone_id: "z-arnava", sponsor_id: null, title: "Arnava Icebreaker", slug: "arnava-icebreaker", description: "Break the ice with fellow freshers through rapid cooperative wave tags.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
-      { id: "exp-taranaga-1", event_id: eventId, zone_id: "z-taranaga", sponsor_id: "sp-2", title: "Taranaga Soundwave Sprint", slug: "taranaga-soundwave", description: "Follow the rhythmic tempo beats on the illuminated floor tiles.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "exp-taranaga-1", event_id: eventId, zone_id: "z-taranaga", sponsor_id: null, title: "Taranaga Soundwave Sprint", slug: "taranaga-soundwave", description: "Follow the rhythmic tempo beats on the illuminated floor tiles.", image_media_id: null, video_media_id: null, coin_cost: 50, xp_reward: 75, coin_reward: 20, max_attempts: 2, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
       // Mini-Games (Free to play, modest XP)
       { id: "e0000000-0000-0000-0000-000000000011", event_id: eventId, zone_id: "z-arnava", sponsor_id: null, title: "Rotaract Trivia Game", slug: "rotaract-game", description: "Rotary & District Trivia Challenge", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 20, coin_reward: 0, max_attempts: 999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
       { id: "e0000000-0000-0000-0000-000000000012", event_id: eventId, zone_id: "z-taranaga", sponsor_id: null, title: "Minion VIBE Run", slug: "minion-run", description: "3-Lane Fast Reaction Arcade", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 25, coin_reward: 0, max_attempts: 999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
       { id: "e0000000-0000-0000-0000-000000000013", event_id: eventId, zone_id: "z-sagara", sponsor_id: null, title: "Memory Match", slug: "memory-game", description: "Card Flip Visual Recall", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 20, coin_reward: 0, max_attempts: 999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
       { id: "e0000000-0000-0000-0000-000000000014", event_id: eventId, zone_id: "z-pravaha", sponsor_id: null, title: "ROCCO Festival Quiz", slug: "vibe-quiz", description: "Lore, Music & Culture", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 20, coin_reward: 0, max_attempts: 999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
+      { id: "e0000000-0000-0000-0000-000000000015", event_id: eventId, zone_id: "z-pravaha", sponsor_id: null, title: "Flappy ROCCO", slug: "flappy-rocco", description: "Flap through neon sound pillars with ROCCO the mascot!", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 20, coin_reward: 0, max_attempts: 999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
       // Social Connect
       { id: "e0000000-0000-0000-0000-000000000020", event_id: eventId, zone_id: "z-arnava", sponsor_id: null, title: "Instagram Friend Connect", slug: "insta-friend-connect", description: "Connect with fellow freshers on Instagram to become in-app friends and level up together.", image_media_id: null, video_media_id: null, coin_cost: 0, xp_reward: 25, coin_reward: 0, max_attempts: 9999, cooldown_seconds: 0, starts_at: null, ends_at: null, is_active: true },
     ];
@@ -304,12 +301,12 @@ class VibeMemoryDatabase {
       { id: "ach-5", event_id: eventId, name: "VIBE Master", description: "Master of the entire VIBE event world.", condition_type: "vibe_master", condition_config: { target: 15 }, badge_media_id: null, is_active: true },
     ];
 
-    // 10. Rewards Store
+    // 10. Rewards Store (Authentic event rewards, zero fake sponsors)
     const rewardsList: Reward[] = [
       { id: "rwd-1", event_id: eventId, sponsor_id: null, name: "Official VIBE Holographic Sticker Pack", description: "High-gloss holographic vinyl sticker collection for laptop & phone.", image_media_id: null, coin_cost: 100, stock: 200, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
       { id: "rwd-2", event_id: eventId, sponsor_id: null, name: "VIBE 2026 Commemorative District Enamel Pin", description: "Exclusive metal collector badge with rotaract freshers insignia.", image_media_id: null, coin_cost: 150, stock: 150, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
-      { id: "rwd-3", event_id: eventId, sponsor_id: "sp-1", name: "Red Bull VIP Energy Drink Voucher", description: "Complimentary Red Bull drink at any festival beverage hub.", image_media_id: null, coin_cost: 200, stock: 100, redemption_limit: 2, starts_at: null, ends_at: null, is_active: true },
-      { id: "rwd-4", event_id: eventId, sponsor_id: "sp-2", name: "Spotify Premium 3-Month Subscription Voucher", description: "Ad-free music voucher provided by official sound partner.", image_media_id: null, coin_cost: 350, stock: 50, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
+      { id: "rwd-3", event_id: eventId, sponsor_id: null, name: "VIP Food & Beverage Coupon", description: "Complimentary festival refreshment voucher redeemable at festival beverage counters.", image_media_id: null, coin_cost: 200, stock: 100, redemption_limit: 2, starts_at: null, ends_at: null, is_active: true },
+      { id: "rwd-4", event_id: eventId, sponsor_id: null, name: "Mystery Festival Gift Swag Box", description: "Exclusive festival box containing sunglasses, glow wristbands, and surprise merchandise.", image_media_id: null, coin_cost: 350, stock: 50, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
       { id: "rwd-5", event_id: eventId, sponsor_id: null, name: "Limited Edition VIBE Streetwear T-Shirt", description: "Heavyweight festival cotton tee with custom fluorescent wave print.", image_media_id: null, coin_cost: 500, stock: 30, redemption_limit: 1, starts_at: null, ends_at: null, is_active: true },
     ];
     rewardsList.forEach((r) => this.rewards.set(r.id, r));
@@ -1030,6 +1027,7 @@ class VibeMemoryDatabase {
         minion_run: "e0000000-0000-0000-0000-000000000012",
         memory_game: "e0000000-0000-0000-0000-000000000013",
         vibe_quiz: "e0000000-0000-0000-0000-000000000014",
+        flappy_rocco: "e0000000-0000-0000-0000-000000000015",
       };
       this.completions.push({
         id: `comp-game-${Date.now()}`,

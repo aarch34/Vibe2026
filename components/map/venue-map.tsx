@@ -14,6 +14,8 @@ import {
   ChevronRight,
   Flame,
   Waves,
+  Eye,
+  Crosshair,
 } from "lucide-react";
 import { Zone, Experience, ExperienceCompletion } from "@/types/database";
 
@@ -24,18 +26,99 @@ interface VenueMapProps {
   assignedZoneId?: string | null;
 }
 
-const ZONE_TAGLINES: Record<string, string> = {
-  arnava: "Rising Tide",
-  taranaga: "Electric Ripple",
-  sagara: "Deep Ocean",
-  pravaha: "Relentless Flow",
-  samudhra: "Endless Horizon",
-  varuna: "Ocean Sovereign",
+interface LandmarkConfig {
+  x: number; // percentage 0 - 100
+  y: number; // percentage 0 - 100
+  landmarkName: string;
+  color: string;
+  accent: string;
+  emoji: string;
+}
+
+// 6 Official Oceanic Zone coordinates matching the custom VIBE Archipelago Map
+const RETRO_LANDMARKS: Record<string, LandmarkConfig> = {
+  arnava: {
+    x: 27.2,
+    y: 12.8,
+    landmarkName: "Lighthouse Bay & Coastal Rocks",
+    color: "#0284C7",
+    accent: "#38BDF8",
+    emoji: "⚓",
+  },
+  taranaga: {
+    x: 73.5,
+    y: 11.5,
+    landmarkName: "Ocean Vortex & Electric Swirls",
+    color: "#6366F1",
+    accent: "#A855F7",
+    emoji: "🌊",
+  },
+  sagara: {
+    x: 50.0,
+    y: 46.5,
+    landmarkName: "Sunken Crystal Sanctuary & Ruins",
+    color: "#00D2FF",
+    accent: "#38BDF8",
+    emoji: "🐚",
+  },
+  pravaha: {
+    x: 16.5,
+    y: 56.5,
+    landmarkName: "River Rapids & Island Bridges",
+    color: "#10B981",
+    accent: "#34D399",
+    emoji: "🌀",
+  },
+  samudhra: {
+    x: 50.0,
+    y: 80.0,
+    landmarkName: "Sunken Galleon & Coral Reef",
+    color: "#F59E0B",
+    accent: "#FBBF24",
+    emoji: "🔱",
+  },
+  varuna: {
+    x: 84.0,
+    y: 64.5,
+    landmarkName: "Royal Atlantis Palace & Pearl Cave",
+    color: "#FF2E93",
+    accent: "#F472B6",
+    emoji: "👑",
+  },
 };
 
+const ZONE_TAGLINES: Record<string, string> = {
+  arnava: "The Rising Tide",
+  taranaga: "The Electric Ripple",
+  sagara: "The Deep Ocean",
+  pravaha: "The Rushing Current",
+  samudhra: "The Endless Ocean",
+  varuna: "The Celestial Waters",
+};
+
+function getZoneSlugKey(zone: Zone): string {
+  return (zone.slug || zone.name || "").replace(/^z-/, "").toLowerCase();
+}
+
 function getZoneTagline(zone: Zone): string {
-  const slugKey = (zone.slug || zone.name || "").replace(/^z-/, "").toLowerCase();
-  return zone.tagline || ZONE_TAGLINES[slugKey] || "Oceanic Zone";
+  const key = getZoneSlugKey(zone);
+  return zone.tagline || ZONE_TAGLINES[key] || "Oceanic Zone";
+}
+
+function getLandmark(zone: Zone, index: number): LandmarkConfig {
+  const key = getZoneSlugKey(zone);
+  if (RETRO_LANDMARKS[key]) {
+    return RETRO_LANDMARKS[key];
+  }
+  const fallbackList: LandmarkConfig[] = [
+    { x: 27.2, y: 12.8, landmarkName: "Lighthouse Bay", color: "#0284C7", accent: "#38BDF8", emoji: "⚓" },
+    { x: 73.5, y: 11.5, landmarkName: "Ocean Vortex", color: "#6366F1", accent: "#A855F7", emoji: "🌊" },
+    { x: 50.0, y: 46.5, landmarkName: "Crystal Sanctuary", color: "#00D2FF", accent: "#38BDF8", emoji: "🐚" },
+    { x: 16.5, y: 56.5, landmarkName: "River Rapids", color: "#10B981", accent: "#34D399", emoji: "🌀" },
+    { x: 50.0, y: 80.0, landmarkName: "Sunken Galleon", color: "#F59E0B", accent: "#FBBF24", emoji: "🔱" },
+    { x: 84.0, y: 64.5, landmarkName: "Royal Atlantis Palace", color: "#FF2E93", accent: "#F472B6", emoji: "👑" },
+  ];
+  return fallbackList[index % fallbackList.length];
 }
 
 export function VenueMap({
@@ -45,6 +128,8 @@ export function VenueMap({
   assignedZoneId,
 }: VenueMapProps) {
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
+  const [showScanlines, setShowScanlines] = useState(false);
+  const [showPins, setShowPins] = useState(true);
 
   const completedExpIds = new Set(userCompletions.map((c) => c.experience_id));
 
@@ -90,210 +175,168 @@ export function VenueMap({
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       {/* Venue Map Container (Left on PC) */}
-      <div className="lg:col-span-7 space-y-2">
-        <div className="relative w-full aspect-[4/4] sm:aspect-[4/3.6] lg:aspect-auto lg:h-[560px] bg-gradient-to-b from-[#090816] via-[#120E26] to-[#090816] border-2 border-border shadow-neo p-3 overflow-hidden flex flex-col justify-between rounded-none">
-          {/* Header overlay */}
-          <div className="flex items-center justify-between z-10 px-2 pt-1">
+      <div className="lg:col-span-7 space-y-3">
+        <div className="relative w-full bg-[#050b1a] border-2 border-border shadow-neo p-3 overflow-hidden flex flex-col justify-between">
+          {/* Retro Game Header Bar */}
+          <div className="flex items-center justify-between z-20 px-2 py-1.5 bg-card/90 border border-border/80 backdrop-blur-md mb-2.5">
             <div className="flex items-center space-x-2">
-              <span className="w-2.5 h-2.5 bg-accent rounded-full animate-ping" />
-              <span className="text-[11px] font-mono font-black text-foreground tracking-wider uppercase">
-                Interactive Zone Radar
+              <span className="w-2.5 h-2.5 bg-cyan-400 rounded-full animate-ping" />
+              <span className="text-[11px] font-mono font-black text-foreground tracking-wider uppercase flex items-center gap-1.5">
+                <span>🌊</span>
+                <span>VIBE 2026 Oceanic Archipelago</span>
               </span>
             </div>
-            <span className="text-[10px] font-mono font-bold text-muted-foreground bg-card/80 px-2 py-0.5 border border-border">
-              Tap any zone to explore
-            </span>
+            <div className="flex items-center space-x-2 text-[10px] font-mono">
+              <button
+                type="button"
+                onClick={() => setShowPins((v) => !v)}
+                className={`px-2 py-0.5 border text-[9px] font-black uppercase transition-colors cursor-pointer ${
+                  showPins
+                    ? "bg-secondary text-secondary-foreground border-border"
+                    : "bg-muted text-muted-foreground border-border"
+                }`}
+              >
+                PINS {showPins ? "ON" : "OFF"}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowScanlines((v) => !v)}
+                className={`px-2 py-0.5 border text-[9px] font-black uppercase transition-colors cursor-pointer ${
+                  showScanlines
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-muted text-muted-foreground border-border hover:text-foreground"
+                }`}
+              >
+                CRT {showScanlines ? "ON" : "OFF"}
+              </button>
+            </div>
           </div>
 
-          {/* SVG Venue Grid & Connecting Pathways */}
-          <svg
-            viewBox="0 0 400 420"
-            className="w-full h-full my-auto"
-            style={{ touchAction: "manipulation" }}
-          >
-            <defs>
-              <radialGradient id="venueGlow" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#9333EA" stopOpacity="0.25" />
-                <stop offset="60%" stopColor="#00D2FF" stopOpacity="0.10" />
-                <stop offset="100%" stopColor="#090816" stopOpacity="0" />
-              </radialGradient>
-              <linearGradient
-                id="pathGradient"
-                x1="0%"
-                y1="0%"
-                x2="100%"
-                y2="100%"
-              >
-                <stop offset="0%" stopColor="#FF2A85" stopOpacity="0.6" />
-                <stop offset="50%" stopColor="#A855F7" stopOpacity="0.6" />
-                <stop offset="100%" stopColor="#00D2FF" stopOpacity="0.6" />
-              </linearGradient>
-              <filter id="neonGlow" x="-50%" y="-50%" width="200%" height="200%">
-                <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
-                <feMerge>
-                  <feMergeNode in="blur" />
-                  <feMergeNode in="SourceGraphic" />
-                </feMerge>
-              </filter>
-            </defs>
-
-            {/* Background Ambient Glow */}
-            <rect width="400" height="420" fill="url(#venueGlow)" />
-
-            {/* Circular Radar Grid Rings */}
-            <circle
-              cx="200"
-              cy="200"
-              r="160"
-              fill="none"
-              stroke="#2E2854"
-              strokeWidth="1"
-              strokeDasharray="3 6"
-            />
-            <circle
-              cx="200"
-              cy="200"
-              r="105"
-              fill="none"
-              stroke="#2E2854"
-              strokeWidth="1"
-              strokeDasharray="2 4"
-            />
-            <circle
-              cx="200"
-              cy="200"
-              r="50"
-              fill="none"
-              stroke="#3B336A"
-              strokeWidth="1"
+          {/* Map Display Viewport */}
+          <div className="relative w-full aspect-square max-w-[620px] mx-auto overflow-hidden border-2 border-border/90 shadow-inner bg-black select-none">
+            {/* Base Pixel Island Map Graphic */}
+            <img
+              src="/assets/map/vibe_oceanic_archipelago_map.png"
+              alt="VIBE 2026 Oceanic Archipelago Pixel Map"
+              className="w-full h-full object-cover pointer-events-none"
+              style={{
+                imageRendering: "pixelated",
+              }}
             />
 
-            {/* Connecting Pathway Lines */}
-            <path
-              d="M 120 90 L 200 180 L 280 90 M 120 90 L 90 250 L 130 330 L 200 180 M 280 90 L 310 250 L 270 330 L 200 180 M 130 330 L 270 330"
-              fill="none"
-              stroke="url(#pathGradient)"
-              strokeWidth="2.5"
-              strokeDasharray="5 5"
-              className="animate-pulse"
-            />
+            {/* Optional CRT Retro Scanline Overlay */}
+            {showScanlines && (
+              <div
+                className="absolute inset-0 pointer-events-none opacity-20 z-10"
+                style={{
+                  backgroundImage:
+                    "repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45) 1px, transparent 1px, transparent 3px)",
+                }}
+              />
+            )}
 
-            {/* Central Sagara / Arena Marker */}
-            <circle
-              cx="200"
-              cy="180"
-              r="46"
-              fill="#141130"
-              stroke="#A855F7"
-              strokeWidth="2"
-              strokeOpacity="0.8"
-            />
+            {/* Interactive Zone Pins Anchored to Landmarks */}
+            {showPins &&
+              zones.map((zone, idx) => {
+                const landmark = getLandmark(zone, idx);
+                const status = getZoneStatus(zone.id);
+                const isSelected = selectedZone?.id === zone.id;
+                const isUserZone = isAssignedZone(zone);
 
-            {/* Interactive Zone Nodes */}
-            {zones.map((zone) => {
-              const status = getZoneStatus(zone.id);
-              const x = zone.map_data?.x || 200;
-              const y = zone.map_data?.y || 200;
-              const isSelected = selectedZone?.id === zone.id;
-              const isUserZone = isAssignedZone(zone);
+                let statusBorder = landmark.color;
+                if (status === "completed") statusBorder = "#10B981";
+                else if (status === "in_progress") statusBorder = "#FF2E93";
 
-              let strokeColor = "#00D2FF"; // Neon Blue/Cyan default
-              let fillColor = "#141130";
-
-              if (status === "completed") {
-                strokeColor = "#10B981"; // Emerald
-                fillColor = "#064E3B";
-              } else if (status === "in_progress") {
-                strokeColor = "#FF2A85"; // Neon Pink
-                fillColor = "#4A0E2E";
-              }
-
-              return (
-                <g
-                  key={zone.id}
-                  className="cursor-pointer transition-transform duration-200 group"
-                  onClick={() => setSelectedZone(zone)}
-                >
-                  {/* Outer halo when user's assigned zone */}
-                  {isUserZone && (
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r="33"
-                      fill="none"
-                      stroke="#FF2A85"
-                      strokeWidth="2"
-                      strokeDasharray="4 3"
-                      className="animate-spin"
-                      style={{ animationDuration: "10s" }}
-                    />
-                  )}
-
-                  {/* Outer halo when selected */}
-                  {isSelected && (
-                    <circle
-                      cx={x}
-                      cy={y}
-                      r="37"
-                      fill="none"
-                      stroke="#00D2FF"
-                      strokeWidth="2.5"
-                      strokeDasharray="3 3"
-                      className="animate-spin"
-                      style={{ animationDuration: "6s" }}
-                    />
-                  )}
-
-                  {/* Main Node Circle */}
-                  <circle
-                    cx={x}
-                    cy={y}
-                    r="27"
-                    fill={fillColor}
-                    stroke={strokeColor}
-                    strokeWidth={isSelected ? "3.5" : "2"}
-                    filter={isSelected ? "url(#neonGlow)" : undefined}
-                    className="transition-all hover:scale-110 active:scale-95"
-                  />
-
-                  {/* Zone Number */}
-                  <text
-                    x={x}
-                    y={y - 3}
-                    textAnchor="middle"
-                    fill="#FFFFFF"
-                    fontSize="11"
-                    fontWeight="900"
-                    fontFamily="monospace"
+                return (
+                  <div
+                    key={zone.id}
+                    onClick={() => setSelectedZone(zone)}
+                    style={{
+                      left: `${landmark.x}%`,
+                      top: `${landmark.y}%`,
+                    }}
+                    className="absolute z-20 -translate-x-1/2 -translate-y-1/2 cursor-pointer group transition-transform duration-200 hover:scale-110 active:scale-95"
                   >
-                    Z{zone.sort_order}
-                  </text>
+                    {/* Outer Pulsing Beacon Aura */}
+                    <div
+                      className="absolute inset-0 rounded-full animate-ping opacity-60 pointer-events-none"
+                      style={{
+                        backgroundColor: landmark.color,
+                        transform: "scale(1.9)",
+                      }}
+                    />
 
-                  {/* Zone Name Label */}
-                  <text
-                    x={x}
-                    y={y + 11}
-                    textAnchor="middle"
-                    fill={status === "completed" ? "#34D399" : "#00D2FF"}
-                    fontSize="8.5"
-                    fontWeight="800"
-                    fontFamily="sans-serif"
-                  >
-                    {zone.name.split(" ")[0]}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
+                    {/* Highlight Ring When Assigned or Selected */}
+                    {(isSelected || isUserZone) && (
+                      <div
+                        className={`absolute -inset-2 rounded-full border-2 border-dashed ${
+                          isSelected ? "border-cyan-300 animate-spin" : "border-pink-500 animate-pulse"
+                        }`}
+                        style={{ animationDuration: isSelected ? "4s" : "2s" }}
+                      />
+                    )}
 
-          {/* Status Legend */}
-          <div className="bg-card/90 backdrop-blur-md border-2 border-border shadow-[2px_2px_0px_var(--border)] py-2 px-3 flex items-center justify-around text-[10px] font-black text-foreground font-mono">
+                    {/* Main Interactive Beacon Node */}
+                    <div
+                      className={`relative w-8 h-8 sm:w-9 sm:h-9 rounded-full flex items-center justify-center border-2 shadow-lg transition-all ${
+                        isSelected
+                          ? "bg-slate-950 scale-110 ring-2 ring-cyan-400"
+                          : "bg-slate-900/95 hover:bg-slate-900"
+                      }`}
+                      style={{
+                        borderColor: isSelected ? "#00D2FF" : statusBorder,
+                        boxShadow: `0 0 14px ${landmark.color}aa`,
+                      }}
+                    >
+                      <span className="text-sm sm:text-base leading-none">
+                        {landmark.emoji}
+                      </span>
+
+                      {/* Checkmark badge if zone completed */}
+                      {status === "completed" && (
+                        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border border-slate-900 rounded-full flex items-center justify-center">
+                          <CheckCircle2 className="w-2.5 h-2.5 text-black stroke-[3]" />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* "YOUR ZONE" Star Banner */}
+                    {isUserZone && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2 whitespace-nowrap pointer-events-none">
+                        <span className="px-1.5 py-0.2 bg-primary text-primary-foreground border border-black text-[9px] font-mono font-black shadow-md">
+                          YOUR ZONE ⭐
+                        </span>
+                      </div>
+                    )}
+
+                    {/* Zone Badge Tag */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0.5 whitespace-nowrap pointer-events-none">
+                      <div
+                        className={`px-1.5 py-0.5 text-[9px] font-mono font-black uppercase tracking-wider border shadow-md flex items-center gap-1 ${
+                          isSelected
+                            ? "bg-cyan-500 text-black border-white"
+                            : isUserZone
+                            ? "bg-pink-600 text-white border-pink-300"
+                            : "bg-black/90 text-white border-white/30 backdrop-blur-sm"
+                        }`}
+                      >
+                        <span>Z{zone.sort_order}</span>
+                        <span>{zone.name.split(" ")[0]}</span>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+
+          {/* Status Legend Bar */}
+          <div className="mt-2 bg-card/90 border border-border shadow-[2px_2px_0px_var(--border)] py-2 px-3 flex items-center justify-around text-[10px] font-black text-foreground font-mono flex-wrap gap-2">
             <div className="flex items-center space-x-1.5">
               <span className="w-2.5 h-2.5 bg-[#10B981] border border-border" />
               <span>Completed</span>
             </div>
             <div className="flex items-center space-x-1.5">
-              <span className="w-2.5 h-2.5 bg-[#FF2A85] border border-border" />
+              <span className="w-2.5 h-2.5 bg-[#FF2E93] border border-border" />
               <span>In Progress</span>
             </div>
             <div className="flex items-center space-x-1.5">
@@ -301,7 +344,7 @@ export function VenueMap({
               <span>Available</span>
             </div>
             <div className="flex items-center space-x-1.5">
-              <span className="text-[#FF2A85] text-xs">⭐</span>
+              <span className="text-[#FF2E93] text-xs">⭐</span>
               <span>YOUR ZONE</span>
             </div>
           </div>
@@ -320,42 +363,51 @@ export function VenueMap({
               <X className="w-4 h-4" />
             </button>
 
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="text-[10px] uppercase font-black text-primary tracking-wider font-mono">
-                  Zone {selectedZone.sort_order} Radar
-                </span>
-                {isAssignedZone(selectedZone) && (
-                  <span className="text-[10px] font-black text-primary-foreground bg-primary border-2 border-border shadow-[1px_1px_0px_var(--border)] px-2 py-0.5">
-                    YOUR ZONE ⭐
-                  </span>
-                )}
-              </div>
-              <h3 className="text-xl font-black text-foreground mt-0.5 font-mono flex items-center gap-2">
-                <span>{selectedZone.name}</span>
-                <span className="text-xs font-mono font-bold text-muted-foreground px-2 py-0.5 bg-muted border border-border">
-                  {getZoneTagline(selectedZone)}
-                </span>
-              </h3>
-              <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed font-medium">
-                {selectedZone.description}
-              </p>
+            {(() => {
+              const landmark = getLandmark(
+                selectedZone,
+                zones.findIndex((z) => z.id === selectedZone.id)
+              );
+              return (
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-[10px] uppercase font-black text-primary tracking-wider font-mono">
+                      Zone {selectedZone.sort_order} • {landmark.landmarkName}
+                    </span>
+                    {isAssignedZone(selectedZone) && (
+                      <span className="text-[10px] font-black text-primary-foreground bg-primary border-2 border-border shadow-[1px_1px_0px_var(--border)] px-2 py-0.5">
+                        YOUR ZONE ⭐
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-black text-foreground mt-0.5 font-mono flex items-center gap-2">
+                    <span>{landmark.emoji}</span>
+                    <span>{selectedZone.name}</span>
+                    <span className="text-xs font-mono font-bold text-muted-foreground px-2 py-0.5 bg-muted border border-border">
+                      {getZoneTagline(selectedZone)}
+                    </span>
+                  </h3>
+                  <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed font-medium">
+                    {selectedZone.description}
+                  </p>
 
-              {/* Zone Battle Standing Badge */}
-              <div className="mt-3 p-3 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-between text-xs font-bold">
-                <div className="flex items-center space-x-2">
-                  <Trophy className="w-4 h-4 text-primary shrink-0" />
-                  <span className="text-[11px] text-muted-foreground">
-                    Zone Battle Score:
-                  </span>
+                  {/* Zone Battle Standing Badge */}
+                  <div className="mt-3 p-3 bg-muted border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-between text-xs font-bold">
+                    <div className="flex items-center space-x-2">
+                      <Trophy className="w-4 h-4 text-primary shrink-0" />
+                      <span className="text-[11px] text-muted-foreground">
+                        Zone Battle Score:
+                      </span>
+                    </div>
+                    <span className="font-mono font-black text-primary text-sm">
+                      🪙 {(selectedZone.coins_collected || 0).toLocaleString()} VIBE
+                    </span>
+                  </div>
                 </div>
-                <span className="font-mono font-black text-primary text-sm">
-                  🪙 {(selectedZone.coins_collected || 0).toLocaleString()} VIBE
-                </span>
-              </div>
-            </div>
+              );
+            })()}
 
-            {/* Missions & Experiences */}
+            {/* Missions & Experiences in Selected Zone */}
             <div className="space-y-2.5 pt-1">
               <div className="flex items-center justify-between">
                 <h4 className="text-xs font-black text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
@@ -429,21 +481,21 @@ export function VenueMap({
               <div className="flex items-center space-x-2 text-primary">
                 <Compass className="w-4 h-4" />
                 <span className="text-xs font-mono font-black uppercase tracking-wider">
-                  Select a Zone to Inspect
+                  Select an Island Zone to Inspect
                 </span>
               </div>
               <h3 className="text-base font-black text-foreground font-mono mt-1">
                 Six Official Oceanic Zones
               </h3>
               <p className="text-xs text-muted-foreground mt-1">
-                Tap on any zone radar circle or select from the directory below to view missions and track championship scores.
+                Tap on any zone signpost on the map or pick from the directory below to view missions and track championship scores.
               </p>
             </div>
 
             <div className="grid grid-cols-1 gap-2 pt-1">
-              {zones.map((z) => {
+              {zones.map((z, idx) => {
                 const isUser = isAssignedZone(z);
-                const status = getZoneStatus(z.id);
+                const landmark = getLandmark(z, idx);
 
                 return (
                   <button
@@ -452,22 +504,25 @@ export function VenueMap({
                     className="w-full text-left p-2.5 bg-muted hover:bg-card border-2 border-border shadow-[2px_2px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px] flex items-center justify-between transition-all cursor-pointer group"
                   >
                     <div className="flex items-center space-x-2.5">
-                      <span className="w-6 h-6 bg-card border border-border flex items-center justify-center font-mono font-black text-[11px] text-foreground">
-                        Z{z.sort_order}
+                      <span className="w-7 h-7 bg-card border border-border flex items-center justify-center font-mono font-black text-xs text-foreground">
+                        {landmark.emoji}
                       </span>
                       <div>
                         <div className="flex items-center space-x-1.5">
                           <span className="text-xs font-black text-foreground font-mono group-hover:text-primary transition-colors">
                             {z.name}
                           </span>
+                          <span className="text-[10px] text-muted-foreground font-mono">
+                            (Z{z.sort_order})
+                          </span>
                           {isUser && (
                             <span className="text-[9px] font-black bg-primary text-primary-foreground px-1 py-0.2 border border-border">
-                              YOU
+                              YOU ⭐
                             </span>
                           )}
                         </div>
                         <span className="text-[10px] text-muted-foreground font-mono block">
-                          {getZoneTagline(z)}
+                          {landmark.landmarkName} • {getZoneTagline(z)}
                         </span>
                       </div>
                     </div>

@@ -15,9 +15,9 @@ import {
 } from "lucide-react";
 import { formatCoins } from "@/lib/utils";
 import { RotaractGame } from "./rotaract-game";
+import { FlappyRocco } from "./flappy-rocco";
 import { MinionRun } from "./minion-run";
 import { MemoryGame } from "./memory-game";
-import { VibeQuiz } from "./vibe-quiz";
 
 interface GamesHubClientProps {
   userBalance: number;
@@ -25,29 +25,42 @@ interface GamesHubClientProps {
 
 export function GamesHubClient({ userBalance }: GamesHubClientProps) {
   const [activeGame, setActiveGame] = useState<
-    "rotaract_game" | "minion_run" | "memory_game" | "vibe_quiz" | null
+    "rotaract_game" | "flappy_rocco" | "minion_run" | "memory_game" | null
   >(null);
 
   const games = [
     {
       id: "rotaract_game" as const,
       title: "Rotaract Game",
-      tagline: "Rotary & District Trivia Challenge",
+      tagline: "District & Rotary Trivia Challenge",
       icon: "🎯",
-      badge: "Trivia",
+      badge: "Prestige Trivia",
       badgeColor: "bg-blue-950/80 text-blue-400 border-blue-500/30",
-      description: "Answer 5 questions about Rotaract and District 3192. Score ≥ 80% to win bonus coins!",
+      description: "Answer 5 authentic, challenging questions on Rotaract history, governance, and District 3192. Score ≥ 80% to win bonus coins!",
       cost: 0,
       rewardXP: "+15 - 25 XP",
       bonus: "+10 VIBE (≥80%)",
       colorGradient: "from-blue-600/20 via-slate-900 to-slate-900 border-blue-500/30 hover:border-blue-400/60",
     },
     {
+      id: "flappy_rocco" as const,
+      title: "Flappy ROCCO",
+      tagline: "Mascot Flap Obstacle Course",
+      icon: "🦝",
+      badge: "Skill Gate: 5+",
+      badgeColor: "bg-pink-950/80 text-pink-400 border-pink-500/30",
+      description: "Guide ROCCO through pulsing neon equalizer columns. Clear at least 5 pillars to unlock XP! Jump ≥ 10 pillars for bonus coins!",
+      cost: 0,
+      rewardXP: "0 / 15 / 25 XP",
+      bonus: "+10 VIBE (≥10 pts)",
+      colorGradient: "from-pink-600/20 via-slate-900 to-slate-900 border-pink-500/30 hover:border-pink-400/60",
+    },
+    {
       id: "minion_run" as const,
       title: "Minion VIBE Run",
       tagline: "3-Lane Fast Reaction Arcade",
       icon: "🍌",
-      badge: "Arcade",
+      badge: "Lane Dodge",
       badgeColor: "bg-amber-950/80 text-amber-400 border-amber-500/30",
       description: "Dodge incoming waves, gather bananas & coins. Reach ≥ 120 points for bonus coins & maximum XP!",
       cost: 0,
@@ -60,26 +73,13 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
       title: "Memory Match",
       tagline: "Card Flip Visual Recall",
       icon: "🃏",
-      badge: "Memory",
+      badge: "Recall Matrix",
       badgeColor: "bg-purple-950/80 text-purple-400 border-purple-500/30",
       description: "Match all 6 pairs in a 12-card grid before time runs out. Clear in under 25s for speed bonus!",
       cost: 0,
       rewardXP: "+10 - 25 XP",
       bonus: "+10 VIBE (<25s)",
       colorGradient: "from-purple-600/20 via-slate-900 to-slate-900 border-purple-500/30 hover:border-purple-400/60",
-    },
-    {
-      id: "vibe_quiz" as const,
-      title: "VIBE Festival Quiz",
-      tagline: "Lore, Music & Culture",
-      icon: "🌊",
-      badge: "Tiered XP",
-      badgeColor: "bg-cyan-950/80 text-cyan-400 border-cyan-500/30",
-      description: "5 dynamic questions with score XP payouts. Score 100% to take home bonus coins!",
-      cost: 0,
-      rewardXP: "+10 - 25 XP",
-      bonus: "+10 VIBE (100%)",
-      colorGradient: "from-cyan-600/20 via-slate-900 to-slate-900 border-cyan-500/30 hover:border-cyan-400/60",
     },
   ];
 
@@ -88,7 +88,7 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
       <div className="space-y-4">
         <button
           onClick={() => setActiveGame(null)}
-          className="neo-btn-card px-4 py-2 text-xs font-black uppercase tracking-wider space-x-2"
+          className="neo-btn-card px-4 py-2 text-xs font-black uppercase tracking-wider space-x-2 cursor-pointer flex items-center"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>All 4 Games</span>
@@ -96,6 +96,12 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
 
         {activeGame === "rotaract_game" && (
           <RotaractGame
+            userBalance={userBalance}
+            onFinished={() => setActiveGame(null)}
+          />
+        )}
+        {activeGame === "flappy_rocco" && (
+          <FlappyRocco
             userBalance={userBalance}
             onFinished={() => setActiveGame(null)}
           />
@@ -108,12 +114,6 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
         )}
         {activeGame === "memory_game" && (
           <MemoryGame
-            userBalance={userBalance}
-            onFinished={() => setActiveGame(null)}
-          />
-        )}
-        {activeGame === "vibe_quiz" && (
-          <VibeQuiz
             userBalance={userBalance}
             onFinished={() => setActiveGame(null)}
           />
@@ -168,7 +168,7 @@ export function GamesHubClient({ userBalance }: GamesHubClientProps) {
 
           <button
             onClick={() => setActiveGame(g.id)}
-            className="w-full py-3 neo-btn-primary text-xs font-black uppercase tracking-wider space-x-2"
+            className="w-full py-3 neo-btn-primary text-xs font-black uppercase tracking-wider space-x-2 flex items-center justify-center cursor-pointer"
           >
             <Play className="w-3.5 h-3.5 fill-current" />
             <span>Play Now (Free)</span>

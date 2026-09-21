@@ -6,10 +6,7 @@ import { User, LogOut, LogIn } from "lucide-react";
 import { UserButton, SignedIn, SignedOut } from "@clerk/nextjs";
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "";
-const isClerkReady =
-  publishableKey &&
-  !publishableKey.includes("placeholder") &&
-  Boolean(process.env.CLERK_SECRET_KEY && !process.env.CLERK_SECRET_KEY.includes("placeholder"));
+const isClerkReady = Boolean(publishableKey && !publishableKey.includes("placeholder"));
 
 interface UserNavProps {
   vibeId?: string;

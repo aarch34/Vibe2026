@@ -136,7 +136,7 @@ export function DualLeaderboardClient({
             )}
 
             {/* Top 3 Podium */}
-            {top3.length >= 3 && (
+            {top3.length >= 3 ? (
               <div className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3">
                 <span className="text-xs uppercase font-black text-muted-foreground tracking-wider block text-center font-mono">
                   District Champions Podium
@@ -207,7 +207,16 @@ export function DualLeaderboardClient({
                   </div>
                 </div>
               </div>
-            )}
+            ) : top3.length > 0 ? (
+              <div className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo space-y-2 text-center">
+                <span className="text-xs uppercase font-black text-muted-foreground tracking-wider block font-mono">
+                  District Champions Podium
+                </span>
+                <p className="text-xs text-muted-foreground font-bold">
+                  Standings are heating up! {top3.length} {top3.length === 1 ? "attendee has" : "attendees have"} claimed their rank.
+                </p>
+              </div>
+            ) : null}
 
             {/* Tie-Breaker Accordion */}
             <div className="p-4 bg-muted text-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] space-y-1 text-xs">
@@ -230,7 +239,16 @@ export function DualLeaderboardClient({
             </div>
 
             <div className="space-y-2">
-              {entries.map((entry) => {
+              {entries.length === 0 ? (
+                <div className="p-8 bg-card text-card-foreground border-2 border-border shadow-neo text-center space-y-3">
+                  <Trophy className="w-10 h-10 text-muted-foreground mx-auto" />
+                  <h3 className="text-sm font-black font-mono text-foreground">NO STANDINGS RECORDED YET</h3>
+                  <p className="text-xs text-muted-foreground max-w-sm mx-auto font-medium">
+                    Explore zones, complete stalls, and play festival mini-games to claim your rank on the leaderboard!
+                  </p>
+                </div>
+              ) : (
+                entries.map((entry) => {
                 const isCurrentUser = entry.profile_id === currentProfileId;
 
                 return (
@@ -289,7 +307,8 @@ export function DualLeaderboardClient({
                     </div>
                   </div>
                 );
-              })}
+              })
+            )}
             </div>
           </div>
         </div>
