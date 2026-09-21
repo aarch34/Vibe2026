@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ClerkProvider } from "@clerk/nextjs";
+import { dark } from "@clerk/themes";
 
 // Production Clerk Publishable Key for ROCCO/VIBE 2026
 const DEFAULT_CLERK_PUBLISHABLE_KEY =
@@ -19,12 +20,14 @@ export function VibeAuthProvider({ children }: { children: React.ReactNode }) {
       afterSignInUrl="/app"
       afterSignUpUrl="/app"
       appearance={{
+        baseTheme: dark,
         variables: {
-          colorPrimary: "#f59e0b",
-          colorBackground: "#09090b",
-          colorText: "#f4f4f5",
-          colorInputBackground: "#18181b",
-          colorInputText: "#fafafa",
+          colorPrimary: "#ff2a85",
+          colorBackground: "#090816",
+          colorText: "#ffffff",
+          colorTextSecondary: "#a39ebf",
+          colorInputBackground: "#121026",
+          colorInputText: "#ffffff",
           borderRadius: "0px",
         },
       }}

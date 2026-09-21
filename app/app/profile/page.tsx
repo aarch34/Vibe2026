@@ -26,6 +26,7 @@ import {
   Gamepad2,
 } from "lucide-react";
 import { formatCoins, formatXP } from "@/lib/utils";
+import { AttendeeSignOutButton } from "@/components/auth/sign-out-button";
 
 export const dynamic = "force-dynamic";
 
@@ -132,6 +133,11 @@ export default async function ProfilePage() {
                 Spent: {formatCoins(walletSummary.totalSpent)}
               </p>
             </div>
+          </div>
+
+          {/* Explicit Sign Out Action */}
+          <div className="pt-2 border-t-2 border-border">
+            <AttendeeSignOutButton />
           </div>
         </div>
 

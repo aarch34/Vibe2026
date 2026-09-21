@@ -1,5 +1,13 @@
+import * as React from "react";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { Wallet, WalletTransaction } from "@/types/database";
+
+function serverCache<T extends (...args: any[]) => any>(fn: T): T {
+  if (typeof (React as any).cache === "function") {
+    return (React as any).cache(fn);
+  }
+  return fn;
+}
 
 export interface WalletSummary {
   wallet: Wallet;
@@ -8,7 +16,7 @@ export interface WalletSummary {
   totalSpent: number;
 }
 
-export async function getWalletSummary(
+export const getWalletSummary = serverCache(async function getWalletSummary(
   eventId: string,
   profileId: string
 ): Promise<WalletSummary> {
@@ -91,7 +99,7 @@ export async function getWalletSummary(
     totalEarned,
     totalSpent,
   };
-}
+});
 
 export async function spendCoinsAtomic(
   eventId: string,

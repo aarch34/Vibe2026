@@ -22,8 +22,6 @@ import { getCurrentUserSession } from "@/lib/auth/session";
 import { getWalletSummary } from "@/lib/wallet/wallet-service";
 import {
   getUserProgression,
-  getUserQuests,
-  getUserAchievements,
   getUserPlayerStats,
 } from "@/lib/gameplay/progression-service";
 import { getUserLeaderboardRank } from "@/lib/leaderboard/leaderboard-service";
@@ -34,12 +32,30 @@ export const dynamic = "force-dynamic";
 
 export default async function AttendeeHomePage() {
   const session = await getCurrentUserSession();
-  const walletSummary = await getWalletSummary(session.eventId, session.profile.id);
-  const progression = await getUserProgression(session.eventId, session.profile.id);
-  const quests = await getUserQuests(session.eventId, session.profile.id);
-  const achievements = await getUserAchievements(session.eventId, session.profile.id);
-  const userRank = await getUserLeaderboardRank(session.eventId, session.profile.id);
-  const playerStats = await getUserPlayerStats(session.profile.id);
+
+  // Run all required metrics in parallel
+  const [walletSummary, progression, playerStats, userRank, liveExpsRes, liveZoneRes] =
+    await Promise.all([
+      getWalletSummary(session.eventId, session.profile.id),
+      getUserProgression(session.eventId, session.profile.id),
+      getUserPlayerStats(session.profile.id),
+      getUserLeaderboardRank(session.eventId, session.profile.id),
+      isUsingLiveSupabase() && supabaseAdmin
+        ? supabaseAdmin
+            .from("experiences")
+            .select("*, zones(name), sponsors(name)")
+            .eq("event_id", session.eventId)
+            .eq("is_active", true)
+            .limit(4)
+        : Promise.resolve({ data: null }),
+      isUsingLiveSupabase() && supabaseAdmin && session.profile.assigned_zone_id
+        ? supabaseAdmin
+            .from("zones")
+            .select("name")
+            .eq("id", session.profile.assigned_zone_id)
+            .maybeSingle()
+        : Promise.resolve({ data: null }),
+    ]);
 
   // Resolve assigned zone name
   let assignedZoneName = "Arnava";
@@ -47,32 +63,13 @@ export default async function AttendeeHomePage() {
     const memZone = mockDb.zones.get(session.profile.assigned_zone_id);
     if (memZone) {
       assignedZoneName = memZone.name;
-    } else if (isUsingLiveSupabase() && supabaseAdmin) {
-      try {
-        const { data: z } = await supabaseAdmin
-          .from("zones")
-          .select("name")
-          .eq("id", session.profile.assigned_zone_id)
-          .maybeSingle();
-        if (z) assignedZoneName = z.name;
-      } catch {}
+    } else if (liveZoneRes?.data?.name) {
+      assignedZoneName = liveZoneRes.data.name;
     }
   }
 
-  const unlockedBadgesCount = achievements.filter((a) => a.isUnlocked).length;
-  const userStampsCount = progression.zonesVisitedCount;
-
   // 4 Featured Experiences from the 6 official zones
-  let featuredExperiences: any[] = [];
-  if (isUsingLiveSupabase() && supabaseAdmin) {
-    const { data: exps } = await supabaseAdmin
-      .from("experiences")
-      .select("*, zones(name), sponsors(name)")
-      .eq("event_id", session.eventId)
-      .eq("is_active", true)
-      .limit(4);
-    featuredExperiences = exps || [];
-  }
+  let featuredExperiences: any[] = liveExpsRes?.data || [];
 
   if (
     !featuredExperiences ||

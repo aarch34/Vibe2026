@@ -1,11 +1,29 @@
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { LeaderboardEntry, Level, ZoneLeaderboardEntry } from "@/types/database";
 
+let cachedLeaderboardData: {
+  eventId: string;
+  timestamp: number;
+  entries: LeaderboardEntry[];
+} | null = null;
+const LEADERBOARD_CACHE_TTL_MS = 15_000;
+
 export async function getLeaderboard(
   eventId: string,
   limit = 50,
   offset = 0
 ): Promise<{ entries: LeaderboardEntry[]; totalParticipants: number }> {
+  if (
+    cachedLeaderboardData &&
+    cachedLeaderboardData.eventId === eventId &&
+    Date.now() - cachedLeaderboardData.timestamp < LEADERBOARD_CACHE_TTL_MS
+  ) {
+    return {
+      entries: cachedLeaderboardData.entries.slice(offset, offset + limit),
+      totalParticipants: cachedLeaderboardData.entries.length,
+    };
+  }
+
   if (isUsingLiveSupabase() && supabaseAdmin) {
     const [membersRes, levelsRes, compsRes, zonesRes] = await Promise.all([
       supabaseAdmin
@@ -118,6 +136,12 @@ export async function getLeaderboard(
     entries.forEach((entry, idx) => {
       entry.rank = idx + 1;
     });
+
+    cachedLeaderboardData = {
+      eventId,
+      timestamp: Date.now(),
+      entries,
+    };
 
     const paged = entries.slice(offset, offset + limit);
 

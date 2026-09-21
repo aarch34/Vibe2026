@@ -404,3 +404,59 @@ body {
   }
 }
 
+/* Clerk UserButton Popover & Modal High-Contrast Dark Theme Overrides */
+.cl-userButtonPopoverCard {
+  background-color: #090816 !important;
+  border: 2px solid #3b336a !important;
+  box-shadow: 4px 4px 0px #000000 !important;
+  border-radius: 0px !important;
+  color: #ffffff !important;
+}
+
+.cl-userButtonPopoverActions {
+  padding: 4px 0 !important;
+}
+
+.cl-userButtonPopoverActionButton {
+  color: #ffffff !important;
+  border-radius: 0px !important;
+  padding: 8px 14px !important;
+  transition: all 0.15s ease-in-out !important;
+}
+
+.cl-userButtonPopoverActionButton:hover {
+  background-color: #1c1838 !important;
+  color: #ffffff !important;
+}
+
+.cl-userButtonPopoverActionButtonText {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+}
+
+.cl-userButtonPopoverActionButtonIcon {
+  color: #ff2a85 !important;
+  width: 16px !important;
+  height: 16px !important;
+}
+
+.cl-userPreviewMainIdentifier {
+  color: #ffffff !important;
+  font-weight: 800 !important;
+}
+
+.cl-userPreviewSecondaryIdentifier {
+  color: #a39ebf !important;
+}
+
+.cl-userButtonPopoverFooter {
+  border-top: 1px solid #3b336a !important;
+  background-color: #090816 !important;
+}
+
+.cl-userButtonPopoverFooter a,
+.cl-userButtonPopoverFooter span {
+  color: #a39ebf !important;
+}
+

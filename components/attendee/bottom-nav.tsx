@@ -19,7 +19,7 @@ export function AttendeeBottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-2 pb-safe pt-2 bg-card/95 backdrop-blur-2xl border-t-2 border-border shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-2 pb-safe pt-2 bg-card border-t-2 border-border shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href;

@@ -1,6 +1,14 @@
+import * as React from "react";
 import { redirect } from "next/navigation";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { Profile, EventMember, MemberRole } from "@/types/database";
+
+function serverCache<T extends (...args: any[]) => any>(fn: T): T {
+  if (typeof (React as any).cache === "function") {
+    return (React as any).cache(fn);
+  }
+  return fn;
+}
 
 const isClerkConfigured =
   process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
@@ -18,7 +26,7 @@ export interface CurrentUserSession {
   staffZoneSlug?: string | null;
 }
 
-export async function getCurrentUserSession(
+export const getCurrentUserSession = serverCache(async function getCurrentUserSession(
   requestedEventSlug = "vibe-2026"
 ): Promise<CurrentUserSession> {
   let clerkUserId: string | null = null;
@@ -29,7 +37,7 @@ export async function getCurrentUserSession(
 
   if (isClerkConfigured) {
     try {
-      const { auth, currentUser } = await import("@clerk/nextjs/server");
+      const { auth } = await import("@clerk/nextjs/server");
       const authData = auth();
       clerkUserId = authData.userId;
       if (clerkUserId) {
@@ -37,14 +45,19 @@ export async function getCurrentUserSession(
         if (metadataRole === "admin" || metadataRole === "volunteer" || metadataRole === "lead") {
           clerkRole = metadataRole;
         }
-        const user = await currentUser();
-        displayName = user?.firstName
-          ? `${user.firstName} ${user.lastName || ""}`.trim()
-          : user?.username || "VIBE Attendee";
-        userEmail = user?.emailAddresses?.[0]?.emailAddress || null;
 
-        if (userEmail?.toLowerCase() === "thejaswinps@gmail.com") {
-          clerkRole = "admin";
+        // Fast zero-network JWT claim inspection
+        const claims = (authData.sessionClaims as any) || {};
+        const claimEmail = claims.email || claims.primary_email_address || claims.sub_email || null;
+        if (claimEmail) {
+          userEmail = claimEmail;
+          if (userEmail?.toLowerCase() === "thejaswinps@gmail.com") {
+            clerkRole = "admin";
+          }
+        }
+        const claimName = claims.name || claims.full_name || claims.first_name || null;
+        if (claimName) {
+          displayName = claimName;
         }
       }
     } catch (err) {
@@ -126,6 +139,24 @@ export async function getCurrentUserSession(
     }
 
     if (!profile) {
+      if (isClerkConfigured && (!userEmail || displayName === "VIBE Attendee")) {
+        try {
+          const { currentUser } = await import("@clerk/nextjs/server");
+          const user = await currentUser();
+          if (user) {
+            displayName = user.firstName
+              ? `${user.firstName} ${user.lastName || ""}`.trim()
+              : user.username || displayName;
+            userEmail = user.emailAddresses?.[0]?.emailAddress || userEmail;
+            if (userEmail?.toLowerCase() === "thejaswinps@gmail.com") {
+              clerkRole = "admin";
+            }
+          }
+        } catch (err) {
+          console.warn("Clerk initial user fetch fallback:", err);
+        }
+      }
+
       const vibeId = `VIBE-${Math.floor(1000 + Math.random() * 9000)}`;
       const { data: newProfile, error } = await supabaseAdmin
         .from("profiles")
@@ -286,4 +317,4 @@ export async function getCurrentUserSession(
     eventId,
     role: member.role,
   };
-}
+});

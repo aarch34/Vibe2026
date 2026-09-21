@@ -1,3 +1,4 @@
+import * as React from "react";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import {
   Level,
@@ -7,6 +8,13 @@ import {
   Achievement,
   UserPlayerStats,
 } from "@/types/database";
+
+function serverCache<T extends (...args: any[]) => any>(fn: T): T {
+  if (typeof (React as any).cache === "function") {
+    return (React as any).cache(fn);
+  }
+  return fn;
+}
 
 export interface UserProgression {
   totalXP: number;
@@ -27,7 +35,7 @@ export interface PassportZoneItem {
   firstCompletedAt: string | null;
 }
 
-export async function getUserProgression(
+export const getUserProgression = serverCache(async function getUserProgression(
   eventId: string,
   profileId: string
 ): Promise<UserProgression> {
@@ -126,7 +134,7 @@ export async function getUserProgression(
     zonesVisitedCount: visitedZoneIds.size,
     totalZonesCount: totalZones,
   };
-}
+});
 
 export async function getUserPassport(
   eventId: string,

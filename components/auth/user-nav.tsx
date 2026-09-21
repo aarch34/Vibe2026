@@ -25,6 +25,20 @@ export function UserNav({ vibeId, displayName }: UserNavProps) {
                 elements: {
                   userButtonAvatarBox: "w-7 h-7 rounded-none",
                   userButtonTrigger: "focus:shadow-none focus:outline-none",
+                  userButtonPopoverCard:
+                    "bg-[#090816] border-2 border-[#3b336a] text-white shadow-[4px_4px_0px_#000000] rounded-none",
+                  userButtonPopoverActionButton:
+                    "text-white hover:bg-[#1c1838] hover:text-white rounded-none transition-colors",
+                  userButtonPopoverActionButtonText:
+                    "text-white font-bold text-xs",
+                  userButtonPopoverActionButtonIcon:
+                    "text-[#ff2a85]",
+                  userButtonPopoverFooter:
+                    "border-t border-[#3b336a] bg-[#090816]",
+                  userPreviewMainIdentifier:
+                    "text-white font-black",
+                  userPreviewSecondaryIdentifier:
+                    "text-[#a39ebf]",
                 },
               }}
             />

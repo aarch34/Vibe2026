@@ -19,7 +19,6 @@ import {
   Image as ImageIcon,
   StopCircle,
 } from "lucide-react";
-import confetti from "canvas-confetti";
 import { completeExperienceAction } from "@/actions/experiences/complete";
 import { formatCoins, formatXP } from "@/lib/utils";
 
@@ -212,13 +211,15 @@ export function QRScannerClient({
       } else {
         setCompletionResult(res);
 
-        // Trigger celebratory confetti
-        confetti({
-          particleCount: 80,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ["#FF2A85", "#A855F7", "#00D2FF", "#10B981"],
-        });
+        // Trigger celebratory confetti dynamically
+        import("canvas-confetti").then(({ default: confetti }) => {
+          confetti({
+            particleCount: 80,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ["#FF2A85", "#A855F7", "#00D2FF", "#10B981"],
+          });
+        }).catch(() => {});
 
         router.refresh();
       }

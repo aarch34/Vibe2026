@@ -13,8 +13,10 @@ export default async function AttendeeLayout({
   children: React.ReactNode;
 }) {
   const session = await getCurrentUserSession();
-  const walletSummary = await getWalletSummary(session.eventId, session.profile.id);
-  const progression = await getUserProgression(session.eventId, session.profile.id);
+  const [walletSummary, progression] = await Promise.all([
+    getWalletSummary(session.eventId, session.profile.id),
+    getUserProgression(session.eventId, session.profile.id),
+  ]);
 
   // Resolve assigned zone
   let assignedZoneName = "Arnava";
