@@ -22,7 +22,18 @@ export async function verifyQRScan(
   eventId: string,
   profileId: string
 ): Promise<QRVerificationResult> {
-  const cleanCode = code.trim();
+  let cleanCode = code.trim();
+  try {
+    if (
+      cleanCode.includes("code=") ||
+      cleanCode.startsWith("http://") ||
+      cleanCode.startsWith("https://")
+    ) {
+      const parsed = new URL(cleanCode, "http://localhost");
+      const param = parsed.searchParams.get("code");
+      if (param) cleanCode = param.trim();
+    }
+  } catch {}
 
   let qrRecord: QRCodeRecord | null = null;
   let experience: Experience | null = null;

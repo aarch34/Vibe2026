@@ -142,7 +142,7 @@ export default async function AdminLayout({
               href="/admin/login"
               className="neo-btn-primary block p-2 text-center text-xs font-black uppercase tracking-wider"
             >
-              Sign In (jk / gunjan)
+              Sign In (Admin Console)
             </Link>
           )}
         </div>

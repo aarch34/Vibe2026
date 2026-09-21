@@ -159,9 +159,24 @@ export function QRScannerClient({
     setErrorMsg(null);
     setIsVerifying(true);
 
+    let cleanCode = codeToVerify.trim();
+    try {
+      if (
+        cleanCode.includes("code=") ||
+        cleanCode.startsWith("http://") ||
+        cleanCode.startsWith("https://")
+      ) {
+        const parsed = new URL(cleanCode, window.location.origin);
+        const param = parsed.searchParams.get("code");
+        if (param) cleanCode = param.trim();
+      }
+    } catch {}
+
+    setScannedCode(cleanCode);
+
     try {
       const res = await fetch(
-        `/api/qr/scan?code=${encodeURIComponent(codeToVerify.trim())}`
+        `/api/qr/scan?code=${encodeURIComponent(cleanCode)}`
       );
       const data = await res.json();
 

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { formatCoins, formatXP } from "@/lib/utils";
 import { EventFreezeControl } from "@/components/admin/event-freeze-control";
+import { AdminMaintenanceCard } from "@/components/admin/admin-maintenance-card";
 import { getLeaderboard, getZoneLeaderboard } from "@/lib/leaderboard/leaderboard-service";
 
 export const dynamic = "force-dynamic";
@@ -171,6 +172,9 @@ export default async function AdminDashboardPage() {
 
       {/* Point 39 Event Concluded / Freeze Control */}
       <EventFreezeControl initialIsFrozen={isEventFrozen} />
+
+      {/* Admin Operations & Data Purge Controls */}
+      <AdminMaintenanceCard />
 
       {/* LIVE LEADERBOARD HIGHLIGHTS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

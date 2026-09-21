@@ -150,24 +150,19 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
     stateRef.current.width = width;
     stateRef.current.height = height;
 
-    const birdRadius = 18;
-    const pipeWidth = 56;
-    const pipeGap = 135;
+    const birdRadius = 15;
+    const pipeWidth = 52;
+    const pipeGap = 145; // Comfortable, fair vertical clearance
+    const minPipeDistance = 215; // Generous horizontal spacing so pillars NEVER overlap or bunch up
     const groundHeight = 36;
+    const speed = 2.2; // Smooth arcade scroll rate
 
     let isRunning = true;
 
     function resetGame() {
       stateRef.current.birdY = 220;
       stateRef.current.velocity = 0;
-      stateRef.current.pipes = [
-        {
-          x: width + 80,
-          topHeight: 120,
-          bottomY: 120 + pipeGap,
-          passed: false,
-        },
-      ];
+      stateRef.current.pipes = [];
       stateRef.current.score = 0;
       setScore(0);
       stateRef.current.frameCount = 0;
@@ -256,9 +251,21 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
         state.velocity += state.gravity;
         state.birdY += state.velocity;
 
-        // Spawn pipes
-        if (state.frameCount % 90 === 0) {
-          const minH = 60;
+        // Deterministic distance-based pipe generation
+        // Pillars ONLY spawn when the previous pillar has advanced at least minPipeDistance (215px)
+        const lastPipe = state.pipes[state.pipes.length - 1];
+        if (!lastPipe) {
+          const minH = 65;
+          const maxH = height - groundHeight - pipeGap - minH;
+          const topH = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
+          state.pipes.push({
+            x: width + 60,
+            topHeight: topH,
+            bottomY: topH + pipeGap,
+            passed: false,
+          });
+        } else if (lastPipe.x <= width - minPipeDistance) {
+          const minH = 65;
           const maxH = height - groundHeight - pipeGap - minH;
           const topH = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
           state.pipes.push({
@@ -270,13 +277,12 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
         }
 
         // Move pipes
-        const speed = 2.4;
         for (let i = 0; i < state.pipes.length; i++) {
           const p = state.pipes[i];
           p.x -= speed;
 
           // Check score pass
-          const birdX = 90;
+          const birdX = 85;
           if (!p.passed && p.x + pipeWidth < birdX) {
             p.passed = true;
             state.score++;
@@ -284,12 +290,12 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
             playBeep("score");
           }
 
-          // Collision check
+          // Fair collision check with forgiving hitbox margins
           const birdBox = {
-            left: birdX - birdRadius + 4,
-            right: birdX + birdRadius - 4,
-            top: state.birdY - birdRadius + 4,
-            bottom: state.birdY + birdRadius - 4,
+            left: birdX - birdRadius + 3,
+            right: birdX + birdRadius - 3,
+            top: state.birdY - birdRadius + 3,
+            bottom: state.birdY + birdRadius - 3,
           };
 
           // Hit upper pipe
@@ -312,9 +318,9 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
         }
 
         // Clean up off-screen pipes
-        state.pipes = state.pipes.filter((p) => p.x + pipeWidth > -20);
+        state.pipes = state.pipes.filter((p) => p.x + pipeWidth > -30);
 
-        // Ceiling collision
+        // Ceiling collision (soft clamp - don't instakill)
         if (state.birdY - birdRadius < 0) {
           state.birdY = birdRadius;
           state.velocity = 0;
@@ -348,6 +354,13 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
         ctx.fillRect(p.x - 3, p.topHeight - 12, pipeWidth + 6, 12);
         ctx.strokeRect(p.x - 3, p.topHeight - 12, pipeWidth + 6, 12);
 
+        // Soundwave accent line inside top pipe
+        ctx.strokeStyle = "rgba(233, 213, 255, 0.4)";
+        ctx.beginPath();
+        ctx.moveTo(p.x + pipeWidth / 2, 0);
+        ctx.lineTo(p.x + pipeWidth / 2, p.topHeight - 12);
+        ctx.stroke();
+
         // Bottom Pipe
         const botH = height - groundHeight - p.bottomY;
         const botGrad = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
@@ -364,6 +377,13 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
         ctx.fillStyle = "#BAE6FD";
         ctx.fillRect(p.x - 3, p.bottomY, pipeWidth + 6, 12);
         ctx.strokeRect(p.x - 3, p.bottomY, pipeWidth + 6, 12);
+
+        // Soundwave accent line inside bottom pipe
+        ctx.strokeStyle = "rgba(186, 230, 253, 0.4)";
+        ctx.beginPath();
+        ctx.moveTo(p.x + pipeWidth / 2, p.bottomY + 12);
+        ctx.lineTo(p.x + pipeWidth / 2, height - groundHeight);
+        ctx.stroke();
       }
 
       // 4. Draw Ground Platform
@@ -393,7 +413,7 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
       }
 
       // 5. Draw ROCCO (The Flappy Bird)
-      const birdX = 90;
+      const birdX = 85;
       const birdY = state.birdY;
       const angle = Math.min(
         Math.PI / 4,
@@ -406,7 +426,7 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
 
       if (roccoImgRef.current && roccoImgRef.current.complete) {
         // Draw circular cropped mascot sprite
-        const size = 42;
+        const size = 38;
         ctx.drawImage(roccoImgRef.current, -size / 2, -size / 2, size, size);
       } else {
         // Fallback Raccoon Circle Avatar if image loading
@@ -426,14 +446,27 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
 
       ctx.restore();
 
-      // 6. Draw HUD Score in Game
+      // 6. Draw HUD Score & Skill Gate Tracker
       if (state.gameState === "playing") {
-        ctx.font = "900 28px monospace";
+        ctx.font = "900 32px monospace";
         ctx.textAlign = "center";
         ctx.fillStyle = "#000000";
         ctx.fillText(`${state.score}`, width / 2 + 2, 48);
-        ctx.fillStyle = "#00D2FF";
+        ctx.fillStyle = state.score >= 10 ? "#FACC15" : state.score >= 5 ? "#10B981" : "#00D2FF";
         ctx.fillText(`${state.score}`, width / 2, 46);
+
+        // Skill Gate Badge underneath
+        ctx.font = "bold 10px monospace";
+        if (state.score >= 10) {
+          ctx.fillStyle = "#FACC15";
+          ctx.fillText("⭐ MASTER BONUS UNLOCKED (+25 XP) ⭐", width / 2, 68);
+        } else if (state.score >= 5) {
+          ctx.fillStyle = "#34D399";
+          ctx.fillText("✨ SKILL GATE PASSED (+15 XP) ✨", width / 2, 68);
+        } else {
+          ctx.fillStyle = "#94A3B8";
+          ctx.fillText(`GATE: ${state.score}/5 PILLARS FOR XP`, width / 2, 68);
+        }
       }
 
       // Draw Ready Hint
@@ -444,7 +477,7 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
         ctx.fillText("TAP SCREEN OR PRESS SPACE", width / 2, 320);
         ctx.font = "bold 11px sans-serif";
         ctx.fillStyle = "#CBD5E1";
-        ctx.fillText("Guide ROCCO between the neon soundwaves!", width / 2, 344);
+        ctx.fillText("Jump ≥ 5 pillars to earn XP rewards!", width / 2, 344);
       }
 
       animFrameIdRef.current = requestAnimationFrame(render);
@@ -465,14 +498,7 @@ export function FlappyRocco({ userBalance, onFinished }: FlappyRoccoProps) {
     stateRef.current.gameState = "ready";
     stateRef.current.birdY = 220;
     stateRef.current.velocity = 0;
-    stateRef.current.pipes = [
-      {
-        x: stateRef.current.width + 80,
-        topHeight: 120,
-        bottomY: 120 + 135,
-        passed: false,
-      },
-    ];
+    stateRef.current.pipes = [];
     stateRef.current.score = 0;
     setScore(0);
     setPayoutResult(null);

@@ -125,32 +125,57 @@ export default async function AttendeeHomePage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Attendee Identity & Core Metrics */}
         <div className="lg:col-span-5 space-y-5">
-          {/* Attendee Profile Hero Card */}
-          <div className="p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
-            <div className="space-y-4">
+          {/* Attendee Profile VIP Festival Pass */}
+          <div className="vip-hologram bg-card text-card-foreground border-2 border-border shadow-[5px_5px_0px_#000] relative overflow-hidden transition-all">
+            {/* Top Lanyard & Holographic Header Strip */}
+            <div className="bg-gradient-to-r from-[#FF1B7A] via-[#8B5CF6] to-[#00F0FF] p-2 flex items-center justify-between text-[10px] font-black tracking-widest uppercase text-white font-mono">
+              <span className="flex items-center space-x-1.5">
+                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                <span>OFFICIAL VIBE 2026 PASS</span>
+              </span>
+              <span>ROTARACT 3192</span>
+            </div>
+
+            <div className="p-5 space-y-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-black text-muted-foreground tracking-wider uppercase">
-                    HEY {session.profile.display_name.toUpperCase()} 👋
-                  </p>
-                  <div className="flex items-center space-x-2 mt-1">
-                    <span className="inline-flex items-center space-x-1 text-xs font-black text-secondary-foreground bg-secondary border-2 border-border px-2.5 py-0.5 shadow-[2px_2px_0px_var(--border)]">
+                  <span className="text-[10px] font-mono font-black text-muted-foreground uppercase tracking-widest block">
+                    ATTENDEE CREDENTIAL
+                  </span>
+                  <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight uppercase mt-0.5">
+                    {session.profile.display_name.toUpperCase()}
+                  </h1>
+                  <div className="flex items-center space-x-2 mt-2">
+                    <span className="inline-flex items-center space-x-1.5 text-xs font-black text-white bg-secondary border-2 border-border px-3 py-1 shadow-[2px_2px_0px_var(--border)]">
                       <span>🌊</span>
                       <span>{assignedZoneName.toUpperCase()}</span>
-                      <span className="text-[9px] font-bold ml-0.5">(YOUR ZONE)</span>
+                      <span className="text-[9px] font-mono text-cyan-300 ml-1">(YOUR ZONE)</span>
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground font-bold mt-1">
+                  <p className="text-xs text-muted-foreground font-bold mt-1.5">
                     {session.profile.club || session.profile.college || "Rotaract District 3192"}
                   </p>
                 </div>
 
                 <div className="flex flex-col items-end">
-                  <span className="text-xs font-mono font-black text-primary-foreground bg-primary border-2 border-border px-2.5 py-0.5 shadow-[2px_2px_0px_var(--border)]">
+                  <span className="text-xs font-mono font-black text-primary-foreground bg-primary border-2 border-border px-3 py-1 shadow-[2px_2px_0px_var(--border)]">
                     {session.profile.vibe_id}
                   </span>
-                  <span className="text-[10px] font-bold text-muted-foreground mt-1">
-                    District Freshers '26
+                  {/* Decorative Mini Barcode */}
+                  <div className="mt-2.5 flex items-end space-x-0.5 opacity-70">
+                    <div className="w-0.5 h-6 bg-foreground" />
+                    <div className="w-1 h-6 bg-foreground" />
+                    <div className="w-0.5 h-6 bg-foreground" />
+                    <div className="w-1.5 h-6 bg-foreground" />
+                    <div className="w-0.5 h-6 bg-foreground" />
+                    <div className="w-0.5 h-6 bg-foreground" />
+                    <div className="w-1 h-6 bg-foreground" />
+                    <div className="w-0.5 h-6 bg-foreground" />
+                    <div className="w-1.5 h-6 bg-foreground" />
+                    <div className="w-0.5 h-6 bg-foreground" />
+                  </div>
+                  <span className="text-[9px] font-mono font-bold text-muted-foreground mt-0.5">
+                    VERIFIED
                   </span>
                 </div>
               </div>
@@ -159,12 +184,12 @@ export default async function AttendeeHomePage() {
               <div className="pt-3 border-t-2 border-border">
                 <div className="flex items-center justify-between text-xs mb-1.5 font-black">
                   <div className="flex items-center space-x-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-primary" />
-                    <span className="text-foreground">
-                      LEVEL {progression.currentLevel.sort_order} — {progression.currentLevel.name.toUpperCase()}
+                    <Sparkles className="w-3.5 h-3.5 text-[#00F0FF]" />
+                    <span className="text-foreground tracking-wide font-mono">
+                      LEVEL {progression.currentLevel.sort_order} • {progression.currentLevel.name.toUpperCase()}
                     </span>
                   </div>
-                  <span className="font-mono text-foreground">
+                  <span className="font-mono text-foreground font-black">
                     {formatXP(progression.totalXP)}
                     {progression.nextLevel && (
                       <span className="text-muted-foreground text-[10px]">
@@ -175,17 +200,18 @@ export default async function AttendeeHomePage() {
                   </span>
                 </div>
 
-                <div className="w-full h-3 bg-muted border-2 border-border p-0.5 overflow-hidden">
+                {/* Segmented Power Meter Bar */}
+                <div className="w-full h-3.5 bg-muted border-2 border-border p-0.5 overflow-hidden">
                   <div
-                    className="h-full bg-primary transition-all duration-500"
-                    style={{ width: `${progression.progressPercent}%` }}
+                    className="h-full bg-gradient-to-r from-[#FF1B7A] via-[#8B5CF6] to-[#00F0FF] transition-all duration-500"
+                    style={{ width: `${Math.max(5, progression.progressPercent)}%` }}
                   />
                 </div>
 
                 {progression.nextLevel && (
                   <p className="text-[10px] text-muted-foreground mt-1.5 text-right font-bold">
-                    {formatXP(progression.xpToNextLevel)} needed for{" "}
-                    <span className="text-foreground font-black">
+                    {formatXP(progression.xpToNextLevel)} XP needed for{" "}
+                    <span className="text-[#00F0FF] font-black font-mono">
                       {progression.nextLevel.name}
                     </span>
                   </p>
@@ -196,55 +222,55 @@ export default async function AttendeeHomePage() {
 
           {/* Section 4: 4 PROGRESS COUNTERS */}
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="p-3 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center space-x-3">
-              <div className="w-9 h-9 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-sm shrink-0">
+            <div className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#00F0FF] transition-all flex items-center space-x-3 group">
+              <div className="w-10 h-10 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform">
                 🗺️
               </div>
               <div className="min-w-0">
                 <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Zone Progress</span>
-                <span className="text-sm sm:text-base font-black font-mono text-foreground">
+                <span className="text-base font-black font-mono text-foreground">
                   {playerStats.zonesVisitedCount} / 6
                 </span>
-                <span className="text-[9px] text-muted-foreground font-bold block">explored</span>
+                <span className="text-[9px] text-[#00F0FF] font-bold block">explored</span>
               </div>
             </div>
 
-            <div className="p-3 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center space-x-3">
-              <div className="w-9 h-9 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-sm shrink-0">
+            <div className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#8B5CF6] transition-all flex items-center space-x-3 group">
+              <div className="w-10 h-10 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform">
                 ⚡
               </div>
               <div className="min-w-0">
                 <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Experiences</span>
-                <span className="text-sm sm:text-base font-black font-mono text-foreground">
+                <span className="text-base font-black font-mono text-foreground">
                   {playerStats.experiencesCompletedCount}
                 </span>
-                <span className="text-[9px] text-muted-foreground font-bold block">completed</span>
+                <span className="text-[9px] text-[#A78BFA] font-bold block">completed</span>
               </div>
             </div>
 
-            <div className="p-3 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center space-x-3">
-              <div className="w-9 h-9 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-sm shrink-0">
+            <div className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#FF1B7A] transition-all flex items-center space-x-3 group">
+              <div className="w-10 h-10 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform">
                 📸
               </div>
               <div className="min-w-0">
                 <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Stalls</span>
-                <span className="text-sm sm:text-base font-black font-mono text-foreground">
+                <span className="text-base font-black font-mono text-foreground">
                   {playerStats.stallsVisitedCount}
                 </span>
-                <span className="text-[9px] text-muted-foreground font-bold block">visited</span>
+                <span className="text-[9px] text-[#FF1B7A] font-bold block">visited</span>
               </div>
             </div>
 
-            <div className="p-3 bg-card text-card-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center space-x-3">
-              <div className="w-9 h-9 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-sm shrink-0">
+            <div className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#F59E0B] transition-all flex items-center space-x-3 group">
+              <div className="w-10 h-10 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform">
                 🎮
               </div>
               <div className="min-w-0">
                 <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Games</span>
-                <span className="text-sm sm:text-base font-black font-mono text-foreground">
+                <span className="text-base font-black font-mono text-foreground">
                   {playerStats.gamesPlayedCount}
                 </span>
-                <span className="text-[9px] text-muted-foreground font-bold block">played</span>
+                <span className="text-[9px] text-[#FBBF24] font-bold block">played</span>
               </div>
             </div>
           </div>
@@ -254,20 +280,21 @@ export default async function AttendeeHomePage() {
             {/* Metric 1: Spendable Coins */}
             <Link
               href="/app/profile"
-              className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all flex flex-col justify-between group"
+              className="p-4 bg-card text-card-foreground border-2 border-border shadow-[4px_4px_0px_var(--border)] hover:shadow-neon-gold hover:border-[#F59E0B] active:translate-x-[2px] active:translate-y-[2px] transition-all flex flex-col justify-between group"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-wider font-black text-foreground">
-                  🪙 VIBE Coins
+                <span className="text-[10px] uppercase tracking-wider font-black text-[#F59E0B] flex items-center space-x-1">
+                  <span>🪙</span>
+                  <span>VIBE Coins</span>
                 </span>
-                <Coins className="w-4 h-4 text-foreground group-hover:scale-110 transition-transform" />
+                <Coins className="w-4 h-4 text-[#F59E0B] group-hover:scale-125 transition-transform" />
               </div>
               <div className="mt-3">
                 <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
                   {formatCoins(walletSummary.wallet.balance)}
                 </span>
-                <p className="text-[10px] text-foreground font-black mt-0.5 flex items-center space-x-1">
-                  <span>View Wallet Ledger →</span>
+                <p className="text-[10px] text-foreground font-black mt-1 flex items-center space-x-1">
+                  <span className="group-hover:translate-x-1 transition-transform">View Wallet Ledger →</span>
                 </p>
               </div>
             </Link>
@@ -275,30 +302,31 @@ export default async function AttendeeHomePage() {
             {/* Metric 2: Overall XP */}
             <Link
               href="/app/leaderboard"
-              className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all flex flex-col justify-between group"
+              className="p-4 bg-card text-card-foreground border-2 border-border shadow-[4px_4px_0px_var(--border)] hover:shadow-neon-pink hover:border-[#FF1B7A] active:translate-x-[2px] active:translate-y-[2px] transition-all flex flex-col justify-between group"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-wider font-black text-foreground">
-                  ⭐ VIBE XP
+                <span className="text-[10px] uppercase tracking-wider font-black text-[#FF1B7A] flex items-center space-x-1">
+                  <span>⭐</span>
+                  <span>VIBE XP</span>
                 </span>
-                <Sparkles className="w-4 h-4 text-foreground group-hover:scale-110 transition-transform" />
+                <Sparkles className="w-4 h-4 text-[#FF1B7A] group-hover:scale-125 transition-transform" />
               </div>
               <div className="mt-3">
                 <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
                   {formatXP(progression.totalXP)}
                 </span>
-                <p className="text-[10px] text-foreground font-black mt-0.5 flex items-center space-x-1">
-                  <span>Rank #{userRank?.rank || 1} • Permanent</span>
+                <p className="text-[10px] text-foreground font-black mt-1 flex items-center space-x-1">
+                  <span className="group-hover:translate-x-1 transition-transform">Rank #{userRank?.rank || 1} • Leaderboard →</span>
                 </p>
               </div>
             </Link>
           </div>
 
           {/* Strategic Principle Callout */}
-          <div className="p-3.5 bg-muted border-2 border-border text-foreground flex items-start space-x-2.5">
-            <Info className="w-4 h-4 text-foreground shrink-0 mt-0.5" />
+          <div className="p-3.5 bg-card/90 border-2 border-border shadow-[2px_2px_0px_var(--border)] text-foreground flex items-start space-x-2.5">
+            <Info className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
             <p className="text-[11px] sm:text-xs text-foreground leading-relaxed font-bold">
-              <span className="font-black underline">Zone Battle Rule:</span> Any VIBE Coins you spend on activities belonging to a zone are transferred to that zone's collected total for the championship!
+              <span className="font-black text-[#00F0FF] underline">Zone Battle Rule:</span> Any VIBE Coins you spend on experiences in your zone directly power your zone championship points!
             </p>
           </div>
         </div>
@@ -336,53 +364,53 @@ export default async function AttendeeHomePage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <Link
               href="/app/map"
-              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all group"
+              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#00F0FF] hover:shadow-neon-cyan active:translate-x-[2px] active:translate-y-[2px] transition-all group"
             >
-              <div className="w-9 h-9 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
-                <Compass className="w-4 h-4" />
+              <div className="w-10 h-10 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <Compass className="w-5 h-5 text-white" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-black text-foreground leading-tight truncate">Explore Zones</h2>
-                <p className="text-[10px] text-muted-foreground font-bold truncate">6 Official Zones</p>
+                <h2 className="text-xs font-black text-foreground leading-tight truncate uppercase">Explore Zones</h2>
+                <p className="text-[10px] text-[#00F0FF] font-mono font-bold truncate">6 Arenas</p>
               </div>
             </Link>
 
             <Link
               href="/app/games"
-              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all group"
+              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#8B5CF6] hover:shadow-neon-purple active:translate-x-[2px] active:translate-y-[2px] transition-all group"
             >
-              <div className="w-9 h-9 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
-                <Gamepad2 className="w-4 h-4" />
+              <div className="w-10 h-10 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <Gamepad2 className="w-5 h-5 text-white" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-black text-foreground leading-tight truncate">Play Games</h2>
-                <p className="text-[10px] text-muted-foreground font-bold truncate">4 Mini-Games</p>
+                <h2 className="text-xs font-black text-foreground leading-tight truncate uppercase">Play Games</h2>
+                <p className="text-[10px] text-[#A78BFA] font-mono font-bold truncate">4 Mini-Games</p>
               </div>
             </Link>
 
             <Link
               href="/app/scan"
-              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all group"
+              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#FF1B7A] hover:shadow-neon-pink active:translate-x-[2px] active:translate-y-[2px] transition-all group"
             >
-              <div className="w-9 h-9 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
-                <QrCode className="w-4 h-4" />
+              <div className="w-10 h-10 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <QrCode className="w-5 h-5 text-white" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-black text-foreground leading-tight truncate">Scan Check-in</h2>
-                <p className="text-[10px] text-muted-foreground font-bold truncate">QR Scanner</p>
+                <h2 className="text-xs font-black text-foreground leading-tight truncate uppercase">Scan Check-in</h2>
+                <p className="text-[10px] text-[#FF1B7A] font-mono font-bold truncate">QR Scanner</p>
               </div>
             </Link>
 
             <Link
               href="/app/leaderboard"
-              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all group"
+              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#F59E0B] hover:shadow-neon-gold active:translate-x-[2px] active:translate-y-[2px] transition-all group"
             >
-              <div className="w-9 h-9 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
-                <Trophy className="w-4 h-4" />
+              <div className="w-10 h-10 bg-[#F59E0B] text-black border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
+                <Trophy className="w-5 h-5" />
               </div>
               <div className="min-w-0">
-                <h2 className="text-xs font-black text-foreground leading-tight truncate">Leaderboard</h2>
-                <p className="text-[10px] text-muted-foreground font-bold truncate">XP & Zone Battle</p>
+                <h2 className="text-xs font-black text-foreground leading-tight truncate uppercase">Leaderboard</h2>
+                <p className="text-[10px] text-[#FBBF24] font-mono font-bold truncate">Live Ranks</p>
               </div>
             </Link>
           </div>

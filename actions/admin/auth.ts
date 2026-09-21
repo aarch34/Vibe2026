@@ -10,7 +10,7 @@ export interface AdminUser {
   loggedInAt: number;
 }
 
-export const SUPER_ADMIN_EMAILS = ["thejaswinps@gmail.com"];
+const SUPER_ADMIN_EMAILS = ["thejaswinps@gmail.com"];
 
 const ADMIN_CREDENTIALS: Record<string, string> = {
   jk: "jk@vibe2026",

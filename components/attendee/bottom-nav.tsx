@@ -19,7 +19,7 @@ export function AttendeeBottomNav() {
   ];
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-3 pb-safe pt-2 bg-card/95 backdrop-blur-xl border-t-2 border-border shadow-neo">
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 max-w-md mx-auto px-2 pb-safe pt-2 bg-card/95 backdrop-blur-2xl border-t-2 border-border shadow-[0_-4px_20px_rgba(0,0,0,0.5)]">
       <div className="flex items-center justify-around">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
@@ -35,13 +35,13 @@ export function AttendeeBottomNav() {
               >
                 <div
                   className={cn(
-                    "w-12 h-12 border-2 border-border flex items-center justify-center transition-all duration-150 active:translate-x-[2px] active:translate-y-[2px] shadow-[3px_3px_0px_var(--border)]",
+                    "w-12 h-12 border-2 border-border flex items-center justify-center transition-all duration-150 active:translate-x-[2px] active:translate-y-[2px]",
                     isActive
-                      ? "bg-secondary text-secondary-foreground"
-                      : "bg-primary text-primary-foreground hover:brightness-105"
+                      ? "bg-secondary text-secondary-foreground shadow-neon-purple"
+                      : "bg-primary text-primary-foreground shadow-neon-pink hover:scale-105"
                   )}
                 >
-                  <Icon className="w-6 h-6" />
+                  <Icon className="w-6 h-6 animate-pulse" />
                 </div>
                 <span className="text-[10px] font-black tracking-wider uppercase text-foreground mt-1 font-mono">
                   Scan
@@ -55,16 +55,19 @@ export function AttendeeBottomNav() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center py-1 px-2 font-bold transition-all active:scale-95",
+                "flex flex-col items-center py-1 px-1.5 font-bold transition-all relative",
                 isActive
-                  ? "text-primary font-black"
+                  ? "text-[#00F0FF] font-black"
                   : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className={cn("w-5 h-5 mb-1", isActive ? "text-primary" : "text-muted-foreground")} />
+              <Icon className={cn("w-5 h-5 mb-0.5", isActive ? "text-[#00F0FF] scale-110 drop-shadow-[0_0_8px_rgba(0,240,255,0.6)]" : "text-muted-foreground")} />
               <span className="text-[10px] font-black tracking-tight">
                 {item.label}
               </span>
+              {isActive && (
+                <span className="w-1 h-1 rounded-full bg-[#00F0FF] mt-0.5 shadow-[0_0_6px_#00F0FF]" />
+              )}
             </Link>
           );
         })}
