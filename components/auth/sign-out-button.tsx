@@ -13,10 +13,17 @@ export function AttendeeSignOutButton({
   className,
   variant = "button",
 }: AttendeeSignOutButtonProps) {
+  const handleSignOutClick = () => {
+    // Purge any dev/registration attendee cookies from browser
+    document.cookie =
+      "vibe_user_id=; path=/; max-age=0; expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  };
+
   return (
-    <SignOutButton redirectUrl="/">
+    <SignOutButton redirectUrl="/sign-in">
       <button
         type="button"
+        onClick={handleSignOutClick}
         className={
           className ||
           (variant === "badge"

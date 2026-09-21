@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { getZonalStaffSession } from "@/actions/staff/auth";
+import { getAdminSession } from "@/actions/admin/auth";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 
 const EVENT_ID = "a0000000-0000-0000-0000-000000000001";
@@ -10,8 +11,8 @@ const dutyAwardSchema = z.object({
   targetProfileId: z.string().min(1, "Target attendee profile is required"),
   zoneId: z.string().min(1, "Zone ID is required"),
   dutyCategory: z.string().min(2, "Duty category is required"),
-  xpAmount: z.number().int().min(0, "XP must be at least 0"),
-  coinAmount: z.number().int().min(0, "Coins must be at least 0"),
+  xpAmount: z.number().int().min(0, "XP must be at least 0").max(300, "Maximum XP award per duty is 300"),
+  coinAmount: z.number().int().min(0, "Coins must be at least 0").max(200, "Maximum coin award per duty is 200"),
   description: z.string().min(5, "A descriptive justification (min 5 chars) is mandatory for audit trails"),
 });
 
@@ -27,8 +28,9 @@ export interface DutyAwardResult {
 
 export async function awardDutyXpAction(rawInput: z.infer<typeof dutyAwardSchema>): Promise<DutyAwardResult> {
   const staff = await getZonalStaffSession();
-  if (!staff) {
-    return { success: false, message: "Unauthorized. Active Zonal Staff login required." };
+  const admin = await getAdminSession();
+  if (!staff && !admin) {
+    return { success: false, message: "Unauthorized. Active Zonal Staff or Admin login required." };
   }
 
   const parsed = dutyAwardSchema.safeParse(rawInput);
@@ -37,6 +39,14 @@ export async function awardDutyXpAction(rawInput: z.infer<typeof dutyAwardSchema
   }
 
   const { targetProfileId, zoneId, dutyCategory, xpAmount, coinAmount, description } = parsed.data;
+
+  // Enforce zonal isolation unless Admin
+  if (staff && !admin && staff.username !== "thejaswinps" && staff.zoneId !== zoneId && staff.zoneSlug !== zoneId) {
+    return { success: false, message: `Access denied. You are stationed at ${staff.zoneName}, not this zone.` };
+  }
+
+  const staffUsername = staff?.username || admin?.username || "admin";
+  const staffHeadName = staff?.headName || admin?.name || "Administrator";
 
   try {
     if (isUsingLiveSupabase() && supabaseAdmin) {
@@ -121,8 +131,8 @@ export async function awardDutyXpAction(rawInput: z.infer<typeof dutyAwardSchema
             description,
             zoneId: zone.id,
             zoneName: zone.name,
-            awardedBy: staff.headName,
-            staffUsername: staff.username,
+            awardedBy: staffHeadName,
+            staffUsername: staffUsername,
           },
         });
       }
@@ -148,8 +158,8 @@ export async function awardDutyXpAction(rawInput: z.infer<typeof dutyAwardSchema
           dutyCategory,
           zoneId: zone.id,
           zoneName: zone.name,
-          awardedBy: staff.headName,
-          staffUsername: staff.username,
+          awardedBy: staffHeadName,
+          staffUsername: staffUsername,
           description,
         },
       });
@@ -172,8 +182,8 @@ export async function awardDutyXpAction(rawInput: z.infer<typeof dutyAwardSchema
         entity_type: "duty_reward",
         entity_id: dutyRecordId,
         after_data: {
-          staffUsername: staff.username,
-          staffHeadName: staff.headName,
+          staffUsername,
+          staffHeadName,
           zoneId: zone.id,
           zoneName: zone.name,
           recipientId: recipient.id,
@@ -239,7 +249,7 @@ export async function awardDutyXpAction(rawInput: z.infer<typeof dutyAwardSchema
       coin_spent: 0,
       xp_earned: xpAmount,
       coin_earned: coinAmount,
-      metadata: { dutyCategory, description, awardedBy: staff.headName },
+      metadata: { dutyCategory, description, awardedBy: staffHeadName },
       completed_at: new Date().toISOString(),
     });
 
@@ -253,7 +263,7 @@ export async function awardDutyXpAction(rawInput: z.infer<typeof dutyAwardSchema
       entity_id: dutyRecordId,
       before_data: null,
       after_data: {
-        staff: staff.headName,
+        staff: staffHeadName,
         recipientName: targetName,
         xpAwarded: xpAmount,
         coinsAwarded: coinAmount,

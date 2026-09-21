@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 import { getCurrentUserSession } from "@/lib/auth/session";
+import { getAdminSession } from "@/actions/admin/auth";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 
 // 1. Adjust Attendee Balance (with audit log)
@@ -12,6 +13,11 @@ const adjustBalanceSchema = z.object({
 });
 
 export async function adminAdjustBalanceAction(rawInput: z.infer<typeof adjustBalanceSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) {
+    return { success: false, message: "Unauthorized. District Admin privileges required." };
+  }
+
   const parsed = adjustBalanceSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.errors[0].message };
@@ -135,6 +141,11 @@ const generateQRSchema = z.object({
 });
 
 export async function adminGenerateQRCodeAction(rawInput: z.infer<typeof generateQRSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) {
+    return { success: false, message: "Unauthorized. District Admin privileges required." };
+  }
+
   const parsed = generateQRSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.errors[0].message };
@@ -196,6 +207,11 @@ export async function adminGenerateQRCodeAction(rawInput: z.infer<typeof generat
 
 // 3. Freeze Event / Finalize Leaderboard (Point 39)
 export async function adminToggleEventFreezeAction(freeze: boolean) {
+  const admin = await getAdminSession();
+  if (!admin) {
+    return { success: false, message: "Unauthorized. District Admin privileges required." };
+  }
+
   const session = await getCurrentUserSession();
 
   if (isUsingLiveSupabase() && supabaseAdmin) {
@@ -246,6 +262,11 @@ const adjustXpSchema = z.object({
 });
 
 export async function adminAdjustXpAction(rawInput: z.infer<typeof adjustXpSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) {
+    return { success: false, message: "Unauthorized. District Admin privileges required." };
+  }
+
   const parsed = adjustXpSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.errors[0].message };
@@ -344,6 +365,11 @@ const createAttendeeSchema = z.object({
 });
 
 export async function adminCreateAttendeeAction(rawInput: z.infer<typeof createAttendeeSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) {
+    return { success: false, message: "Unauthorized. District Admin privileges required." };
+  }
+
   const parsed = createAttendeeSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.errors[0].message };
@@ -480,6 +506,11 @@ const updateAttendeeSchema = z.object({
 });
 
 export async function adminUpdateAttendeeAction(rawInput: z.infer<typeof updateAttendeeSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) {
+    return { success: false, message: "Unauthorized. District Admin privileges required." };
+  }
+
   const parsed = updateAttendeeSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.errors[0].message };
@@ -541,6 +572,11 @@ const deleteAttendeeSchema = z.object({
 });
 
 export async function adminDeleteAttendeeAction(rawInput: z.infer<typeof deleteAttendeeSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) {
+    return { success: false, message: "Unauthorized. District Admin privileges required." };
+  }
+
   const parsed = deleteAttendeeSchema.safeParse(rawInput);
   if (!parsed.success) {
     return { success: false, message: parsed.error.errors[0].message };
@@ -588,6 +624,11 @@ export async function adminDeleteAttendeeAction(rawInput: z.infer<typeof deleteA
 
 // 8. Purge Test Data Server Action
 export async function adminPurgeTestDataAction() {
+  const admin = await getAdminSession();
+  if (!admin) {
+    return { success: false, message: "Unauthorized. District Admin privileges required." };
+  }
+
   const session = await getCurrentUserSession();
 
   try {
@@ -635,6 +676,9 @@ const updateZoneSchema = z.object({
 });
 
 export async function adminToggleZoneAction(rawInput: z.infer<typeof updateZoneSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) return { success: false, message: "Unauthorized. District Admin privileges required." };
+
   const parsed = updateZoneSchema.safeParse(rawInput);
   if (!parsed.success) return { success: false, message: parsed.error.errors[0].message };
   const { zoneId, isActive } = parsed.data;
@@ -659,6 +703,9 @@ const awardZoneCoinsSchema = z.object({
 });
 
 export async function adminAwardZoneCoinsAction(rawInput: z.infer<typeof awardZoneCoinsSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) return { success: false, message: "Unauthorized. District Admin privileges required." };
+
   const parsed = awardZoneCoinsSchema.safeParse(rawInput);
   if (!parsed.success) return { success: false, message: parsed.error.errors[0].message };
   const { zoneId, coins, reason } = parsed.data;
@@ -702,6 +749,9 @@ const toggleExperienceSchema = z.object({
 });
 
 export async function adminToggleExperienceAction(rawInput: z.infer<typeof toggleExperienceSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) return { success: false, message: "Unauthorized. District Admin privileges required." };
+
   const parsed = toggleExperienceSchema.safeParse(rawInput);
   if (!parsed.success) return { success: false, message: parsed.error.errors[0].message };
   const { experienceId, isActive } = parsed.data;
@@ -728,6 +778,9 @@ const updateExperienceSchema = z.object({
 });
 
 export async function adminUpdateExperienceAction(rawInput: z.infer<typeof updateExperienceSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) return { success: false, message: "Unauthorized. District Admin privileges required." };
+
   const parsed = updateExperienceSchema.safeParse(rawInput);
   if (!parsed.success) return { success: false, message: parsed.error.errors[0].message };
   const { experienceId, title, coinCost, xpReward, isActive } = parsed.data;
@@ -780,6 +833,9 @@ const updateRewardSchema = z.object({
 });
 
 export async function adminUpdateRewardAction(rawInput: z.infer<typeof updateRewardSchema>) {
+  const admin = await getAdminSession();
+  if (!admin) return { success: false, message: "Unauthorized. District Admin privileges required." };
+
   const parsed = updateRewardSchema.safeParse(rawInput);
   if (!parsed.success) return { success: false, message: parsed.error.errors[0].message };
   const { rewardId, stockChange, stockSet, coinCost, isActive } = parsed.data;

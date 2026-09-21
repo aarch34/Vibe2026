@@ -1,9 +1,18 @@
+import { redirect } from "next/navigation";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { StallVerificationQueue } from "@/components/staff/stall-verification-queue";
+import { getZonalStaffSession } from "@/actions/staff/auth";
+import { getAdminSession } from "@/actions/admin/auth";
 
 export const dynamic = "force-dynamic";
 
 export default async function StaffStallsPage() {
+  const staff = await getZonalStaffSession();
+  const admin = await getAdminSession();
+  if (!staff && !admin) {
+    redirect("/staff/login");
+  }
+
   const eventId = "a0000000-0000-0000-0000-000000000001";
   let submissions: any[] = [];
 

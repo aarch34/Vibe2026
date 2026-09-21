@@ -15,11 +15,11 @@ const GAME_EXPERIENCE_IDS: Record<string, string> = {
 
 const playGameOverSchema = z.object({
   gameType: z.enum(["rotaract_game", "minion_run", "memory_game", "vibe_quiz", "flappy_rocco"]),
-  score: z.number().min(0),
-  maxScore: z.number().min(1),
-  coinCost: z.number().min(0).default(0),
-  coinReward: z.number().min(0).default(0),
-  xpReward: z.number().min(0).default(20),
+  score: z.number().min(0).max(10000),
+  maxScore: z.number().min(1).max(10000),
+  coinCost: z.number().min(0).max(100).default(0),
+  coinReward: z.number().min(0).max(50, "Coin reward exceeds permitted game limit").default(0),
+  xpReward: z.number().min(0).max(50, "XP reward exceeds permitted game limit").default(20),
 });
 
 export async function submitGameResultAction(rawInput: z.infer<typeof playGameOverSchema>) {

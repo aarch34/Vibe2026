@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 import { getCurrentUserSession } from "@/lib/auth/session";
+import { getZonalStaffSession } from "@/actions/staff/auth";
+import { getAdminSession } from "@/actions/admin/auth";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 
 const submitPhotoSchema = z.object({
@@ -57,6 +59,12 @@ export async function submitStallPhotoAction(rawInput: z.infer<typeof submitPhot
 }
 
 export async function approveStallPhotoAction(submissionId: string) {
+  const staff = await getZonalStaffSession();
+  const admin = await getAdminSession();
+  if (!staff && !admin) {
+    return { success: false, message: "Unauthorized. Staff or Admin role required to approve photo submissions." };
+  }
+
   try {
     const session = await getCurrentUserSession();
 
@@ -136,6 +144,12 @@ export async function approveStallPhotoAction(submissionId: string) {
 }
 
 export async function rejectStallPhotoAction(submissionId: string) {
+  const staff = await getZonalStaffSession();
+  const admin = await getAdminSession();
+  if (!staff && !admin) {
+    return { success: false, message: "Unauthorized. Staff or Admin role required to reject photo submissions." };
+  }
+
   try {
     const session = await getCurrentUserSession();
 

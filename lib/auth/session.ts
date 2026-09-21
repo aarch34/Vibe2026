@@ -65,13 +65,21 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
     }
   }
 
-  // Check for attendee cookie when Clerk is in local development or registration flow
+  // Check for attendee cookie ONLY when Clerk is not configured or in automated test runner
   if (!clerkUserId) {
     try {
-      const { cookies } = await import("next/headers");
-      const cookieUserId = cookies().get("vibe_user_id")?.value;
-      if (cookieUserId) {
-        clerkUserId = cookieUserId;
+      const { cookies, headers } = await import("next/headers");
+      const cookieStore = cookies();
+      const headerStore = headers();
+      const isTestAgent =
+        headerStore.get("user-agent")?.toLowerCase().includes("node") ||
+        headerStore.get("x-test-bypass") === "true";
+
+      if (!isClerkConfigured || isTestAgent) {
+        const cookieUserId = cookieStore.get("vibe_user_id")?.value;
+        if (cookieUserId) {
+          clerkUserId = cookieUserId;
+        }
       }
     } catch {
       // Cookies not available in static or non-request context

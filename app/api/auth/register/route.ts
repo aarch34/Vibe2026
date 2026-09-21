@@ -36,7 +36,10 @@ export async function POST(req: NextRequest) {
       // Clerk not loaded
     }
 
-    if (!authenticatedUserId && body.clerkUserId) {
+    const isDevOrTest = process.env.NODE_ENV !== "production";
+
+    // In production, never trust an unverified clerkUserId supplied in the request body
+    if (!authenticatedUserId && body.clerkUserId && isDevOrTest) {
       authenticatedUserId = body.clerkUserId;
     }
 

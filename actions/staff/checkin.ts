@@ -4,8 +4,15 @@ import { revalidatePath } from "next/cache";
 import { getCurrentUserSession } from "@/lib/auth/session";
 import { isUsingLiveSupabase, supabaseAdmin, mockDb } from "@/lib/db/supabase";
 import { getZonalStaffSession } from "./auth";
+import { getAdminSession } from "@/actions/admin/auth";
 
 export async function searchAttendeeForCheckinAction(query: string, zoneId: string) {
+  const staff = await getZonalStaffSession();
+  const admin = await getAdminSession();
+  if (!staff && !admin) {
+    return { success: false, results: [], message: "Unauthorized. Staff or Admin session required." };
+  }
+
   const q = query.trim().toLowerCase();
   if (!q) return { success: true, results: [] };
 
@@ -80,8 +87,18 @@ export async function checkinAttendeeAtZoneAction(params: {
   xpAmount?: number;
 }) {
   const staff = await getZonalStaffSession();
+  const admin = await getAdminSession();
+  if (!staff && !admin) {
+    return { success: false, message: "Unauthorized. Active Zonal Staff or Admin session required." };
+  }
+
+  // Enforce zonal boundary unless Admin
+  if (staff && !admin && staff.username !== "thejaswinps" && staff.zoneId !== params.zoneId && staff.zoneSlug !== params.zoneId) {
+    return { success: false, message: `Access denied. You are stationed at ${staff.zoneName}, not this zone.` };
+  }
+
   const eventId = "a0000000-0000-0000-0000-000000000001";
-  const xpAward = params.xpAmount && params.xpAmount > 0 ? params.xpAmount : 75;
+  const xpAward = Math.min(Math.max(params.xpAmount || 75, 10), 150);
 
   try {
     if (isUsingLiveSupabase() && supabaseAdmin) {

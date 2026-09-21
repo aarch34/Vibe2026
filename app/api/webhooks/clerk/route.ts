@@ -15,6 +15,15 @@ export async function POST(req: NextRequest) {
   const payload = await req.json();
   const body = JSON.stringify(payload);
 
+  // In production, webhook secret is mandatory - fail closed
+  if (!webhookSecret && process.env.NODE_ENV === "production") {
+    console.error("Critical Security: CLERK_WEBHOOK_SECRET is not configured in production.");
+    return NextResponse.json(
+      { error: "Webhook signature verification is required in production." },
+      { status: 500 }
+    );
+  }
+
   // If secret is set, verify webhook signature
   if (webhookSecret) {
     if (!svix_id || !svix_timestamp || !svix_signature) {

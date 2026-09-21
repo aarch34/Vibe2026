@@ -3,6 +3,13 @@ import { cookies } from "next/headers";
 import { supabaseAdmin, isUsingLiveSupabase } from "@/lib/db/supabase";
 
 export async function GET(req: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Forbidden: Session switching is disabled in production." },
+      { status: 403 }
+    );
+  }
+
   const url = new URL(req.url);
   const userId = url.searchParams.get("userId");
   const redirectPath = url.searchParams.get("redirect") || "/app";
@@ -19,6 +26,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json(
+      { error: "Forbidden: Session switching is disabled in production." },
+      { status: 403 }
+    );
+  }
+
   try {
     const { userId, name, college } = await req.json();
 

@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createPresignedUploadUrl } from "@/lib/storage/storage-client";
+import { getCurrentUserSession } from "@/lib/auth/session";
+import { getAdminSession } from "@/actions/admin/auth";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getCurrentUserSession();
+    if (!session?.profile?.id) {
+      return NextResponse.json(
+        { error: "Unauthorized: You must be signed in to upload media." },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     const {
       eventSlug = "vibe-2026",
@@ -15,6 +25,26 @@ export async function POST(req: NextRequest) {
     if (!allowedCategories.includes(category)) {
       return NextResponse.json(
         { error: `Invalid category. Allowed: ${allowedCategories.join(", ")}` },
+        { status: 400 }
+      );
+    }
+
+    // Only administrators can upload banners, experiences, rewards, or sponsors
+    if (category !== "avatars") {
+      const admin = await getAdminSession();
+      if (!admin) {
+        return NextResponse.json(
+          { error: "Forbidden: Administrator privileges required for this category." },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Validate MIME types strictly to prevent arbitrary/malicious file uploads
+    const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
+    if (!allowedMimeTypes.includes(mimeType)) {
+      return NextResponse.json(
+        { error: "Invalid mime type: Only image uploads (JPEG, PNG, WebP, AVIF, GIF) are permitted." },
         { status: 400 }
       );
     }

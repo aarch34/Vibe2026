@@ -20,7 +20,7 @@ export function UserNav({ vibeId, displayName }: UserNavProps) {
         <SignedIn>
           <div className="border-2 border-border shadow-[2px_2px_0px_var(--border)] p-0.5 bg-card flex items-center justify-center">
             <UserButton
-              afterSignOutUrl="/"
+              afterSignOutUrl="/sign-in"
               appearance={{
                 elements: {
                   userButtonAvatarBox: "w-7 h-7 rounded-none",

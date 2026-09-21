@@ -6,7 +6,7 @@ import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 
 const contributeSchema = z.object({
   zoneId: z.string().min(1, "Zone ID is required"),
-  amount: z.number().int().min(10, "Minimum contribution is 10 VIBE coins"),
+  amount: z.number().int().min(10, "Minimum contribution is 10 VIBE coins").max(10000, "Maximum contribution is 10,000 VIBE coins"),
 });
 
 export async function sendCoinsToZoneAction(rawInput: z.infer<typeof contributeSchema>) {

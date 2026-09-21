@@ -27,8 +27,15 @@ export default async function AdminLayout({
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || headersList.get("next-url") || "";
 
-  // If on login page, render children directly
+  // If on login page, render children directly without admin layout chrome
+  if (pathname.includes("/admin/login")) {
+    return <>{children}</>;
+  }
+
   const admin = await getAdminSession();
+  if (!admin) {
+    redirect("/admin/login");
+  }
 
   const navItems = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },

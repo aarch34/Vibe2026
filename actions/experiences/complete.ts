@@ -2,6 +2,8 @@
 
 import { z } from "zod";
 import { getCurrentUserSession } from "@/lib/auth/session";
+import { getZonalStaffSession } from "@/actions/staff/auth";
+import { getAdminSession } from "@/actions/admin/auth";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 
 const completeExperienceSchema = z.object({
@@ -182,6 +184,16 @@ export async function discoverZoneAction(zoneId: string) {
 
 // Staff Manual Verification for Physical Challenges
 export async function approveChallengeStaffAction(attendeeProfileId: string, experienceId: string) {
+  const staff = await getZonalStaffSession();
+  const admin = await getAdminSession();
+  if (!staff && !admin) {
+    return {
+      success: false,
+      code: "UNAUTHORIZED",
+      message: "Unauthorized. Staff or Admin privileges required to verify challenges.",
+    };
+  }
+
   try {
     const session = await getCurrentUserSession();
 
