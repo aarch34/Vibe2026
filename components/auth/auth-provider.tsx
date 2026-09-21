@@ -3,13 +3,13 @@
 import React from "react";
 import { ClerkProvider } from "@clerk/nextjs";
 
-const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
-const isClerkReady = publishableKey && !publishableKey.includes("placeholder");
+// Production Clerk Publishable Key for ROCCO/VIBE 2026
+const DEFAULT_CLERK_PUBLISHABLE_KEY =
+  "pk_test_dG9wLXB5dGhvbi05MDg5LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 export function VibeAuthProvider({ children }: { children: React.ReactNode }) {
-  if (!isClerkReady) {
-    return <>{children}</>;
-  }
+  const publishableKey =
+    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || DEFAULT_CLERK_PUBLISHABLE_KEY;
 
   return (
     <ClerkProvider
