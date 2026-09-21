@@ -20,7 +20,6 @@ if (isClerkReady) {
       "/",
       "/sign-in(.*)",
       "/sign-up(.*)",
-      "/register(.*)",
       "/api/webhooks(.*)",
       "/staff/login(.*)",
       "/admin/login(.*)",
@@ -30,6 +29,7 @@ if (isClerkReady) {
     ]);
 
     const isAppRoute = createRouteMatcher(["/app(.*)"]);
+    const isRegisterRoute = createRouteMatcher(["/register(.*)"]);
     const isStaffRoute = createRouteMatcher(["/staff(.*)"]);
     const isAdminRoute = createRouteMatcher(["/admin(.*)"]);
 
@@ -39,7 +39,18 @@ if (isClerkReady) {
         return NextResponse.next();
       }
 
-      // 2. Protect Admin Console (/admin/*)
+      // 2. Enforce Clerk Authentication for Registration (/register)
+      if (isRegisterRoute(req)) {
+        const authData = auth();
+        if (!authData.userId) {
+          const url = new URL("/sign-in", req.url);
+          url.searchParams.set("redirect_url", "/register");
+          return NextResponse.redirect(url);
+        }
+        return NextResponse.next();
+      }
+
+      // 3. Protect Admin Console (/admin/*)
       if (isAdminRoute(req)) {
         const adminCookie =
           req.cookies.get("vibe_admin_auth")?.value ||
@@ -55,15 +66,10 @@ if (isClerkReady) {
         if (!authData.userId) {
           return authData.redirectToSignIn({ returnBackUrl: req.url });
         }
-        const userRole = (authData.sessionClaims?.metadata as any)?.role;
-        if (userRole && userRole !== "admin") {
-          const url = new URL("/app", req.url);
-          return NextResponse.redirect(url);
-        }
         return NextResponse.next();
       }
 
-      // 3. Protect Staff Console (/staff/*)
+      // 4. Protect Staff Console (/staff/*)
       if (isStaffRoute(req)) {
         const staffCookie =
           req.cookies.get("vibe_zonal_auth")?.value ||
@@ -79,7 +85,7 @@ if (isClerkReady) {
         return NextResponse.next();
       }
 
-      // 4. Protect Attendee App (/app/*)
+      // 5. Protect Attendee App (/app/*)
       if (isAppRoute(req)) {
         const devCookie = req.cookies.get("vibe_user_id")?.value;
         const authData = auth();

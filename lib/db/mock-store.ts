@@ -187,7 +187,11 @@ class VibeMemoryDatabase {
         map_data: { x: 200, y: 340, color: "#EC4899", icon: "Sparkles" },
       },
     ];
-    zonesList.forEach((z) => this.zones.set(z.id, z));
+    zonesList.forEach((z, idx) => {
+      this.zones.set(z.id, z);
+      const uuid = `d0000000-0000-0000-0000-00000000000${idx + 1}`;
+      this.zones.set(uuid, { ...z, id: uuid });
+    });
 
     // Compatibility zones for existing unit tests
     this.zones.set("z-arcade", {

@@ -10,9 +10,12 @@ export interface AdminUser {
   loggedInAt: number;
 }
 
+export const SUPER_ADMIN_EMAILS = ["thejaswinps@gmail.com"];
+
 const ADMIN_CREDENTIALS: Record<string, string> = {
   jk: "jk@vibe2026",
   gunjan: "gunjan@vibe2026",
+  thejaswinps: "thejaswinps@vibe2026",
 };
 
 export async function loginAdminAction(formData: FormData) {
@@ -24,13 +27,13 @@ export async function loginAdminAction(formData: FormData) {
   if (!expectedPassword || password !== expectedPassword) {
     return {
       success: false,
-      message: "Invalid admin username or password. Authorized logins: jk, gunjan",
+      message: "Invalid admin credentials. Official Super Admin: thejaswinps@gmail.com (Sign in with Clerk).",
     };
   }
 
   const adminSession: AdminUser = {
     username,
-    name: username.toUpperCase(),
+    name: username === "thejaswinps" ? "Thejaswin P" : username.toUpperCase(),
     role: "admin",
     loggedInAt: Date.now(),
   };
@@ -54,13 +57,43 @@ export async function logoutAdminAction() {
 }
 
 export async function getAdminSession(): Promise<AdminUser | null> {
+  // 1. Check Clerk session first (Super Admin thejaswinps@gmail.com)
+  try {
+    const { auth, currentUser } = await import("@clerk/nextjs/server");
+    const authData = auth();
+    if (authData.userId) {
+      const user = await currentUser();
+      const email = user?.emailAddresses?.[0]?.emailAddress?.toLowerCase();
+      const role = (authData.sessionClaims?.metadata as any)?.role;
+
+      if (email === "thejaswinps@gmail.com" || role === "admin") {
+        return {
+          username: "thejaswinps",
+          name: user?.firstName
+            ? `${user.firstName} ${user.lastName || ""}`.trim()
+            : "Thejaswin P (Admin)",
+          role: "admin",
+          loggedInAt: Date.now(),
+        };
+      }
+    }
+  } catch {
+    // Clerk not loaded or static render
+  }
+
+  // 2. Fallback to cookie (for kiosk/preset logins)
   try {
     const cookieStore = await cookies();
     const cookie = cookieStore.get("vibe_admin_auth");
     if (!cookie?.value) return null;
 
     const session = JSON.parse(cookie.value);
-    if (session.role === "admin" && (session.username === "jk" || session.username === "gunjan")) {
+    if (
+      session.role === "admin" &&
+      (session.username === "jk" ||
+        session.username === "gunjan" ||
+        session.username === "thejaswinps")
+    ) {
       return session;
     }
     return null;

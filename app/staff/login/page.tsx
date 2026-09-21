@@ -50,21 +50,6 @@ export default function ZonalStaffLoginPage() {
     }
   }
 
-  function fillZoneLogin(user: string, pass: string) {
-    setUsername(user);
-    setPassword(pass);
-    setErrorMsg(null);
-  }
-
-  const zonePresets = [
-    { zone: "Arnava", user1: "arnava1", user2: "arnava2", pass: "arnava@vibe2026", color: "border-sky-500/30 text-sky-400" },
-    { zone: "Taranaga", user1: "taranaga1", user2: "taranaga2", pass: "taranaga@vibe2026", color: "border-purple-500/30 text-purple-400" },
-    { zone: "Sagara", user1: "sagara1", user2: "sagara2", pass: "sagara@vibe2026", color: "border-blue-500/30 text-blue-400" },
-    { zone: "Pravaha", user1: "pravaha1", user2: "pravaha2", pass: "pravaha@vibe2026", color: "border-emerald-500/30 text-emerald-400" },
-    { zone: "Samudhra", user1: "samudhra1", user2: "samudhra2", pass: "samudhra@vibe2026", color: "border-amber-500/30 text-amber-400" },
-    { zone: "Varuna", user1: "varuna1", user2: "varuna2", pass: "varuna@vibe2026", color: "border-rose-500/30 text-rose-400" },
-  ];
-
   return (
     <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-4 relative overflow-hidden selection:bg-primary selection:text-primary-foreground">
       {/* Glow backdrop */}
@@ -80,10 +65,10 @@ export default function ZonalStaffLoginPage() {
             ROCCO 2026 • Staff Operations
           </span>
           <h1 className="text-2xl font-black text-foreground uppercase tracking-tight">
-            Zonal Heads Portal
+            Zonal Station Portal
           </h1>
           <p className="text-xs text-muted-foreground font-medium">
-            Dedicated check-in station & coin collection console for the 6 official zones.
+            Dedicated check-in station & coin collection console for authorized Zonal Heads & Staff.
           </p>
         </div>
 
@@ -93,93 +78,81 @@ export default function ZonalStaffLoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-1.5">
-            <label className="text-[11px] uppercase font-black text-muted-foreground font-mono block">
-              Zonal Head Username (12 Logins Available)
-            </label>
-            <div className="relative">
-              <User className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="e.g. arnava1, taranaga2, varuna1"
-                className="w-full pl-10 pr-4 py-2.5 bg-muted border-2 border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary font-mono font-bold"
-                autoCapitalize="none"
-              />
-            </div>
+        {/* Primary Authentication: Clerk SSO */}
+        <div className="p-4 bg-muted border-2 border-border space-y-3">
+          <div className="flex items-center space-x-2 text-primary font-mono text-xs font-black uppercase">
+            <ShieldCheck className="w-4 h-4" />
+            <span>Official Zonal Staff Access</span>
           </div>
-
-          <div className="space-y-1.5">
-            <label className="text-[11px] uppercase font-black text-muted-foreground font-mono block">
-              Password
-            </label>
-            <div className="relative">
-              <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
-                className="w-full pl-10 pr-4 py-2.5 bg-muted border-2 border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary font-mono font-bold"
-              />
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="neo-btn-primary w-full py-3.5 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2 disabled:opacity-50 shadow-[4px_4px_0px_var(--border)] active:translate-x-[2px] active:translate-y-[2px]"
+          <p className="text-xs text-muted-foreground font-medium">
+            Sign in with your authorized email address added by the administrator to access your assigned Oceanic Zone station.
+          </p>
+          <a
+            href="/sign-in?redirect_url=/staff"
+            className="neo-btn-primary w-full py-3.5 text-xs font-black uppercase tracking-wider flex items-center justify-center space-x-2 shadow-[3px_3px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px]"
           >
-            {isSubmitting ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <>
-                <span>Access Zonal Station</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </form>
+            <span>Sign In With Clerk (Staff & Heads)</span>
+            <ArrowRight className="w-4 h-4" />
+          </a>
+        </div>
 
-        {/* 12 Logins Quick-Click Selector */}
-        <div className="pt-4 border-t-2 border-border space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-black">
-              12 Official Zonal Logins (2 Per Zone)
+        {/* Offline / Kiosk Direct Passcode Form */}
+        <div className="pt-2 border-t-2 border-border space-y-3">
+          <div className="text-center">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-bold">
+              — Or Station Kiosk Passcode (Offline Booth Tablet) —
             </span>
-            <span className="text-[10px] text-foreground font-mono font-bold">Password: [zone]@vibe2026</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            {zonePresets.map((z) => (
-              <div
-                key={z.zone}
-                className="p-2.5 bg-muted border-2 border-border text-left space-y-1.5"
-              >
-                <span className="text-[11px] font-black block text-foreground">
-                  Zone {z.zone}
-                </span>
-                <div className="flex items-center space-x-1">
-                  <button
-                    type="button"
-                    onClick={() => fillZoneLogin(z.user1, z.pass)}
-                    className="neo-btn-card flex-1 py-1 text-[10px] font-mono font-bold border-2 border-border shadow-[1px_1px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px]"
-                  >
-                    Head 1
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => fillZoneLogin(z.user2, z.pass)}
-                    className="neo-btn-card flex-1 py-1 text-[10px] font-mono font-bold border-2 border-border shadow-[1px_1px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px]"
-                  >
-                    Head 2
-                  </button>
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-[11px] uppercase font-black text-muted-foreground font-mono block">
+                Station Username / Email
+              </label>
+              <div className="relative">
+                <User className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="e.g. arnava1, user@example.com"
+                  className="w-full pl-10 pr-4 py-2.5 bg-muted border-2 border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary font-mono font-bold"
+                  autoCapitalize="none"
+                />
               </div>
-            ))}
-          </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-[11px] uppercase font-black text-muted-foreground font-mono block">
+                Kiosk Passcode
+              </label>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-muted-foreground absolute left-3.5 top-1/2 -translate-y-1/2" />
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full pl-10 pr-4 py-2.5 bg-muted border-2 border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary font-mono font-bold"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="neo-btn-card w-full py-2.5 text-xs font-black uppercase tracking-wider flex items-center justify-center space-x-2 disabled:opacity-50 border-2 border-border shadow-[2px_2px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px]"
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <span>Unlock Station Kiosk</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </>
+              )}
+            </button>
+          </form>
         </div>
       </div>
     </div>

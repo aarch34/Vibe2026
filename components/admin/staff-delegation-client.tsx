@@ -16,12 +16,17 @@ import {
   X,
   Compass,
   Sparkles,
+  Mail,
+  UserPlus,
+  Phone,
+  Building,
 } from "lucide-react";
 import {
   ZoneStaffMatrix,
   AssignedStaffRecord,
   adminSearchAttendeesAction,
   adminAssignZonalStaffAction,
+  adminCreateAndAssignZonalStaffAction,
   adminRevokeZonalStaffAction,
 } from "@/actions/admin/staff-delegation";
 
@@ -32,7 +37,15 @@ interface StaffDelegationClientProps {
 export function StaffDelegationClient({ initialMatrix }: StaffDelegationClientProps) {
   const [matrix, setMatrix] = useState<ZoneStaffMatrix[]>(initialMatrix);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalTab, setModalTab] = useState<"direct" | "search">("direct");
   const [isPending, startTransition] = useTransition();
+
+  // Direct Add state
+  const [directName, setDirectName] = useState("");
+  const [directEmail, setDirectEmail] = useState("");
+  const [directPhone, setDirectPhone] = useState("");
+  const [directCollege, setDirectCollege] = useState("");
+  const [directClub, setDirectClub] = useState("");
 
   // Search state
   const [searchQuery, setSearchQuery] = useState("");
@@ -66,6 +79,56 @@ export function StaffDelegationClient({ initialMatrix }: StaffDelegationClientPr
     } finally {
       setIsSearching(false);
     }
+  }
+
+  function handleDirectCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!directName.trim()) {
+      setStatusMsg({ text: "Full Name is required.", isError: true });
+      return;
+    }
+    if (!directEmail.trim() || !directEmail.includes("@")) {
+      setStatusMsg({ text: "Valid email address is required for Clerk authentication.", isError: true });
+      return;
+    }
+
+    startTransition(async () => {
+      setStatusMsg(null);
+      const res = await adminCreateAndAssignZonalStaffAction({
+        fullName: directName.trim(),
+        email: directEmail.trim().toLowerCase(),
+        phone: directPhone.trim() || undefined,
+        college: directCollege.trim() || undefined,
+        club: directClub.trim() || undefined,
+        zoneId: targetZoneId,
+        staffType,
+        passcode: customPasscode.trim() || undefined,
+      });
+
+      if (res.success && res.record) {
+        const rec = res.record;
+        setStatusMsg({ text: res.message || "Staff member authorized successfully!" });
+        setMatrix((prev) =>
+          prev.map((z) => {
+            if (z.zoneId !== targetZoneId) return z;
+            return {
+              ...z,
+              heads: staffType === "zonal_head" ? [...z.heads, rec] : z.heads,
+              staff: staffType === "zonal_staff" ? [...z.staff, rec] : z.staff,
+            };
+          })
+        );
+        setDirectName("");
+        setDirectEmail("");
+        setDirectPhone("");
+        setDirectCollege("");
+        setDirectClub("");
+        setCustomPasscode("");
+        setIsModalOpen(false);
+      } else {
+        setStatusMsg({ text: res.message || "Failed to authorize staff member", isError: true });
+      }
+    });
   }
 
   function handleAssign() {
@@ -243,9 +306,21 @@ export function StaffDelegationClient({ initialMatrix }: StaffDelegationClientPr
                               [{h.vibeId}]
                             </span>
                           </div>
-                          <div className="text-[10px] text-slate-400 truncate max-w-[180px]">
+                          <div className="text-[10px] text-slate-400 truncate max-w-[200px]">
                             {h.college || "Rotaract Member"}
                           </div>
+                          {h.email && (
+                            <div className="text-[10px] text-cyan-400 font-mono flex items-center space-x-1 mt-0.5 truncate max-w-[200px]">
+                              <Mail className="w-2.5 h-2.5 shrink-0" />
+                              <span className="truncate">{h.email}</span>
+                            </div>
+                          )}
+                          {h.phone && (
+                            <div className="text-[9px] text-slate-400 font-mono flex items-center space-x-1">
+                              <Phone className="w-2.5 h-2.5 shrink-0" />
+                              <span>{h.phone}</span>
+                            </div>
+                          )}
                         </div>
                         <button
                           onClick={() => handleRevoke(h.assignmentId, z.zoneId)}
@@ -282,9 +357,21 @@ export function StaffDelegationClient({ initialMatrix }: StaffDelegationClientPr
                           <div className="text-xs font-bold text-slate-200">
                             {s.displayName} <span className="text-[10px] text-cyan-400 font-mono">({s.vibeId})</span>
                           </div>
-                          <div className="text-[10px] text-slate-500 truncate max-w-[180px]">
+                          <div className="text-[10px] text-slate-500 truncate max-w-[200px]">
                             {s.college || "Rotaract Member"}
                           </div>
+                          {s.email && (
+                            <div className="text-[10px] text-cyan-400 font-mono flex items-center space-x-1 mt-0.5 truncate max-w-[200px]">
+                              <Mail className="w-2.5 h-2.5 shrink-0" />
+                              <span className="truncate">{s.email}</span>
+                            </div>
+                          )}
+                          {s.phone && (
+                            <div className="text-[9px] text-slate-400 font-mono flex items-center space-x-1">
+                              <Phone className="w-2.5 h-2.5 shrink-0" />
+                              <span>{s.phone}</span>
+                            </div>
+                          )}
                         </div>
                         <button
                           onClick={() => handleRevoke(s.assignmentId, z.zoneId)}
@@ -308,9 +395,10 @@ export function StaffDelegationClient({ initialMatrix }: StaffDelegationClientPr
                 setIsModalOpen(true);
                 setStatusMsg(null);
               }}
-              className="mt-5 w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs font-bold uppercase transition-colors border border-slate-700"
+              className="mt-5 w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono text-xs font-bold uppercase transition-colors border border-slate-700 flex items-center justify-center space-x-1.5"
             >
-              + Assign to {z.zoneName}
+              <UserPlus className="w-3.5 h-3.5 text-cyan-400" />
+              <span>+ Authorize Staff for {z.zoneName}</span>
             </button>
           </div>
         ))}
@@ -319,7 +407,7 @@ export function StaffDelegationClient({ initialMatrix }: StaffDelegationClientPr
       {/* Assignment Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border-2 border-slate-700 max-w-lg w-full p-6 shadow-[8px_8px_0px_#000] relative">
+          <div className="bg-slate-900 border-2 border-slate-700 max-w-lg w-full p-6 shadow-[8px_8px_0px_#000] relative max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setIsModalOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-white"
@@ -335,183 +423,395 @@ export function StaffDelegationClient({ initialMatrix }: StaffDelegationClientPr
               Authorize Zonal Staff Member
             </h3>
 
-            {/* Attendee Search */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
-                  1. Search Registered Attendee
-                </label>
-                <div className="flex space-x-2">
-                  <div className="relative flex-1">
-                    <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+            {/* Tab Selection */}
+            <div className="flex border-b border-slate-800 mb-4 font-mono text-xs">
+              <button
+                type="button"
+                onClick={() => setModalTab("direct")}
+                className={`flex-1 py-2.5 flex items-center justify-center space-x-1.5 border-b-2 font-bold uppercase ${
+                  modalTab === "direct"
+                    ? "border-cyan-400 text-cyan-400 bg-cyan-950/20"
+                    : "border-transparent text-slate-400 hover:text-white"
+                }`}
+              >
+                <UserPlus className="w-3.5 h-3.5" />
+                <span>Add By Email (Clerk)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setModalTab("search")}
+                className={`flex-1 py-2.5 flex items-center justify-center space-x-1.5 border-b-2 font-bold uppercase ${
+                  modalTab === "search"
+                    ? "border-cyan-400 text-cyan-400 bg-cyan-950/20"
+                    : "border-transparent text-slate-400 hover:text-white"
+                }`}
+              >
+                <Search className="w-3.5 h-3.5" />
+                <span>Search Registered</span>
+              </button>
+            </div>
+
+            {/* Tab 1: Direct Add with Full Details */}
+            {modalTab === "direct" && (
+              <form onSubmit={handleDirectCreate} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                      Full Name *
+                    </label>
                     <input
                       type="text"
-                      placeholder="Search by Name, VIBE ID, or College..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
+                      required
+                      placeholder="e.g. Rahul Sharma"
+                      value={directName}
+                      onChange={(e) => setDirectName(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                      Clerk Auth Email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="staff@gmail.com"
+                      value={directEmail}
+                      onChange={(e) => setDirectEmail(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="+91 9876543210"
+                      value={directPhone}
+                      onChange={(e) => setDirectPhone(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                      College / Institution
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. RV College of Engineering"
+                      value={directCollege}
+                      onChange={(e) => setDirectCollege(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                    Rotaract Club Name
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Rotaract Club of Bangalore West"
+                    value={directClub}
+                    onChange={(e) => setDirectClub(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
+                  />
+                </div>
+
+                {/* Zone Selector */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                    Assigned Oceanic Zone *
+                  </label>
+                  <select
+                    value={targetZoneId}
+                    onChange={(e) => setTargetZoneId(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
+                  >
+                    {matrix.map((z) => (
+                      <option key={z.zoneId} value={z.zoneId}>
+                        Zone {z.zoneName} ({z.zoneSlug})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Role Selector */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                    Access Level & Authority
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setStaffType("zonal_head")}
+                      className={`p-3 border text-left font-mono text-xs transition-colors ${
+                        staffType === "zonal_head"
+                          ? "bg-amber-500/20 border-amber-500 text-amber-300 font-bold"
+                          : "bg-slate-950 border-slate-800 text-slate-400"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-1.5">
+                        <Shield className="w-3.5 h-3.5" />
+                        <span>Zonal Head</span>
+                      </div>
+                      <div className="text-[10px] opacity-70 mt-1">
+                        Full Station Authority (Duty XP, QR station, completions)
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setStaffType("zonal_staff")}
+                      className={`p-3 border text-left font-mono text-xs transition-colors ${
+                        staffType === "zonal_staff"
+                          ? "bg-cyan-500/20 border-cyan-500 text-cyan-300 font-bold"
+                          : "bg-slate-950 border-slate-800 text-slate-400"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-1.5">
+                        <Users className="w-3.5 h-3.5" />
+                        <span>Volunteer Staff</span>
+                      </div>
+                      <div className="text-[10px] opacity-70 mt-1">
+                        Check-in & attendee assist
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Optional Custom Passcode */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                    Offline Kiosk Passcode (Optional)
+                  </label>
+                  <div className="relative">
+                    <Key className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      placeholder="Leave blank for default: <zone>@vibe2026"
+                      value={customPasscode}
+                      onChange={(e) => setCustomPasscode(e.target.value)}
                       className="w-full bg-slate-950 border border-slate-700 text-white pl-9 pr-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
                     />
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => handleSearch()}
-                    disabled={isSearching}
-                    className="neo-btn-card px-4 py-2 text-xs font-mono font-bold uppercase"
-                  >
-                    {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
-                  </button>
+                  <p className="text-[10px] font-mono text-slate-500 mt-1">
+                    Used for tablet stations at noisy festival booths when Clerk internet is offline.
+                  </p>
                 </div>
 
-                {/* Search Results Dropdown */}
-                {searchResults.length > 0 && (
-                  <div className="mt-2 max-h-40 overflow-y-auto bg-slate-950 border border-slate-800 divide-y divide-slate-800">
-                    {searchResults.map((a) => (
-                      <button
-                        key={a.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedAttendee(a);
-                          setSearchResults([]);
-                        }}
-                        className="w-full text-left p-2.5 hover:bg-slate-800 transition-colors flex items-center justify-between"
-                      >
-                        <div>
-                          <div className="text-xs font-bold text-white">{a.displayName}</div>
-                          <div className="text-[10px] text-slate-400 font-mono">
-                            {a.vibeId} • {a.college || "Rotaract Member"}
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
-                          Select →
-                        </span>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {/* Action Buttons */}
+                <div className="pt-3 border-t border-slate-800 flex justify-end space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 border border-slate-700 text-slate-300 text-xs font-mono uppercase hover:bg-slate-800"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isPending}
+                    className="neo-btn-primary px-5 py-2 text-xs font-mono font-bold uppercase flex items-center space-x-2 disabled:opacity-50"
+                  >
+                    {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                    <span>Authorize Staff & Grant Access</span>
+                  </button>
+                </div>
+              </form>
+            )}
 
-                {/* Selected Attendee Card */}
-                {selectedAttendee && (
-                  <div className="mt-2 p-3 bg-cyan-950/40 border border-cyan-500/50 flex items-center justify-between">
-                    <div>
-                      <div className="text-xs font-bold text-white flex items-center space-x-2">
-                        <span>{selectedAttendee.displayName}</span>
-                        <span className="text-[10px] font-mono text-cyan-400">[{selectedAttendee.vibeId}]</span>
-                      </div>
-                      <div className="text-[10px] text-slate-400">{selectedAttendee.college}</div>
+            {/* Tab 2: Search Existing Registered Attendee */}
+            {modalTab === "search" && (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                    1. Search Registered Attendee
+                  </label>
+                  <div className="flex space-x-2">
+                    <div className="relative flex-1">
+                      <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                      <input
+                        type="text"
+                        placeholder="Search by Name, VIBE ID, or College..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSearch(e)}
+                        className="w-full bg-slate-950 border border-slate-700 text-white pl-9 pr-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
+                      />
                     </div>
                     <button
-                      onClick={() => setSelectedAttendee(null)}
-                      className="text-xs text-rose-400 hover:underline font-mono"
+                      type="button"
+                      onClick={() => handleSearch()}
+                      disabled={isSearching}
+                      className="neo-btn-card px-4 py-2 text-xs font-mono font-bold uppercase"
                     >
-                      Change
+                      {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
                     </button>
                   </div>
-                )}
-              </div>
 
-              {/* Zone Selector */}
-              <div>
-                <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
-                  2. Select Oceanic Zone
-                </label>
-                <select
-                  value={targetZoneId}
-                  onChange={(e) => setTargetZoneId(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
-                >
-                  {matrix.map((z) => (
-                    <option key={z.zoneId} value={z.zoneId}>
-                      {z.zoneName} ({z.zoneSlug})
-                    </option>
-                  ))}
-                </select>
-              </div>
+                  {/* Search Results Dropdown */}
+                  {searchResults.length > 0 && (
+                    <div className="mt-2 max-h-40 overflow-y-auto bg-slate-950 border border-slate-800 divide-y divide-slate-800">
+                      {searchResults.map((a) => (
+                        <button
+                          key={a.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedAttendee(a);
+                            setSearchResults([]);
+                          }}
+                          className="w-full text-left p-2.5 hover:bg-slate-800 transition-colors flex items-center justify-between"
+                        >
+                          <div>
+                            <div className="text-xs font-bold text-white">{a.displayName}</div>
+                            <div className="text-[10px] text-slate-400 font-mono">
+                              {a.vibeId} • {a.college || "Rotaract Member"}
+                            </div>
+                            {a.email && (
+                              <div className="text-[10px] text-cyan-400 font-mono">
+                                {a.email}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[10px] font-mono text-cyan-400 font-bold uppercase">
+                            Select →
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
 
-              {/* Role Selector */}
-              <div>
-                <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
-                  3. Delegation Tier
-                </label>
-                <div className="grid grid-cols-2 gap-2">
+                  {/* Selected Attendee Card */}
+                  {selectedAttendee && (
+                    <div className="mt-2 p-3 bg-cyan-950/40 border border-cyan-500/50 flex items-center justify-between">
+                      <div>
+                        <div className="text-xs font-bold text-white flex items-center space-x-2">
+                          <span>{selectedAttendee.displayName}</span>
+                          <span className="text-[10px] font-mono text-cyan-400">[{selectedAttendee.vibeId}]</span>
+                        </div>
+                        <div className="text-[10px] text-slate-400">{selectedAttendee.college}</div>
+                        {selectedAttendee.email && (
+                          <div className="text-[10px] text-cyan-400 font-mono">{selectedAttendee.email}</div>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setSelectedAttendee(null)}
+                        className="text-xs text-rose-400 hover:underline font-mono"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Zone Selector */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                    2. Select Oceanic Zone
+                  </label>
+                  <select
+                    value={targetZoneId}
+                    onChange={(e) => setTargetZoneId(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-700 text-white px-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
+                  >
+                    {matrix.map((z) => (
+                      <option key={z.zoneId} value={z.zoneId}>
+                        {z.zoneName} ({z.zoneSlug})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Role Selector */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                    3. Delegation Tier
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setStaffType("zonal_head")}
+                      className={`p-3 border text-left font-mono text-xs transition-colors ${
+                        staffType === "zonal_head"
+                          ? "bg-amber-500/20 border-amber-500 text-amber-300 font-bold"
+                          : "bg-slate-950 border-slate-800 text-slate-400"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-1.5">
+                        <Shield className="w-3.5 h-3.5" />
+                        <span>Zonal Head</span>
+                      </div>
+                      <div className="text-[10px] opacity-70 mt-1">
+                        Full Station Authority (Duty XP, QR station, completions)
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setStaffType("zonal_staff")}
+                      className={`p-3 border text-left font-mono text-xs transition-colors ${
+                        staffType === "zonal_staff"
+                          ? "bg-cyan-500/20 border-cyan-500 text-cyan-300 font-bold"
+                          : "bg-slate-950 border-slate-800 text-slate-400"
+                      }`}
+                    >
+                      <div className="flex items-center space-x-1.5">
+                        <Users className="w-3.5 h-3.5" />
+                        <span>Volunteer Staff</span>
+                      </div>
+                      <div className="text-[10px] opacity-70 mt-1">
+                        Check-in & attendee assist
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Optional Custom Passcode */}
+                <div>
+                  <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
+                    4. Kiosk Station Passcode (Optional)
+                  </label>
+                  <div className="relative">
+                    <Key className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
+                    <input
+                      type="text"
+                      placeholder="Leave blank for default: <zone>@vibe2026"
+                      value={customPasscode}
+                      onChange={(e) => setCustomPasscode(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-700 text-white pl-9 pr-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="pt-3 border-t border-slate-800 flex justify-end space-x-2">
                   <button
                     type="button"
-                    onClick={() => setStaffType("zonal_head")}
-                    className={`p-3 border text-left font-mono text-xs transition-colors ${
-                      staffType === "zonal_head"
-                        ? "bg-amber-500/20 border-amber-500 text-amber-300 font-bold"
-                        : "bg-slate-950 border-slate-800 text-slate-400"
-                    }`}
+                    onClick={() => setIsModalOpen(false)}
+                    className="px-4 py-2 border border-slate-700 text-slate-300 text-xs font-mono uppercase hover:bg-slate-800"
                   >
-                    <div className="flex items-center space-x-1.5">
-                      <Shield className="w-3.5 h-3.5" />
-                      <span>Zonal Head</span>
-                    </div>
-                    <div className="text-[10px] opacity-70 mt-1">
-                      Full Station Authority (Duty XP awards, QR codes, photo approvals)
-                    </div>
+                    Cancel
                   </button>
-
                   <button
                     type="button"
-                    onClick={() => setStaffType("zonal_staff")}
-                    className={`p-3 border text-left font-mono text-xs transition-colors ${
-                      staffType === "zonal_staff"
-                        ? "bg-cyan-500/20 border-cyan-500 text-cyan-300 font-bold"
-                        : "bg-slate-950 border-slate-800 text-slate-400"
-                    }`}
+                    onClick={handleAssign}
+                    disabled={!selectedAttendee || isPending}
+                    className="neo-btn-primary px-5 py-2 text-xs font-mono font-bold uppercase flex items-center space-x-2 disabled:opacity-50"
                   >
-                    <div className="flex items-center space-x-1.5">
-                      <Users className="w-3.5 h-3.5" />
-                      <span>Volunteer Staff</span>
-                    </div>
-                    <div className="text-[10px] opacity-70 mt-1">
-                      Check-in and stall photo assist
-                    </div>
+                    {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
+                    <span>Authorize Staff Access</span>
                   </button>
                 </div>
               </div>
-
-              {/* Optional Custom Passcode */}
-              <div>
-                <label className="block text-xs font-mono font-bold text-slate-300 uppercase mb-1">
-                  4. Kiosk Station Passcode (Optional)
-                </label>
-                <div className="relative">
-                  <Key className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
-                  <input
-                    type="text"
-                    placeholder="Leave blank for default: <zone>@vibe2026"
-                    value={customPasscode}
-                    onChange={(e) => setCustomPasscode(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 text-white pl-9 pr-3 py-2 text-xs font-mono focus:border-cyan-400 focus:outline-none"
-                  />
-                </div>
-                <p className="text-[10px] font-mono text-slate-500 mt-1">
-                  Allows direct kiosk login on tablets at noisy festival booths without Clerk.
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="pt-3 border-t border-slate-800 flex justify-end space-x-2">
-                <button
-                  type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-slate-700 text-slate-300 text-xs font-mono uppercase hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleAssign}
-                  disabled={!selectedAttendee || isPending}
-                  className="neo-btn-primary px-5 py-2 text-xs font-mono font-bold uppercase flex items-center space-x-2 disabled:opacity-50"
-                >
-                  {isPending && <Loader2 className="w-4 h-4 animate-spin" />}
-                  <span>Authorize Staff Access</span>
-                </button>
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}

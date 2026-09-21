@@ -4,6 +4,8 @@ export interface ZonalStaffUser {
   zoneId: string;
   zoneName: string;
   headName: string;
+  staffType?: "zonal_head" | "zonal_staff";
+  email?: string;
   loggedInAt: number;
 }
 

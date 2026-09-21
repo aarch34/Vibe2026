@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ShieldAlert, Lock, User, ArrowRight, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import { ShieldAlert, ShieldCheck, Lock, User, ArrowRight, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
 import { loginAdminAction } from "@/actions/admin/auth";
 
 export default function AdminLoginPage() {
@@ -65,7 +65,7 @@ export default function AdminLoginPage() {
             Admin Authentication
           </h1>
           <p className="text-xs text-muted-foreground font-medium">
-            Restricted access for designated festival administrators (jk, gunjan).
+            Restricted access for designated festival administrators (Super Admin: thejaswinps@gmail.com).
           </p>
         </div>
 
@@ -74,6 +74,24 @@ export default function AdminLoginPage() {
             {errorMsg}
           </div>
         )}
+
+        {/* Super Admin Clerk Sign In */}
+        <div className="p-4 bg-muted border-2 border-border space-y-2.5">
+          <div className="flex items-center space-x-2 text-primary font-mono text-xs font-black uppercase">
+            <ShieldCheck className="w-4 h-4" />
+            <span>Super Admin (Clerk SSO)</span>
+          </div>
+          <p className="text-xs text-muted-foreground font-medium">
+            Sign in with <strong className="text-foreground">thejaswinps@gmail.com</strong> via Clerk for full unrestricted console authority.
+          </p>
+          <a
+            href="/sign-in?redirect_url=/admin"
+            className="neo-btn-primary w-full py-3 text-xs font-black uppercase tracking-wider flex items-center justify-center space-x-2 shadow-[2px_2px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px]"
+          >
+            <span>Sign In with Clerk</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
