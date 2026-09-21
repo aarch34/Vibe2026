@@ -127,11 +127,18 @@ export async function awardDutyXpAction(rawInput: z.infer<typeof dutyAwardSchema
         });
       }
 
-      // 5. Record experience completion for instant XP credit and leaderboard sync
+      // 5. Resolve zone experience and record completion for instant XP credit and leaderboard sync
+      const { data: zoneExp } = await supabaseAdmin
+        .from("experiences")
+        .select("id")
+        .eq("zone_id", zone.id)
+        .limit(1)
+        .maybeSingle();
+
       await supabaseAdmin.from("experience_completions").insert({
         event_id: EVENT_ID,
         profile_id: targetProfileId,
-        experience_id: null,
+        experience_id: zoneExp?.id || null,
         attempt_number: 1,
         coin_spent: 0,
         xp_earned: xpAmount,

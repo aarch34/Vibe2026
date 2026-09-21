@@ -66,6 +66,7 @@ declare
   v_staff_name text;
   v_recipient_name text;
   v_completion_id uuid;
+  v_exp_id uuid;
 begin
   -- Validate inputs
   if p_xp_awarded < 0 or p_coins_awarded < 0 then
@@ -81,6 +82,9 @@ begin
   if not found then
     return jsonb_build_object('success', false, 'code', 'ZONE_NOT_FOUND', 'message', 'Specified Oceanic Zone does not exist');
   end if;
+
+  -- Resolve zone primary experience for reference and foreign key compatibility
+  select id into v_exp_id from experiences where zone_id = p_zone_id and event_id = p_event_id limit 1;
 
   -- Validate Staff Profile
   select display_name into v_staff_name from profiles where id = p_staff_profile_id;
@@ -147,7 +151,7 @@ begin
     event_id, profile_id, experience_id, attempt_number,
     coin_spent, xp_earned, coin_earned, metadata
   ) values (
-    p_event_id, p_recipient_profile_id, null, 1,
+    p_event_id, p_recipient_profile_id, v_exp_id, 1,
     0, p_xp_awarded, p_coins_awarded,
     jsonb_build_object(
       'duty_reward_id', v_duty_id,
