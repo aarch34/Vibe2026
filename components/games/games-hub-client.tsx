@@ -13,11 +13,54 @@ import {
   Clock,
   Award,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { formatCoins } from "@/lib/utils";
-import { RotaractGame } from "./rotaract-game";
-import { FlappyRocco } from "./flappy-rocco";
-import { MinionRun } from "./minion-run";
-import { MemoryGame } from "./memory-game";
+
+function GameLoadingSkeleton({ title }: { title: string }) {
+  return (
+    <div className="p-8 border-2 border-border bg-card text-card-foreground shadow-neo flex flex-col items-center justify-center space-y-4 min-h-[360px]">
+      <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+      <p className="font-mono text-sm font-black tracking-wider uppercase text-foreground">
+        Loading {title}...
+      </p>
+      <span className="text-xs text-muted-foreground font-bold">
+        Preparing canvas & audio engine
+      </span>
+    </div>
+  );
+}
+
+const RotaractGame = dynamic(
+  () => import("./rotaract-game").then((m) => m.RotaractGame),
+  {
+    ssr: false,
+    loading: () => <GameLoadingSkeleton title="Rotaract Game" />,
+  }
+);
+
+const FlappyRocco = dynamic(
+  () => import("./flappy-rocco").then((m) => m.FlappyRocco),
+  {
+    ssr: false,
+    loading: () => <GameLoadingSkeleton title="Flappy ROCCO" />,
+  }
+);
+
+const MinionRun = dynamic(
+  () => import("./minion-run").then((m) => m.MinionRun),
+  {
+    ssr: false,
+    loading: () => <GameLoadingSkeleton title="Minion VIBE Run" />,
+  }
+);
+
+const MemoryGame = dynamic(
+  () => import("./memory-game").then((m) => m.MemoryGame),
+  {
+    ssr: false,
+    loading: () => <GameLoadingSkeleton title="Memory Match" />,
+  }
+);
 
 interface GamesHubClientProps {
   userBalance: number;

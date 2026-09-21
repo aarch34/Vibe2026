@@ -23,9 +23,11 @@ import { getWalletSummary } from "@/lib/wallet/wallet-service";
 import {
   getUserProgression,
   getUserPlayerStats,
+  getCachedActiveExperiences,
+  getCachedEventZones,
 } from "@/lib/gameplay/progression-service";
 import { getUserLeaderboardRank } from "@/lib/leaderboard/leaderboard-service";
-import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
+import { mockDb } from "@/lib/db/supabase";
 import { formatCoins, formatXP } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -33,43 +35,33 @@ export const dynamic = "force-dynamic";
 export default async function AttendeeHomePage() {
   const session = await getCurrentUserSession();
 
-  // Run all required metrics in parallel
-  const [walletSummary, progression, playerStats, userRank, liveExpsRes, liveZoneRes] =
+  // Run all required metrics in parallel (with instant server-side memory caching)
+  const [walletSummary, progression, playerStats, userRank, allExperiences, zones] =
     await Promise.all([
       getWalletSummary(session.eventId, session.profile.id),
       getUserProgression(session.eventId, session.profile.id),
       getUserPlayerStats(session.profile.id),
       getUserLeaderboardRank(session.eventId, session.profile.id),
-      isUsingLiveSupabase() && supabaseAdmin
-        ? supabaseAdmin
-            .from("experiences")
-            .select("*, zones(name), sponsors(name)")
-            .eq("event_id", session.eventId)
-            .eq("is_active", true)
-            .limit(4)
-        : Promise.resolve({ data: null }),
-      isUsingLiveSupabase() && supabaseAdmin && session.profile.assigned_zone_id
-        ? supabaseAdmin
-            .from("zones")
-            .select("name")
-            .eq("id", session.profile.assigned_zone_id)
-            .maybeSingle()
-        : Promise.resolve({ data: null }),
+      getCachedActiveExperiences(session.eventId),
+      getCachedEventZones(session.eventId),
     ]);
 
   // Resolve assigned zone name
   let assignedZoneName = "Arnava";
   if (session.profile.assigned_zone_id) {
-    const memZone = mockDb.zones.get(session.profile.assigned_zone_id);
-    if (memZone) {
-      assignedZoneName = memZone.name;
-    } else if (liveZoneRes?.data?.name) {
-      assignedZoneName = liveZoneRes.data.name;
+    const foundZone = zones.find(
+      (z) => z.id === session.profile.assigned_zone_id || z.slug === session.profile.assigned_zone_id
+    );
+    if (foundZone) {
+      assignedZoneName = foundZone.name;
+    } else {
+      const memZone = mockDb.zones.get(session.profile.assigned_zone_id);
+      if (memZone) assignedZoneName = memZone.name;
     }
   }
 
-  // 4 Featured Experiences from the 6 official zones
-  let featuredExperiences: any[] = liveExpsRes?.data || [];
+  // 4 Featured Experiences from the official catalog
+  let featuredExperiences: any[] = allExperiences.slice(0, 4);
 
   if (
     !featuredExperiences ||

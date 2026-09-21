@@ -1,7 +1,10 @@
 import React from "react";
 import { getCurrentUserSession } from "@/lib/auth/session";
 import { getWalletSummary } from "@/lib/wallet/wallet-service";
-import { getUserProgression } from "@/lib/gameplay/progression-service";
+import {
+  getUserProgression,
+  getCachedEventZones,
+} from "@/lib/gameplay/progression-service";
 import { TopHeader } from "@/components/attendee/top-header";
 import { AttendeeBottomNav } from "@/components/attendee/bottom-nav";
 
@@ -13,17 +16,21 @@ export default async function AttendeeLayout({
   children: React.ReactNode;
 }) {
   const session = await getCurrentUserSession();
-  const [walletSummary, progression] = await Promise.all([
+  const [walletSummary, progression, zones] = await Promise.all([
     getWalletSummary(session.eventId, session.profile.id),
     getUserProgression(session.eventId, session.profile.id),
+    getCachedEventZones(session.eventId),
   ]);
 
-  // Resolve assigned zone
+  // Resolve assigned zone from cached catalog
   let assignedZoneName = "Arnava";
   if (session.profile.assigned_zone_id) {
-    const { mockDb } = await import("@/lib/db/supabase");
-    const z = mockDb.zones.get(session.profile.assigned_zone_id);
-    if (z) assignedZoneName = z.name;
+    const found = zones.find(
+      (z) => z.id === session.profile.assigned_zone_id || z.slug === session.profile.assigned_zone_id
+    );
+    if (found) {
+      assignedZoneName = found.name;
+    }
   }
 
   return (

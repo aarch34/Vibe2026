@@ -3,6 +3,9 @@
 import { z } from "zod";
 import { getCurrentUserSession } from "@/lib/auth/session";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
+import { invalidateWalletCache } from "@/lib/wallet/wallet-service";
+import { invalidateUserProgressionCache } from "@/lib/gameplay/progression-service";
+import { invalidateLeaderboardCache } from "@/lib/leaderboard/leaderboard-service";
 import { GameType } from "@/types/database";
 
 const GAME_EXPERIENCE_IDS: Record<string, string> = {
@@ -126,6 +129,10 @@ export async function submitGameResultAction(rawInput: z.infer<typeof playGameOv
         // Table might not exist, ignore
       }
 
+      invalidateWalletCache(session.eventId, session.profile.id);
+      invalidateUserProgressionCache(session.profile.id);
+      invalidateLeaderboardCache();
+
       return {
         success: true,
         balanceAfter: newBal,
@@ -134,7 +141,7 @@ export async function submitGameResultAction(rawInput: z.infer<typeof playGameOv
       };
     }
 
-    return mockDb.recordGameSession(
+    const memRes = mockDb.recordGameSession(
       session.eventId,
       session.profile.id,
       gameType as GameType,
@@ -144,6 +151,10 @@ export async function submitGameResultAction(rawInput: z.infer<typeof playGameOv
       coinReward,
       xpReward
     );
+    invalidateWalletCache(session.eventId, session.profile.id);
+    invalidateUserProgressionCache(session.profile.id);
+    invalidateLeaderboardCache();
+    return memRes;
   } catch (err: any) {
     console.error("submitGameResultAction error:", err);
     return { success: false, message: err.message || "Failed to record game" };

@@ -5,6 +5,9 @@ import { getCurrentUserSession } from "@/lib/auth/session";
 import { getZonalStaffSession } from "@/actions/staff/auth";
 import { getAdminSession } from "@/actions/admin/auth";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
+import { invalidateWalletCache } from "@/lib/wallet/wallet-service";
+import { invalidateUserProgressionCache } from "@/lib/gameplay/progression-service";
+import { invalidateLeaderboardCache } from "@/lib/leaderboard/leaderboard-service";
 
 const completeExperienceSchema = z.object({
   experienceId: z.string().min(1, "Experience ID is required"),
@@ -60,6 +63,9 @@ export async function completeExperienceAction(rawInput: CompleteExperienceInput
         };
       }
 
+      invalidateWalletCache(session.eventId, session.profile.id);
+      invalidateUserProgressionCache(session.profile.id);
+      invalidateLeaderboardCache();
       return data;
     }
 
@@ -72,6 +78,9 @@ export async function completeExperienceAction(rawInput: CompleteExperienceInput
       idempotencyKey || null
     );
 
+    invalidateWalletCache(session.eventId, session.profile.id);
+    invalidateUserProgressionCache(session.profile.id);
+    invalidateLeaderboardCache();
     return result;
   } catch (err: any) {
     return {
@@ -163,6 +172,10 @@ export async function discoverZoneAction(zoneId: string) {
         });
       }
 
+      invalidateWalletCache(session.eventId, session.profile.id);
+      invalidateUserProgressionCache(session.profile.id);
+      invalidateLeaderboardCache();
+
       return {
         success: true,
         alreadyDiscovered: false,
@@ -172,7 +185,11 @@ export async function discoverZoneAction(zoneId: string) {
       };
     }
 
-    return mockDb.discoverZone(session.eventId, session.profile.id, zoneId);
+    const memRes = mockDb.discoverZone(session.eventId, session.profile.id, zoneId);
+    invalidateWalletCache(session.eventId, session.profile.id);
+    invalidateUserProgressionCache(session.profile.id);
+    invalidateLeaderboardCache();
+    return memRes;
   } catch (err: any) {
     return {
       success: false,

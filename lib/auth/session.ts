@@ -26,6 +26,17 @@ export interface CurrentUserSession {
   staffZoneSlug?: string | null;
 }
 
+const globalSessionCache = new Map<string, { timestamp: number; session: CurrentUserSession }>();
+const SESSION_CACHE_TTL_MS = 60_000; // 60s in-memory cache
+
+export function invalidateSessionCache(userId?: string) {
+  if (userId) {
+    globalSessionCache.delete(userId);
+  } else {
+    globalSessionCache.clear();
+  }
+}
+
 export const getCurrentUserSession = serverCache(async function getCurrentUserSession(
   requestedEventSlug = "vibe-2026"
 ): Promise<CurrentUserSession> {
@@ -93,6 +104,12 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
 
   const validUserId: string = clerkUserId;
 
+  // 0. Fast in-memory cache check (avoids 4 sequential Supabase queries taking ~2.5s)
+  const cached = globalSessionCache.get(validUserId);
+  if (cached && Date.now() - cached.timestamp < SESSION_CACHE_TTL_MS) {
+    return cached.session;
+  }
+
   const eventId = "a0000000-0000-0000-0000-000000000001";
 
   // Check if profile exists in memory store first (for local registration)
@@ -123,6 +140,7 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
 
   // If using live Supabase with service role
   if (isUsingLiveSupabase() && supabaseAdmin) {
+    let isNewlyCreated = false;
     // 1. Resolve Profile
     let { data: profile } = await supabaseAdmin
       .from("profiles")
@@ -190,6 +208,7 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
         profile = existingProfile;
       } else {
         profile = newProfile;
+        isNewlyCreated = true;
       }
     }
 
@@ -256,18 +275,20 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
       // Ignore if staff tables not present
     }
 
-    // 3. Ensure Initial Wallet Credit (if procedure exists)
-    try {
-      await supabaseAdmin.rpc("fn_credit_initial_wallet", {
-        p_event_id: eventId,
-        p_profile_id: profile.id,
-        p_initial_amount: 500,
-      });
-    } catch {
-      // Ignore if procedures not yet applied
+    // 3. Ensure Initial Wallet Credit ONLY for brand new profiles
+    if (isNewlyCreated) {
+      try {
+        await supabaseAdmin.rpc("fn_credit_initial_wallet", {
+          p_event_id: eventId,
+          p_profile_id: profile.id,
+          p_initial_amount: 500,
+        });
+      } catch {
+        // Ignore if procedures not yet applied
+      }
     }
 
-    return {
+    const resolvedSession: CurrentUserSession = {
       clerkUserId,
       profile,
       member: member || {
@@ -283,6 +304,9 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
       staffZoneId,
       staffZoneSlug,
     };
+
+    globalSessionCache.set(validUserId, { timestamp: Date.now(), session: resolvedSession });
+    return resolvedSession;
   }
 
   // Fallback / In-Memory Mock Store

@@ -1,5 +1,9 @@
 import { getCurrentUserSession } from "@/lib/auth/session";
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
+import {
+  getCachedEventZones,
+  getCachedActiveExperiences,
+} from "@/lib/gameplay/progression-service";
 import { VenueMap } from "@/components/map/venue-map";
 import { Compass } from "lucide-react";
 import { Zone, Experience, ExperienceCompletion } from "@/types/database";
@@ -13,29 +17,22 @@ export default async function VenueMapPage() {
   let experiences: Experience[] = [];
   let userCompletions: ExperienceCompletion[] = [];
 
-  if (isUsingLiveSupabase() && supabaseAdmin) {
-    const [zonesRes, expsRes, compsRes] = await Promise.all([
-      supabaseAdmin
-        .from("zones")
-        .select("*")
-        .eq("event_id", session.eventId)
-        .eq("is_active", true)
-        .order("sort_order", { ascending: true }),
-      supabaseAdmin
-        .from("experiences")
-        .select("*")
-        .eq("event_id", session.eventId)
-        .eq("is_active", true),
-      supabaseAdmin
-        .from("experience_completions")
-        .select("*")
-        .eq("event_id", session.eventId)
-        .eq("profile_id", session.profile.id),
-    ]);
+  const [cachedZones, cachedExps] = await Promise.all([
+    getCachedEventZones(session.eventId),
+    getCachedActiveExperiences(session.eventId),
+  ]);
 
-    zones = zonesRes.data || [];
-    experiences = expsRes.data || [];
-    userCompletions = compsRes.data || [];
+  zones = cachedZones;
+  experiences = cachedExps;
+
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    const { data: comps } = await supabaseAdmin
+      .from("experience_completions")
+      .select("*")
+      .eq("event_id", session.eventId)
+      .eq("profile_id", session.profile.id);
+
+    userCompletions = comps || [];
   }
 
   if (

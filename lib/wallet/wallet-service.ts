@@ -16,11 +16,29 @@ export interface WalletSummary {
   totalSpent: number;
 }
 
+const walletSummaryCache = new Map<string, { timestamp: number; data: WalletSummary }>();
+const WALLET_CACHE_TTL_MS = 30_000; // 30 seconds
+
+export function invalidateWalletCache(eventId?: string, profileId?: string) {
+  if (eventId && profileId) {
+    walletSummaryCache.delete(`${eventId}:${profileId}`);
+  } else {
+    walletSummaryCache.clear();
+  }
+}
+
 export const getWalletSummary = serverCache(async function getWalletSummary(
   eventId: string,
   profileId: string
 ): Promise<WalletSummary> {
   const key = `${eventId}:${profileId}`;
+
+  // 0. Fast in-memory cache check (avoids remote database latency)
+  const cached = walletSummaryCache.get(key);
+  if (cached && Date.now() - cached.timestamp < WALLET_CACHE_TTL_MS) {
+    return cached.data;
+  }
+
   const memWallet = mockDb.wallets.get(key);
   if (memWallet) {
     const txs = mockDb.walletTransactions.filter(
@@ -66,12 +84,14 @@ export const getWalletSummary = serverCache(async function getWalletSummary(
         .filter((t) => t.type === "spend" || t.type === "reward_redemption")
         .reduce((sum, t) => sum + t.amount, 0);
 
-      return {
+      const result = {
         wallet,
         transactions: txs,
         totalEarned,
         totalSpent,
       };
+      walletSummaryCache.set(key, { timestamp: Date.now(), data: result });
+      return result;
     }
   }
 
@@ -93,12 +113,14 @@ export const getWalletSummary = serverCache(async function getWalletSummary(
     .filter((t) => t.type === "spend" || t.type === "reward_redemption")
     .reduce((sum, t) => sum + t.amount, 0);
 
-  return {
+  const memResult = {
     wallet,
     transactions: txs,
     totalEarned,
     totalSpent,
   };
+  walletSummaryCache.set(key, { timestamp: Date.now(), data: memResult });
+  return memResult;
 });
 
 export async function spendCoinsAtomic(
@@ -110,6 +132,7 @@ export async function spendCoinsAtomic(
   idempotencyKey?: string | null,
   metadata?: Record<string, any>
 ) {
+  invalidateWalletCache(eventId, profileId);
   if (isUsingLiveSupabase() && supabaseAdmin) {
     const { data, error } = await supabaseAdmin.rpc("fn_spend_wallet_atomic", {
       p_event_id: eventId,

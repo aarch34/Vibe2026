@@ -1,12 +1,26 @@
 import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { LeaderboardEntry, Level, ZoneLeaderboardEntry } from "@/types/database";
+import { getCachedEventLevels, getCachedEventZones } from "@/lib/gameplay/progression-service";
 
 let cachedLeaderboardData: {
   eventId: string;
   timestamp: number;
   entries: LeaderboardEntry[];
+  rankMap: Map<string, LeaderboardEntry>;
 } | null = null;
-const LEADERBOARD_CACHE_TTL_MS = 15_000;
+
+let cachedZoneLeaderboard: {
+  eventId: string;
+  timestamp: number;
+  entries: ZoneLeaderboardEntry[];
+} | null = null;
+
+const LEADERBOARD_CACHE_TTL_MS = 60_000; // 60 seconds
+
+export function invalidateLeaderboardCache() {
+  cachedLeaderboardData = null;
+  cachedZoneLeaderboard = null;
+}
 
 export async function getLeaderboard(
   eventId: string,
@@ -25,30 +39,22 @@ export async function getLeaderboard(
   }
 
   if (isUsingLiveSupabase() && supabaseAdmin) {
-    const [membersRes, levelsRes, compsRes, zonesRes] = await Promise.all([
+    const [membersRes, levels, compsRes, zones] = await Promise.all([
       supabaseAdmin
         .from("event_members")
         .select("profile_id, profiles(id, display_name, vibe_id, instagram_id, club, assigned_zone_id)")
         .eq("event_id", eventId),
-      supabaseAdmin
-        .from("levels")
-        .select("*")
-        .eq("event_id", eventId)
-        .order("sort_order", { ascending: true }),
+      getCachedEventLevels(eventId),
       supabaseAdmin
         .from("experience_completions")
         .select("profile_id, xp_earned, completed_at, experiences(zone_id)")
         .eq("event_id", eventId),
-      supabaseAdmin
-        .from("zones")
-        .select("id, name")
-        .eq("event_id", eventId),
+      getCachedEventZones(eventId),
     ]);
 
-    const levels: Level[] = levelsRes.data || [];
     const members = membersRes.data || [];
     const completions = compsRes.data || [];
-    const zonesMap = new Map((zonesRes.data || []).map((z: any) => [z.id, z.name]));
+    const zonesMap = new Map((zones || []).map((z: any) => [z.id, z.name]));
 
     // Aggregate by profile
     const profileAggregates = new Map<
@@ -133,14 +139,17 @@ export async function getLeaderboard(
       return a.display_name.localeCompare(b.display_name);
     });
 
+    const rankMap = new Map<string, LeaderboardEntry>();
     entries.forEach((entry, idx) => {
       entry.rank = idx + 1;
+      rankMap.set(entry.profile_id, entry);
     });
 
     cachedLeaderboardData = {
       eventId,
       timestamp: Date.now(),
       entries,
+      rankMap,
     };
 
     const paged = entries.slice(offset, offset + limit);
@@ -179,19 +188,34 @@ export async function getUserLeaderboardRank(
   eventId: string,
   profileId: string
 ): Promise<LeaderboardEntry | null> {
+  // Fast path: if cached, resolve in O(1) time with 0 network calls
+  if (
+    cachedLeaderboardData &&
+    cachedLeaderboardData.eventId === eventId &&
+    Date.now() - cachedLeaderboardData.timestamp < LEADERBOARD_CACHE_TTL_MS
+  ) {
+    return cachedLeaderboardData.rankMap.get(profileId) || null;
+  }
+
   const { entries } = await getLeaderboard(eventId, 1000, 0);
+  if (cachedLeaderboardData?.rankMap) {
+    return cachedLeaderboardData.rankMap.get(profileId) || null;
+  }
   return entries.find((e) => e.profile_id === profileId) || null;
 }
 
 // Zone Battle Competition: Ranked strictly by VIBE Coins collected (Section 27 & 33)
 export async function getZoneLeaderboard(eventId: string): Promise<ZoneLeaderboardEntry[]> {
+  if (
+    cachedZoneLeaderboard &&
+    cachedZoneLeaderboard.eventId === eventId &&
+    Date.now() - cachedZoneLeaderboard.timestamp < LEADERBOARD_CACHE_TTL_MS
+  ) {
+    return cachedZoneLeaderboard.entries;
+  }
+
   if (isUsingLiveSupabase() && supabaseAdmin) {
-    const { data: zones } = await supabaseAdmin
-      .from("zones")
-      .select("*")
-      .eq("event_id", eventId)
-      .eq("is_active", true)
-      .order("sort_order", { ascending: true });
+    const zones = await getCachedEventZones(eventId);
 
     if (zones && zones.length > 0) {
       // Fetch real completions to count per zone
@@ -238,6 +262,12 @@ export async function getZoneLeaderboard(eventId: string): Promise<ZoneLeaderboa
       list.forEach((z, idx) => {
         z.rank = idx + 1;
       });
+
+      cachedZoneLeaderboard = {
+        eventId,
+        timestamp: Date.now(),
+        entries: list,
+      };
 
       return list;
     }

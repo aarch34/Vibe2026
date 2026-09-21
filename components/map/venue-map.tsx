@@ -214,9 +214,9 @@ export function VenueMap({
 
           {/* Map Display Viewport */}
           <div className="relative w-full aspect-square max-w-[620px] mx-auto overflow-hidden border-2 border-border/90 shadow-inner bg-black select-none">
-            {/* Base Pixel Island Map Graphic */}
+            {/* Base Pixel Island Map Graphic (Optimized 105 KB Asset) */}
             <img
-              src="/assets/map/vibe_oceanic_archipelago_map.png"
+              src="/assets/map/retro_island_map.png"
               alt="VIBE 2026 Oceanic Archipelago Pixel Map"
               className="w-full h-full object-cover pointer-events-none"
               style={{
