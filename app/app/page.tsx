@@ -29,6 +29,7 @@ import {
 import { getUserLeaderboardRank } from "@/lib/leaderboard/leaderboard-service";
 import { mockDb } from "@/lib/db/supabase";
 import { formatCoins, formatXP } from "@/lib/utils";
+import { ZoneSelectionBanner } from "@/components/attendee/zone-selection-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -48,6 +49,7 @@ export default async function AttendeeHomePage() {
 
   // Resolve assigned zone name
   let assignedZoneName = "Arnava";
+  const hasSelectedZone = Boolean(session.profile.assigned_zone_id);
   if (session.profile.assigned_zone_id) {
     const foundZone = zones.find(
       (z) => z.id === session.profile.assigned_zone_id || z.slug === session.profile.assigned_zone_id
@@ -90,6 +92,11 @@ export default async function AttendeeHomePage() {
 
   return (
     <div className="space-y-6">
+      {/* 0. Zone Selection Prompt if attendee hasn't picked their oceanic zone yet */}
+      {!hasSelectedZone && (
+        <ZoneSelectionBanner isUnassigned={true} />
+      )}
+
       {/* 1. Welcome to VIBE Banner (Loaded with 500 Coins) */}
       {isNewRegistration && (
         <div className="relative overflow-hidden p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo">
@@ -100,7 +107,13 @@ export default async function AttendeeHomePage() {
                 Welcome to VIBE, {session.profile.display_name}!
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-medium">
-                Your VIBE Wallet has been loaded with <strong className="text-foreground font-black font-mono">500 VIBE Coins</strong>. You are part of <span className="bg-secondary text-secondary-foreground px-2 py-0.5 font-black border border-border">🌊 {assignedZoneName.toUpperCase()}</span>. Explore zones, play games, and conquer the festival leaderboard!
+                Your VIBE Wallet has been loaded with <strong className="text-foreground font-black font-mono">500 VIBE Coins</strong>.{" "}
+                {hasSelectedZone ? (
+                  <>You are part of <span className="bg-secondary text-secondary-foreground px-2 py-0.5 font-black border border-border">🌊 {assignedZoneName.toUpperCase()}</span>.</>
+                ) : (
+                  <>Please select your oceanic zone below to join the 6-zone championship battle!</>
+                )}{" "}
+                Explore zones, play games, and conquer the festival leaderboard!
               </p>
               <div className="pt-1 flex items-center space-x-2 text-[10px] sm:text-xs font-black tracking-wider uppercase text-muted-foreground">
                 <span>Explore</span> • <span>Experience</span> • <span>Earn</span> • <span>Spend</span> • <span>Repeat</span>
@@ -134,12 +147,18 @@ export default async function AttendeeHomePage() {
                   <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight uppercase mt-0.5">
                     {session.profile.display_name.toUpperCase()}
                   </h1>
-                  <div className="flex items-center space-x-2 mt-2">
+                  <div className="flex items-center space-x-2 mt-2 flex-wrap gap-y-1">
                     <span className="inline-flex items-center space-x-1.5 text-xs font-black text-white bg-secondary border-2 border-border px-3 py-1 shadow-[2px_2px_0px_var(--border)]">
                       <span>🌊</span>
-                      <span>{assignedZoneName.toUpperCase()}</span>
-                      <span className="text-[9px] font-mono text-cyan-300 ml-1">(YOUR ZONE)</span>
+                      <span>{hasSelectedZone ? assignedZoneName.toUpperCase() : "NO ZONE SELECTED"}</span>
+                      <span className="text-[9px] font-mono text-cyan-300 ml-1">
+                        {hasSelectedZone ? "(YOUR ZONE)" : "(CLICK TO CHOOSE)"}
+                      </span>
                     </span>
+                    <ZoneSelectionBanner
+                      currentAssignedZoneId={session.profile.assigned_zone_id}
+                      currentZoneName={hasSelectedZone ? assignedZoneName : "None"}
+                    />
                   </div>
                   <p className="text-xs text-muted-foreground font-bold mt-1.5">
                     {session.profile.club || session.profile.college || "Rotaract District 3192"}

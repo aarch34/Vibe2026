@@ -327,7 +327,7 @@ class VibeMemoryDatabase {
     completionsCount = 0,
     instagramId?: string,
     phone: string = "+91 98765 00000",
-    assignedZoneId: string = "z-arnava"
+    assignedZoneId: string | null = null
   ): Profile {
     const profileId = `prof-${clerkId}`;
     const profile: Profile = {

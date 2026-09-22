@@ -9,7 +9,7 @@ export default async function WelcomePage() {
   const session = await getCurrentUserSession();
 
   // Resolve assigned zone name
-  let assignedZoneName = "Arnava";
+  let assignedZoneName: string | null = null;
   if (session.profile.assigned_zone_id) {
     const memZone = mockDb.zones.get(session.profile.assigned_zone_id);
     if (memZone) {
@@ -42,14 +42,22 @@ export default async function WelcomePage() {
           </h1>
           <div className="inline-block px-4 py-1.5 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)]">
             <p className="text-sm sm:text-base font-black flex items-center justify-center space-x-2">
-              <span>You are part of</span>
-              <span className="underline decoration-2 underline-offset-4">
-                🌊 {assignedZoneName.toUpperCase()}
-              </span>
+              {assignedZoneName ? (
+                <>
+                  <span>You are part of</span>
+                  <span className="underline decoration-2 underline-offset-4">
+                    🌊 {assignedZoneName.toUpperCase()}
+                  </span>
+                </>
+              ) : (
+                <span>🌊 6 Oceanic Zones Await You</span>
+              )}
             </p>
           </div>
           <p className="text-xs sm:text-sm text-muted-foreground font-bold">
-            Your VIBE journey starts now.
+            {assignedZoneName
+              ? "Your VIBE journey starts now."
+              : "Choose your oceanic zone from the Home feed and lead them to victory!"}
           </p>
         </div>
 

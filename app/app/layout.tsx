@@ -23,7 +23,7 @@ export default async function AttendeeLayout({
   ]);
 
   // Resolve assigned zone from cached catalog
-  let assignedZoneName = "Arnava";
+  let assignedZoneName = "Select Zone";
   if (session.profile.assigned_zone_id) {
     const found = zones.find(
       (z) => z.id === session.profile.assigned_zone_id || z.slug === session.profile.assigned_zone_id

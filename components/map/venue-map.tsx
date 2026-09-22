@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useTransition } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { selectMyZoneAction } from "@/actions/profile/update-profile";
 import {
   Compass,
   MapPin,
@@ -16,6 +18,7 @@ import {
   Waves,
   Eye,
   Crosshair,
+  Loader2,
 } from "lucide-react";
 import { Zone, Experience, ExperienceCompletion } from "@/types/database";
 
@@ -130,25 +133,41 @@ export function VenueMap({
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
   const [showScanlines, setShowScanlines] = useState(false);
   const [showPins, setShowPins] = useState(true);
+  const [currentAssignedZoneId, setCurrentAssignedZoneId] = useState<string | null>(assignedZoneId || null);
+  const [pendingZoneId, setPendingZoneId] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+
+  const handleSetAsMyZone = (zoneId: string) => {
+    setPendingZoneId(zoneId);
+    startTransition(async () => {
+      const res = await selectMyZoneAction(zoneId);
+      if (res.success) {
+        setCurrentAssignedZoneId(zoneId);
+        router.refresh();
+      }
+      setPendingZoneId(null);
+    });
+  };
 
   const completedExpIds = new Set(userCompletions.map((c) => c.experience_id));
 
   function isAssignedZone(zone: Zone | null | undefined): boolean {
-    if (!zone || !assignedZoneId) return false;
-    if (assignedZoneId === zone.id) return true;
+    if (!zone || !currentAssignedZoneId) return false;
+    if (currentAssignedZoneId === zone.id) return true;
     if (zone.slug) {
-      if (assignedZoneId === zone.slug) return true;
-      if (assignedZoneId === `z-${zone.slug}`) return true;
+      if (currentAssignedZoneId === zone.slug) return true;
+      if (currentAssignedZoneId === `z-${zone.slug}`) return true;
       if (
-        assignedZoneId.replace(/^z-/, "").toLowerCase() ===
+        currentAssignedZoneId.replace(/^z-/, "").toLowerCase() ===
         zone.slug.replace(/^z-/, "").toLowerCase()
       )
         return true;
     }
     if (zone.name) {
-      if (assignedZoneId.toLowerCase() === zone.name.toLowerCase()) return true;
+      if (currentAssignedZoneId.toLowerCase() === zone.name.toLowerCase()) return true;
       if (
-        assignedZoneId.replace(/^z-/, "").toLowerCase() ===
+        currentAssignedZoneId.replace(/^z-/, "").toLowerCase() ===
         zone.name.toLowerCase()
       )
         return true;
@@ -374,10 +393,26 @@ export function VenueMap({
                     <span className="text-[10px] uppercase font-black text-primary tracking-wider font-mono">
                       Zone {selectedZone.sort_order} • {landmark.landmarkName}
                     </span>
-                    {isAssignedZone(selectedZone) && (
+                    {isAssignedZone(selectedZone) ? (
                       <span className="text-[10px] font-black text-primary-foreground bg-primary border-2 border-border shadow-[1px_1px_0px_var(--border)] px-2 py-0.5">
                         YOUR ZONE ⭐
                       </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSetAsMyZone(selectedZone.id)}
+                        disabled={isPending}
+                        className="text-[10px] font-mono font-black uppercase text-secondary-foreground bg-secondary hover:brightness-110 px-2.5 py-0.5 border-2 border-border shadow-[2px_2px_0px_var(--border)] active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer flex items-center space-x-1"
+                      >
+                        {isPending && pendingZoneId === selectedZone.id ? (
+                          <>
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                            <span>Joining...</span>
+                          </>
+                        ) : (
+                          <span>🌊 Set as My Zone</span>
+                        )}
+                      </button>
                     )}
                   </div>
                   <h3 className="text-xl font-black text-foreground mt-0.5 font-mono flex items-center gap-2">

@@ -24,9 +24,12 @@ import {
   Sparkles,
   Camera,
   Gamepad2,
+  Mail,
 } from "lucide-react";
 import { formatCoins, formatXP } from "@/lib/utils";
 import { AttendeeSignOutButton } from "@/components/auth/sign-out-button";
+import { EditProfileModal } from "@/components/attendee/edit-profile-modal";
+import { ZoneSelectionBanner } from "@/components/attendee/zone-selection-banner";
 
 export const dynamic = "force-dynamic";
 
@@ -43,6 +46,7 @@ export default async function ProfilePage() {
 
   // Resolve assigned zone name
   let assignedZoneName = "Arnava";
+  const hasSelectedZone = Boolean(session.profile.assigned_zone_id);
   if (session.profile.assigned_zone_id) {
     const foundPz = passportZones.find(
       (pz) =>
@@ -95,17 +99,31 @@ export default async function ProfilePage() {
                 <span className="text-[10px] opacity-70">↗</span>
               </a>
 
+              {/* Email Address */}
+              {session.profile.email && (
+                <div className="flex items-center space-x-1.5 text-xs text-muted-foreground font-mono mt-0.5 truncate">
+                  <Mail className="w-3.5 h-3.5 shrink-0 text-secondary" />
+                  <span className="truncate">{session.profile.email}</span>
+                </div>
+              )}
+
               {/* Club & Assigned Zone */}
               <p className="text-xs text-muted-foreground font-bold mt-1 truncate">
                 {session.profile.club || session.profile.college || "Rotaract District 3192"}
               </p>
 
-              <div className="pt-1.5">
+              <div className="pt-1.5 flex items-center space-x-2 flex-wrap gap-y-1">
                 <span className="inline-flex items-center space-x-1 text-xs font-black text-secondary-foreground bg-secondary border-2 border-border px-2.5 py-0.5 shadow-[2px_2px_0px_var(--border)]">
                   <span>🌊</span>
-                  <span>{assignedZoneName.toUpperCase()}</span>
-                  <span className="text-[9px] font-bold ml-0.5">(YOUR ZONE)</span>
+                  <span>{hasSelectedZone ? assignedZoneName.toUpperCase() : "NO ZONE SELECTED"}</span>
+                  <span className="text-[9px] font-bold ml-0.5">
+                    {hasSelectedZone ? "(YOUR ZONE)" : "(SELECT ZONE)"}
+                  </span>
                 </span>
+                <ZoneSelectionBanner
+                  currentAssignedZoneId={session.profile.assigned_zone_id}
+                  currentZoneName={hasSelectedZone ? assignedZoneName : "None"}
+                />
               </div>
             </div>
           </div>
@@ -133,9 +151,23 @@ export default async function ProfilePage() {
             </div>
           </div>
 
-          {/* Explicit Sign Out Action */}
-          <div className="pt-2 border-t-2 border-border">
-            <AttendeeSignOutButton />
+          {/* Actions: Edit Profile & Sign Out */}
+          <div className="pt-2 border-t-2 border-border flex items-center gap-2">
+            <EditProfileModal
+              initialProfile={{
+                id: session.profile.id,
+                displayName: session.profile.display_name,
+                email: session.profile.email,
+                instagramId: session.profile.instagram_id,
+                assignedZoneId: session.profile.assigned_zone_id,
+                club: session.profile.club,
+                college: session.profile.college,
+                phone: session.profile.phone,
+              }}
+            />
+            <div className="flex-1">
+              <AttendeeSignOutButton />
+            </div>
           </div>
         </div>
 
@@ -213,11 +245,14 @@ export default async function ProfilePage() {
       <div className="lg:col-span-7 space-y-5">
         {/* Section 30: THE 10-METRIC PLAYER STATS GRID */}
         <div className="p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3">
-          <div className="flex items-center space-x-2">
-            <BarChart3 className="w-4 h-4 text-primary" />
-            <h2 className="text-sm sm:text-base font-black text-foreground uppercase tracking-tight">
-              10 Player Statistics
-            </h2>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <BarChart3 className="w-4 h-4 text-primary" />
+              <h2 className="text-sm sm:text-base font-black text-foreground uppercase tracking-tight">
+                10 Player Statistics
+              </h2>
+            </div>
+            <AttendeeSignOutButton variant="badge" label="Logout" />
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2.5">

@@ -42,7 +42,7 @@ export function RegisterClient() {
     club: "",
     instagramId: "",
     registrationId: "",
-    assignedZoneId: "z-arnava",
+    assignedZoneId: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -75,6 +75,10 @@ export function RegisterClient() {
     }
     if (!formData.club.trim()) {
       setErrorMsg("Please enter your Rotaract club name.");
+      return;
+    }
+    if (!formData.assignedZoneId) {
+      setErrorMsg("Please choose your Oceanic Zone to represent in the festival.");
       return;
     }
 
@@ -328,10 +332,10 @@ export function RegisterClient() {
                   <label className="text-xs font-black text-foreground flex items-center justify-between">
                     <span className="flex items-center space-x-1.5">
                       <Waves className="w-3.5 h-3.5 text-primary" />
-                      <span>Assigned VIBE Zone</span>
+                      <span>Choose Your Oceanic Zone *</span>
                     </span>
                     <span className="text-[10px] text-primary font-black font-mono">
-                      6 Official Zones
+                      Select 1 of 6 Zones
                     </span>
                   </label>
 

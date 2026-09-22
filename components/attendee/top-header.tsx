@@ -74,10 +74,14 @@ export function TopHeader({ vibeId, coins, levelName, assignedZoneName, displayN
             {vibeId}
           </span>
           {assignedZoneName && (
-            <span className="hidden sm:inline-flex items-center space-x-1 text-[11px] font-black text-secondary-foreground bg-secondary border-2 border-border shadow-[2px_2px_0px_var(--border)] px-2 py-0.5">
+            <Link
+              href="/app/map"
+              title="View or Change Your Zone"
+              className="hidden sm:inline-flex items-center space-x-1 text-[11px] font-black text-secondary-foreground bg-secondary border-2 border-border shadow-[2px_2px_0px_var(--border)] px-2 py-0.5 hover:brightness-110 active:translate-x-[1px] active:translate-y-[1px] transition-all cursor-pointer"
+            >
               <span>🌊</span>
               <span>{assignedZoneName}</span>
-            </span>
+            </Link>
           )}
         </div>
 
