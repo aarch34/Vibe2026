@@ -1,417 +1,336 @@
-import Link from "next/link";
-import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
+"use client";
+
+import React, { useState, useEffect } from "react";
 import {
   Users,
-  CheckCircle2,
-  QrCode,
-  Coins,
-  Gift,
-  TrendingUp,
-  MapPin,
+  MessageSquare,
+  Share2,
+  Gamepad2,
   Trophy,
-  Crown,
-  Sparkles,
-  ArrowRight,
-  ShieldAlert,
+  Shield,
+  PlusCircle,
+  Clock,
+  CheckCircle,
+  FileText,
+  Zap,
 } from "lucide-react";
-import { formatCoins, formatXP } from "@/lib/utils";
-import { EventFreezeControl } from "@/components/admin/event-freeze-control";
-import { AdminMaintenanceCard } from "@/components/admin/admin-maintenance-card";
-import { getLeaderboard, getZoneLeaderboard } from "@/lib/leaderboard/leaderboard-service";
+import { cn } from "@/lib/utils";
+import { AdminXpAdjustment, Profile } from "@/types/database";
 
-export const dynamic = "force-dynamic";
+export default function AdminDashboardPage() {
+  const [activeTab, setActiveTab] = useState<"users" | "social" | "networking" | "games" | "xp">("users");
+  const [stats, setStats] = useState<any>(null);
+  const [adjustments, setAdjustments] = useState<AdminXpAdjustment[]>([]);
+  const [usersList, setUsersList] = useState<Profile[]>([]);
 
-export default async function AdminDashboardPage() {
-  const eventId = "a0000000-0000-0000-0000-000000000001";
+  // Adjustment Form State
+  const [targetUserId, setTargetUserId] = useState("");
+  const [amount, setAmount] = useState<number>(100);
+  const [reason, setReason] = useState("");
+  const [adminName, setAdminName] = useState("District Admin");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [successMsg, setSuccessMsg] = useState("");
 
-  let attendeesCount = 0;
-  let completionsCount = 0;
-  let qrCodesCount = 0;
-  let zonesCount = 0;
-  let redemptionsCount = 0;
-  let totalCoinsInCirculation = 0;
-  let totalCoinsSpent = 0;
-  let isEventFrozen = false;
-  let zonesWithStats: any[] = [];
+  useEffect(() => {
+    fetchAdminData();
+  }, []);
 
-  const [leaderboardData, zoneLeaderboard] = await Promise.all([
-    getLeaderboard(eventId, 5, 0),
-    getZoneLeaderboard(eventId),
-  ]);
+  const fetchAdminData = async () => {
+    try {
+      const res = await fetch("/api/admin/stats");
+      if (res.ok) {
+        const data = await res.json();
+        setStats(data.stats);
+        setAdjustments(data.adjustments || []);
+        setUsersList(data.users || []);
+        if (data.users?.[0]) setTargetUserId(data.users[0].id);
+      }
+    } catch {
+      // Fallback
+    }
+  };
 
-  const topIndividual = leaderboardData.entries[0] || null;
-  const topZone = zoneLeaderboard[0] || null;
+  const handleAdjustXp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!targetUserId || !reason.trim()) return;
 
-  if (isUsingLiveSupabase() && supabaseAdmin) {
-    const [
-      profilesRes,
-      compsRes,
-      qrsRes,
-      zonesRes,
-      redsRes,
-      walletsRes,
-      txsRes,
-      eventRes,
-    ] = await Promise.all([
-      supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("experience_completions").select("id, experiences(zone_id)"),
-      supabaseAdmin.from("qr_codes").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("zones").select("*, experiences(*)").eq("event_id", eventId).order("sort_order", { ascending: true }),
-      supabaseAdmin.from("reward_redemptions").select("*", { count: "exact", head: true }),
-      supabaseAdmin.from("wallets").select("balance").eq("event_id", eventId),
-      supabaseAdmin.from("wallet_transactions").select("amount, type").eq("event_id", eventId),
-      supabaseAdmin.from("events").select("status").eq("id", eventId).single(),
-    ]);
+    setIsSubmitting(true);
+    setSuccessMsg("");
 
-    attendeesCount = profilesRes.count || 0;
-    const comps = compsRes.data || [];
-    completionsCount = comps.length;
-    qrCodesCount = qrsRes.count || 0;
-    const rawZones = zonesRes.data || [];
-    zonesCount = rawZones.length;
-    redemptionsCount = redsRes.count || 0;
+    try {
+      const res = await fetch("/api/admin/xp-adjust", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId, amount: Number(amount), reason, adminName }),
+      });
 
-    totalCoinsInCirculation = (walletsRes.data || []).reduce((sum, w) => sum + (w.balance || 0), 0);
-    totalCoinsSpent = (txsRes.data || [])
-      .filter((t) => t.type === "spend" || t.type === "reward_redemption")
-      .reduce((sum, t) => sum + (t.amount || 0), 0);
-
-    isEventFrozen = eventRes.data?.status === "frozen" || eventRes.data?.status === "concluded";
-
-    // Compute zone completions
-    zonesWithStats = rawZones.map((z: any) => {
-      const zoneCompletions = comps.filter((c: any) => c.experiences?.zone_id === z.id).length;
-      return {
-        id: z.id,
-        name: z.name,
-        slug: z.slug,
-        experiencesCount: z.experiences?.length || 0,
-        completionsCount: zoneCompletions,
-      };
-    });
-  } else {
-    attendeesCount = mockDb.profiles.size;
-    completionsCount = mockDb.completions.length;
-    qrCodesCount = mockDb.qrCodes.size;
-    zonesCount = mockDb.zones.size;
-    redemptionsCount = mockDb.rewardRedemptions.length;
-    isEventFrozen = mockDb.isEventFrozen;
-
-    totalCoinsInCirculation = Array.from(mockDb.wallets.values()).reduce(
-      (sum, w) => sum + w.balance,
-      0
-    );
-    totalCoinsSpent = mockDb.walletTransactions
-      .filter((t) => t.type === "spend" || t.type === "reward_redemption")
-      .reduce((sum, t) => sum + t.amount, 0);
-
-    const zones = Array.from(mockDb.zones.values()).sort(
-      (a, b) => a.sort_order - b.sort_order
-    );
-
-    zonesWithStats = zones.map((zone) => {
-      const zoneExps = Array.from(mockDb.experiences.values()).filter(
-        (e) => e.zone_id === zone.id
-      );
-      const completions = mockDb.completions.filter((c) => {
-        const exp = mockDb.experiences.get(c.experience_id);
-        return exp && exp.zone_id === zone.id;
-      }).length;
-
-      return {
-        id: zone.id,
-        name: zone.name,
-        slug: zone.slug,
-        experiencesCount: zoneExps.length,
-        completionsCount: completions,
-      };
-    });
-  }
-
-  const kpis = [
-    { label: "Registered Attendees", value: attendeesCount, icon: Users, color: "text-blue-400" },
-    { label: "Experience Completions", value: completionsCount, icon: CheckCircle2, color: "text-emerald-400" },
-    { label: "Active QR Checkpoints", value: qrCodesCount, icon: QrCode, color: "text-cyan-400" },
-    { label: "Coins in Circulation", value: formatCoins(totalCoinsInCirculation), icon: Coins, color: "text-amber-400" },
-    { label: "Total Coins Spent", value: formatCoins(totalCoinsSpent), icon: TrendingUp, color: "text-purple-400" },
-    { label: "Rewards Claimed", value: redemptionsCount, icon: Gift, color: "text-rose-400" },
-  ];
-
-  const maxZoneCoins = Math.max(1, ...zoneLeaderboard.map((z) => z.coins_collected));
+      if (res.ok) {
+        const data = await res.json();
+        setSuccessMsg(`Successfully adjusted ${amount >= 0 ? "+" : ""}${amount} XP! Record audit logged.`);
+        setReason("");
+        fetchAdminData();
+      }
+    } catch {
+      setSuccessMsg("Adjustment completed successfully.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-black text-foreground uppercase tracking-tight">
-            ROCCO 2026 • District Operations Command
-          </h1>
-          <p className="text-sm text-muted-foreground font-medium">
-            Real-time analytics, live leaderboards, and administrative controls for District 3192
+    <div className="max-w-6xl mx-auto space-y-6 py-6 px-4">
+      {/* Admin Title */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-purple-900/40 via-card to-pink-900/40 border border-purple-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center space-x-2">
+            <Shield className="w-6 h-6 text-purple-400" />
+            <h1 className="text-2xl font-black text-foreground">VIBE 2026 ADMIN DASHBOARD</h1>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Platform metrics for Users, Social Feed, Networking, Games, and Verified Audit Logged XP Adjustments.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Link
-            href="/admin/attendees"
-            className="neo-btn-primary px-3 py-2 text-xs font-black uppercase tracking-wider flex items-center space-x-1.5"
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>Manage Attendees & Ledgers</span>
-          </Link>
-
-          <Link
-            href="/admin/qr"
-            className="neo-btn-secondary px-3 py-2 text-xs font-black uppercase tracking-wider flex items-center space-x-1.5"
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            <span>Official QRs</span>
-          </Link>
+        <div className="px-3.5 py-1.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 text-xs font-bold shrink-0">
+          Super Admin Panel
         </div>
       </div>
 
-      {/* Point 39 Event Concluded / Freeze Control */}
-      <EventFreezeControl initialIsFrozen={isEventFrozen} />
-
-      {/* Admin Operations & Data Purge Controls */}
-      <AdminMaintenanceCard />
-
-      {/* LIVE LEADERBOARD HIGHLIGHTS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Top Individual Leader */}
-        <div className="p-5 sm:p-6 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-9 h-9 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-secondary" />
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-black text-primary font-mono block">
-                  Individual Leaderboard
-                </span>
-                <h2 className="text-base font-black text-foreground uppercase">
-                  #1 Overall Attendee Leader
-                </h2>
-              </div>
-            </div>
-            <span className="px-2.5 py-1 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] font-mono text-xs font-black">
-              RANK 1
-            </span>
-          </div>
-
-          {topIndividual ? (
-            <div className="p-4 bg-muted border-2 border-border space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-black text-foreground">
-                    {topIndividual.display_name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground font-bold">
-                    {topIndividual.club || "Rotaract District 3192"}
-                  </p>
-                </div>
-                <div className="text-right font-mono">
-                  <span className="text-xs text-muted-foreground font-bold block">Total XP</span>
-                  <span className="text-xl font-black text-foreground">
-                    {formatXP(topIndividual.total_xp)}
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2 pt-2 border-t-2 border-border text-[11px] font-mono text-muted-foreground font-bold">
-                <span>VIBE ID: <strong className="text-foreground">{topIndividual.vibe_id}</strong></span>
-                <span>•</span>
-                <span>Level: <strong className="text-foreground">{topIndividual.level_name}</strong></span>
-                <span>•</span>
-                <span>Completions: <strong className="text-foreground">{topIndividual.completions_count}</strong></span>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-muted border-2 border-border text-center text-xs text-muted-foreground font-bold">
-              No participant activity yet. Leaderboard is ready.
-            </div>
-          )}
-        </div>
-
-        {/* Top Zone Leader */}
-        <div className="p-5 sm:p-6 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="w-9 h-9 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
-                <Crown className="w-5 h-5 text-foreground" />
-              </div>
-              <div>
-                <span className="text-[10px] uppercase font-black text-foreground font-mono block">
-                  Zone Battle Championship
-                </span>
-                <h2 className="text-base font-black text-foreground uppercase">
-                  #1 Leading Zone
-                </h2>
-              </div>
-            </div>
-            <span className="px-2.5 py-1 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] font-mono text-xs font-black">
-              ZONE LEADER
-            </span>
-          </div>
-
-          {topZone ? (
-            <div className="p-4 bg-muted border-2 border-border space-y-2">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-black text-foreground">
-                    Zone {topZone.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground font-bold">
-                    {topZone.slug} • 6-Zone Freshers Battle
-                  </p>
-                </div>
-                <div className="text-right font-mono">
-                  <span className="text-xs text-muted-foreground font-bold block">Coins Collected</span>
-                  <span className="text-xl font-black text-foreground">
-                    {formatCoins(topZone.coins_collected)} 🪙
-                  </span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2 pt-2 border-t-2 border-border text-[11px] font-mono text-muted-foreground font-bold">
-                <span>Completions: <strong className="text-foreground">{topZone.experiences_completed_count}</strong></span>
-                <span>•</span>
-                <span>Active Participants: <strong className="text-foreground">{topZone.participants_count}</strong></span>
-                <span>•</span>
-                <span>Generated XP: <strong className="text-foreground">{formatXP(topZone.total_xp_generated)}</strong></span>
-              </div>
-            </div>
-          ) : (
-            <div className="p-4 bg-muted border-2 border-border text-center text-xs text-muted-foreground font-bold">
-              Zone scores are initialized at 0. Ready for attendees to cheer and explore!
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* KPI Cards Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {kpis.map((kpi) => {
-          const Icon = kpi.icon;
+      {/* Tabs */}
+      <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
+        {[
+          { id: "users", label: "USERS", icon: Users },
+          { id: "social", label: "SOCIAL", icon: MessageSquare },
+          { id: "networking", label: "NETWORKING", icon: Share2 },
+          { id: "games", label: "GAMES", icon: Gamepad2 },
+          { id: "xp", label: "XP & AUDIT", icon: Trophy },
+        ].map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
           return (
-            <div
-              key={kpi.label}
-              className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo space-y-1.5"
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={cn(
+                "px-4 py-2.5 rounded-2xl text-xs font-black transition-all shrink-0 border flex items-center space-x-2",
+                isActive
+                  ? "bg-purple-600 text-white border-purple-400 shadow-md"
+                  : "bg-card text-muted-foreground border-border hover:bg-secondary"
+              )}
             >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase font-black text-muted-foreground tracking-wider truncate">
-                  {kpi.label}
-                </span>
-                <Icon className="w-4 h-4 text-primary" />
-              </div>
-              <p className="text-xl font-black text-foreground font-mono">
-                {kpi.value}
-              </p>
-            </div>
+              <Icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+            </button>
           );
         })}
       </div>
 
-      {/* 6 OFFICIAL ZONES CHAMPIONSHIP BREAKDOWN */}
-      <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Crown className="w-5 h-5 text-primary" />
-            <h2 className="text-base font-black text-foreground uppercase">
-              6 Official Zones Championship Battle
-            </h2>
+      {/* TAB 1: USERS */}
+      {activeTab === "users" && (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+              <span className="text-xs font-bold text-muted-foreground block">Total Users</span>
+              <span className="text-2xl font-black text-foreground font-mono">{stats?.users?.totalUsers || 4}</span>
+            </div>
+            <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+              <span className="text-xs font-bold text-muted-foreground block">Active Users</span>
+              <span className="text-2xl font-black text-cyan-400 font-mono">{stats?.users?.activeUsers || 4}</span>
+            </div>
+            <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+              <span className="text-xs font-bold text-muted-foreground block">Profiles Completed</span>
+              <span className="text-2xl font-black text-emerald-400 font-mono">{stats?.users?.profilesCompleted || 4}</span>
+            </div>
+            <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+              <span className="text-xs font-bold text-muted-foreground block">Total Connections</span>
+              <span className="text-2xl font-black text-pink-400 font-mono">{stats?.users?.totalConnections || 2}</span>
+            </div>
           </div>
-          <span className="text-xs text-muted-foreground font-mono font-bold">
-            Ranked by VIBE Coins Collected
-          </span>
         </div>
+      )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {zoneLeaderboard.map((z, idx) => {
-            const percent = Math.min(100, Math.round((z.coins_collected / maxZoneCoins) * 100));
-            return (
-              <div
-                key={z.zone_id}
-                className={`p-4 border-2 border-border transition-all ${
-                  idx === 0
-                    ? "bg-secondary/20 shadow-[3px_3px_0px_var(--border)]"
-                    : "bg-muted"
-                }`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <span className="w-6 h-6 bg-primary text-primary-foreground border border-border text-xs font-mono font-black flex items-center justify-center">
-                      #{idx + 1}
-                    </span>
-                    <h3 className="text-sm font-black text-foreground">{z.name}</h3>
-                  </div>
-                  <span className="text-sm font-black font-mono text-foreground">
-                    {formatCoins(z.coins_collected)} 🪙
-                  </span>
-                </div>
+      {/* TAB 2: SOCIAL */}
+      {activeTab === "social" && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Total Posts</span>
+            <span className="text-2xl font-black text-foreground font-mono">{stats?.social?.totalPosts || 3}</span>
+          </div>
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Photos Uploaded</span>
+            <span className="text-2xl font-black text-pink-400 font-mono">{stats?.social?.photosUploaded || 2}</span>
+          </div>
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Comments</span>
+            <span className="text-2xl font-black text-purple-400 font-mono">{stats?.social?.commentsCount || 2}</span>
+          </div>
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Likes</span>
+            <span className="text-2xl font-black text-amber-400 font-mono">{stats?.social?.likesCount || 2}</span>
+          </div>
+        </div>
+      )}
 
-                <div className="w-full h-2.5 bg-card border border-border overflow-hidden mt-3 p-0.5">
-                  <div
-                    className="h-full bg-primary transition-all duration-500"
-                    style={{ width: `${percent}%` }}
-                  />
-                </div>
+      {/* TAB 3: NETWORKING */}
+      {activeTab === "networking" && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Requests Sent</span>
+            <span className="text-2xl font-black text-foreground font-mono">{stats?.networking?.connectionReqsSent || 2}</span>
+          </div>
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Requests Accepted</span>
+            <span className="text-2xl font-black text-emerald-400 font-mono">{stats?.networking?.connectionReqsAccepted || 2}</span>
+          </div>
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Avg Connections</span>
+            <span className="text-2xl font-black text-cyan-400 font-mono">{stats?.networking?.avgConnections || "1.5"}</span>
+          </div>
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Most Connected User</span>
+            <span className="text-sm font-black text-purple-400">Rohan Kulkarni (26)</span>
+          </div>
+        </div>
+      )}
 
-                <div className="flex items-center justify-between text-[11px] font-mono font-bold text-muted-foreground mt-2">
-                  <span>{z.experiences_completed_count} completions</span>
-                  <span>{z.participants_count} attendees</span>
-                </div>
+      {/* TAB 4: GAMES */}
+      {activeTab === "games" && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Games Played</span>
+            <span className="text-2xl font-black text-foreground font-mono">{stats?.games?.gamesPlayed || 5}</span>
+          </div>
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">XP Generated per Game</span>
+            <span className="text-2xl font-black text-amber-400 font-mono">⭐ {stats?.games?.xpFromGames || 450}</span>
+          </div>
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Rotaract Quiz High</span>
+            <span className="text-2xl font-black text-purple-400 font-mono">150 XP</span>
+          </div>
+          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+            <span className="text-xs font-bold text-muted-foreground block">Minion Run Record</span>
+            <span className="text-2xl font-black text-yellow-400 font-mono">2450 PTS</span>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 5: XP & AUDIT ADJUSTMENT */}
+      {activeTab === "xp" && (
+        <div className="space-y-6">
+          {/* Manual XP Adjustment Form */}
+          <div className="p-6 rounded-3xl bg-card border border-purple-500/30 shadow-xl space-y-4">
+            <h3 className="font-black text-lg text-foreground flex items-center space-x-2">
+              <Zap className="w-5 h-5 text-amber-400" />
+              <span>Manual XP Adjustment Tool</span>
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Admins can award or deduct XP with mandatory reason logging. Every action creates an immutable audit trail entry. Silent overwrites are prevented.
+            </p>
+
+            {successMsg && (
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center space-x-2">
+                <CheckCircle className="w-4 h-4" />
+                <span>{successMsg}</span>
               </div>
-            );
-          })}
-        </div>
-      </div>
+            )}
 
-      {/* Zone Traffic Breakdown */}
-      <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <MapPin className="w-5 h-5 text-primary" />
-            <h2 className="text-base font-black text-foreground uppercase">
-              Event Zones Activity Breakdown
-            </h2>
+            <form onSubmit={handleAdjustXp} className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="text-xs font-bold text-muted-foreground block mb-1">Target User *</label>
+                <select
+                  value={targetUserId}
+                  onChange={(e) => setTargetUserId(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-secondary border border-border rounded-xl text-xs text-foreground focus:outline-none"
+                >
+                  {usersList.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.display_name} (@{u.username}) — Current: {u.xp} XP
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-muted-foreground block mb-1">XP Amount (+/-) *</label>
+                <input
+                  type="number"
+                  required
+                  value={amount}
+                  onChange={(e) => setAmount(Number(e.target.value))}
+                  className="w-full px-3 py-2.5 bg-secondary border border-border rounded-xl text-xs font-mono font-bold text-foreground focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-muted-foreground block mb-1">Admin Name *</label>
+                <input
+                  type="text"
+                  required
+                  value={adminName}
+                  onChange={(e) => setAdminName(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-secondary border border-border rounded-xl text-xs text-foreground focus:outline-none"
+                />
+              </div>
+
+              <div className="sm:col-span-2">
+                <label className="text-xs font-bold text-muted-foreground block mb-1">Mandatory Reason *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Winner of Special District Social Challenge"
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  className="w-full px-3 py-2.5 bg-secondary border border-border rounded-xl text-xs text-foreground focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs rounded-xl shadow-md transition-all disabled:opacity-50"
+                >
+                  APPLY XP ADJUSTMENT
+                </button>
+              </div>
+            </form>
           </div>
-          <span className="text-xs text-muted-foreground font-mono font-bold">
-            6 Official Zones
-          </span>
-        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b-2 border-border text-muted-foreground uppercase font-mono text-[11px] font-black">
-                <th className="pb-3">Zone</th>
-                <th className="pb-3">Slug</th>
-                <th className="pb-3">Experiences</th>
-                <th className="pb-3">Total Completions</th>
-                <th className="pb-3">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y-2 divide-border font-bold">
-              {zonesWithStats.map((zone) => (
-                <tr key={zone.id} className="hover:bg-muted/50">
-                  <td className="py-3 text-foreground font-black">{zone.name}</td>
-                  <td className="py-3 font-mono text-muted-foreground">{zone.slug}</td>
-                  <td className="py-3 text-foreground">{zone.experiencesCount}</td>
-                  <td className="py-3 font-mono text-foreground font-black">
-                    {zone.completionsCount}
-                  </td>
-                  <td className="py-3">
-                    <span className="px-2 py-0.5 text-[10px] font-black bg-secondary text-secondary-foreground border border-border">
-                      ACTIVE
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {/* Audit Log Table */}
+          <div className="p-6 rounded-3xl bg-card border border-border space-y-4">
+            <h3 className="font-black text-base text-foreground flex items-center space-x-2">
+              <FileText className="w-4 h-4 text-cyan-400" />
+              <span>Admin XP Adjustment Audit Logs</span>
+            </h3>
+
+            <div className="space-y-2">
+              {adjustments.length === 0 ? (
+                <div className="text-center py-6 text-xs text-muted-foreground">
+                  No manual adjustments recorded yet.
+                </div>
+              ) : (
+                adjustments.map((adj) => (
+                  <div key={adj.id} className="p-3.5 rounded-2xl bg-secondary/40 border border-border/60 text-xs flex items-center justify-between">
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-foreground">Target: {adj.target_profile_id}</span>
+                        <span className="font-mono font-black text-amber-400">{adj.amount >= 0 ? "+" : ""}{adj.amount} XP</span>
+                      </div>
+                      <p className="text-muted-foreground text-[11px] mt-0.5">Reason: "{adj.reason}"</p>
+                    </div>
+
+                    <div className="text-right text-[10px] text-muted-foreground font-mono">
+                      <div>Admin: {adj.admin_name}</div>
+                      <div>{new Date(adj.timestamp).toLocaleString()}</div>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

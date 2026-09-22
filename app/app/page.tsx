@@ -1,521 +1,159 @@
+import React from "react";
 import Link from "next/link";
-import {
-  Coins,
-  Sparkles,
-  Compass,
-  QrCode,
-  Trophy,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
-  Flame,
-  ChevronRight,
-  Award,
-  Info,
-  Gift,
-  Gamepad2,
-  Camera,
-  Waves,
-  Users,
-} from "lucide-react";
+import { Sparkles, Gamepad2, Users, ArrowRight, UserPlus, Instagram, Flame } from "lucide-react";
 import { getCurrentUserSession } from "@/lib/auth/session";
-import { getWalletSummary } from "@/lib/wallet/wallet-service";
-import {
-  getUserProgression,
-  getUserPlayerStats,
-  getCachedActiveExperiences,
-  getCachedEventZones,
-} from "@/lib/gameplay/progression-service";
-import { getUserLeaderboardRank } from "@/lib/leaderboard/leaderboard-service";
-import { mockDb } from "@/lib/db/supabase";
-import { formatCoins, formatXP } from "@/lib/utils";
-import { ZoneSelectionBanner } from "@/components/attendee/zone-selection-banner";
+import { mockDb, calculateLevel } from "@/lib/db/mock-store";
+import { VibeFeed } from "@/components/social/vibe-feed";
+import { SocialChallengesCard } from "@/components/social/challenges-card";
 
 export const dynamic = "force-dynamic";
 
 export default async function AttendeeHomePage() {
   const session = await getCurrentUserSession();
+  const currentProfile = mockDb.getProfile(session.profile.id) || session.profile;
+  const levelInfo = calculateLevel(currentProfile.xp);
 
-  // Run all required metrics in parallel (with instant server-side memory caching)
-  const [walletSummary, progression, playerStats, userRank, allExperiences, zones] =
-    await Promise.all([
-      getWalletSummary(session.eventId, session.profile.id),
-      getUserProgression(session.eventId, session.profile.id),
-      getUserPlayerStats(session.profile.id),
-      getUserLeaderboardRank(session.eventId, session.profile.id),
-      getCachedActiveExperiences(session.eventId),
-      getCachedEventZones(session.eventId),
-    ]);
+  // Level progress math
+  const minXp = levelInfo.min_xp;
+  const maxXp = levelInfo.max_xp || 3000;
+  const currentLevelXp = Math.max(0, currentProfile.xp - minXp);
+  const totalLevelRange = Math.max(1, maxXp - minXp);
+  const progressPercent = Math.min(100, Math.floor((currentLevelXp / totalLevelRange) * 100));
 
-  // Resolve assigned zone name
-  let assignedZoneName = "Arnava";
-  const hasSelectedZone = Boolean(session.profile.assigned_zone_id);
-  if (session.profile.assigned_zone_id) {
-    const foundZone = zones.find(
-      (z) => z.id === session.profile.assigned_zone_id || z.slug === session.profile.assigned_zone_id
-    );
-    if (foundZone) {
-      assignedZoneName = foundZone.name;
-    } else {
-      const memZone = mockDb.zones.get(session.profile.assigned_zone_id);
-      if (memZone) assignedZoneName = memZone.name;
-    }
-  }
-
-  // 4 Featured Experiences from the official catalog
-  let featuredExperiences: any[] = allExperiences.slice(0, 4);
-
-  if (
-    !featuredExperiences ||
-    featuredExperiences.length === 0 ||
-    !featuredExperiences.some(
-      (e) => e.slug?.includes("arnava") || e.slug?.includes("taranaga")
-    )
-  ) {
-    featuredExperiences = Array.from(mockDb.experiences.values())
-      .filter(
-        (e) =>
-          e.is_active &&
-          e.zone_id.startsWith("z-") &&
-          e.zone_id !== "z-arcade" &&
-          e.zone_id !== "z-stage"
-      )
-      .slice(0, 4)
-      .map((e) => ({
-        ...e,
-        zones: { name: mockDb.zones.get(e.zone_id)?.name },
-        sponsors: e.sponsor_id ? { name: mockDb.sponsors.get(e.sponsor_id)?.name } : null,
-      }));
-  }
-
-  const isNewRegistration = walletSummary.transactions.length <= 1;
+  const posts = mockDb.getPosts();
+  const challenges = mockDb.getChallenges();
+  const completedChallengeIds = mockDb.getUserCompletedChallengeIds(currentProfile.id);
+  const suggestedPeople = mockDb.searchProfiles("", "all", "all", "all", currentProfile.id).slice(0, 4);
 
   return (
     <div className="space-y-6">
-      {/* 0. Zone Selection Prompt if attendee hasn't picked their oceanic zone yet */}
-      {!hasSelectedZone && (
-        <ZoneSelectionBanner isUnassigned={true} />
-      )}
-
-      {/* 1. Welcome to VIBE Banner (Loaded with 500 Coins) */}
-      {isNewRegistration && (
-        <div className="relative overflow-hidden p-4 sm:p-5 bg-card text-card-foreground border-2 border-border shadow-neo">
-          <div className="flex items-start space-x-3 sm:space-x-4">
-            <span className="text-2xl sm:text-3xl">🎉</span>
-            <div className="space-y-1">
-              <h2 className="text-sm sm:text-base font-black text-foreground tracking-tight uppercase">
-                Welcome to VIBE, {session.profile.display_name}!
-              </h2>
-              <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed font-medium">
-                Your VIBE Wallet has been loaded with <strong className="text-foreground font-black font-mono">500 VIBE Coins</strong>.{" "}
-                {hasSelectedZone ? (
-                  <>You are part of <span className="bg-secondary text-secondary-foreground px-2 py-0.5 font-black border border-border">🌊 {assignedZoneName.toUpperCase()}</span>.</>
-                ) : (
-                  <>Please select your oceanic zone below to join the 6-zone championship battle!</>
-                )}{" "}
-                Explore zones, play games, and conquer the festival leaderboard!
-              </p>
-              <div className="pt-1 flex items-center space-x-2 text-[10px] sm:text-xs font-black tracking-wider uppercase text-muted-foreground">
-                <span>Explore</span> • <span>Experience</span> • <span>Earn</span> • <span>Spend</span> • <span>Repeat</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Responsive Grid: 2 Columns on Desktop */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left Column: Attendee Identity & Core Metrics */}
-        <div className="lg:col-span-5 space-y-5">
-          {/* Attendee Profile VIP Festival Pass */}
-          <div className="vip-hologram bg-card text-card-foreground border-2 border-border shadow-[5px_5px_0px_#000] relative overflow-hidden transition-all">
-            {/* Top Lanyard & Holographic Header Strip */}
-            <div className="bg-gradient-to-r from-[#FF1B7A] via-[#8B5CF6] to-[#00F0FF] p-2 flex items-center justify-between text-[10px] font-black tracking-widest uppercase text-white font-mono">
-              <span className="flex items-center space-x-1.5">
-                <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                <span>OFFICIAL VIBE 2026 PASS</span>
-              </span>
-              <span>ROTARACT 3192</span>
-            </div>
-
-            <div className="p-5 space-y-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <span className="text-[10px] font-mono font-black text-muted-foreground uppercase tracking-widest block">
-                    ATTENDEE CREDENTIAL
-                  </span>
-                  <h1 className="text-xl sm:text-2xl font-black text-foreground tracking-tight uppercase mt-0.5">
-                    {session.profile.display_name.toUpperCase()}
-                  </h1>
-                  <div className="flex items-center space-x-2 mt-2 flex-wrap gap-y-1">
-                    <span className="inline-flex items-center space-x-1.5 text-xs font-black text-white bg-secondary border-2 border-border px-3 py-1 shadow-[2px_2px_0px_var(--border)]">
-                      <span>🌊</span>
-                      <span>{hasSelectedZone ? assignedZoneName.toUpperCase() : "NO ZONE SELECTED"}</span>
-                      <span className="text-[9px] font-mono text-cyan-300 ml-1">
-                        {hasSelectedZone ? "(YOUR ZONE)" : "(CLICK TO CHOOSE)"}
-                      </span>
-                    </span>
-                    <ZoneSelectionBanner
-                      currentAssignedZoneId={session.profile.assigned_zone_id}
-                      currentZoneName={hasSelectedZone ? assignedZoneName : "None"}
-                    />
-                  </div>
-                  <p className="text-xs text-muted-foreground font-bold mt-1.5">
-                    {session.profile.club || session.profile.college || "Rotaract District 3192"}
-                  </p>
-                </div>
-
-                <div className="flex flex-col items-end">
-                  <span className="text-xs font-mono font-black text-primary-foreground bg-primary border-2 border-border px-3 py-1 shadow-[2px_2px_0px_var(--border)]">
-                    {session.profile.vibe_id}
-                  </span>
-                  {/* Decorative Mini Barcode */}
-                  <div className="mt-2.5 flex items-end space-x-0.5 opacity-70">
-                    <div className="w-0.5 h-6 bg-foreground" />
-                    <div className="w-1 h-6 bg-foreground" />
-                    <div className="w-0.5 h-6 bg-foreground" />
-                    <div className="w-1.5 h-6 bg-foreground" />
-                    <div className="w-0.5 h-6 bg-foreground" />
-                    <div className="w-0.5 h-6 bg-foreground" />
-                    <div className="w-1 h-6 bg-foreground" />
-                    <div className="w-0.5 h-6 bg-foreground" />
-                    <div className="w-1.5 h-6 bg-foreground" />
-                    <div className="w-0.5 h-6 bg-foreground" />
-                  </div>
-                  <span className="text-[9px] font-mono font-bold text-muted-foreground mt-0.5">
-                    VERIFIED
-                  </span>
-                </div>
-              </div>
-
-              {/* XP & Level Progression Bar */}
-              <div className="pt-3 border-t-2 border-border">
-                <div className="flex items-center justify-between text-xs mb-1.5 font-black">
-                  <div className="flex items-center space-x-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-[#00F0FF]" />
-                    <span className="text-foreground tracking-wide font-mono">
-                      LEVEL {progression.currentLevel.sort_order} • {progression.currentLevel.name.toUpperCase()}
-                    </span>
-                  </div>
-                  <span className="font-mono text-foreground font-black">
-                    {formatXP(progression.totalXP)}
-                    {progression.nextLevel && (
-                      <span className="text-muted-foreground text-[10px]">
-                        {" "}
-                        / {formatXP(progression.nextLevel.min_xp)}
-                      </span>
-                    )}
-                  </span>
-                </div>
-
-                {/* Segmented Power Meter Bar */}
-                <div className="w-full h-3.5 bg-muted border-2 border-border p-0.5 overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-[#FF1B7A] via-[#8B5CF6] to-[#00F0FF] transition-all duration-500"
-                    style={{ width: `${Math.max(5, progression.progressPercent)}%` }}
-                  />
-                </div>
-
-                {progression.nextLevel && (
-                  <p className="text-[10px] text-muted-foreground mt-1.5 text-right font-bold">
-                    {formatXP(progression.xpToNextLevel)} XP needed for{" "}
-                    <span className="text-[#00F0FF] font-black font-mono">
-                      {progression.nextLevel.name}
-                    </span>
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Section 4: 4 PROGRESS COUNTERS */}
-          <div className="grid grid-cols-2 gap-2.5">
-            <div className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#00F0FF] transition-all flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform">
-                🗺️
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Zone Progress</span>
-                <span className="text-base font-black font-mono text-foreground">
-                  {playerStats.zonesVisitedCount} / 6
-                </span>
-                <span className="text-[9px] text-[#00F0FF] font-bold block">explored</span>
-              </div>
-            </div>
-
-            <div className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#8B5CF6] transition-all flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform">
-                ⚡
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Experiences</span>
-                <span className="text-base font-black font-mono text-foreground">
-                  {playerStats.experiencesCompletedCount}
-                </span>
-                <span className="text-[9px] text-[#A78BFA] font-bold block">completed</span>
-              </div>
-            </div>
-
-            <div className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#FF1B7A] transition-all flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform">
-                📸
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Stalls</span>
-                <span className="text-base font-black font-mono text-foreground">
-                  {playerStats.stallsVisitedCount}
-                </span>
-                <span className="text-[9px] text-[#FF1B7A] font-bold block">visited</span>
-              </div>
-            </div>
-
-            <div className="p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#F59E0B] transition-all flex items-center space-x-3 group">
-              <div className="w-10 h-10 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center text-base shrink-0 group-hover:scale-105 transition-transform">
-                🎮
-              </div>
-              <div className="min-w-0">
-                <span className="text-[10px] uppercase font-black text-muted-foreground block truncate">Games</span>
-                <span className="text-base font-black font-mono text-foreground">
-                  {playerStats.gamesPlayedCount}
-                </span>
-                <span className="text-[9px] text-[#FBBF24] font-bold block">played</span>
-              </div>
-            </div>
-          </div>
-
-          {/* THE TWO CORE WALLET & XP PILLARS */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Metric 1: Spendable Coins */}
-            <Link
-              href="/app/profile"
-              className="p-4 bg-card text-card-foreground border-2 border-border shadow-[4px_4px_0px_var(--border)] hover:shadow-neon-gold hover:border-[#F59E0B] active:translate-x-[2px] active:translate-y-[2px] transition-all flex flex-col justify-between group"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-wider font-black text-[#F59E0B] flex items-center space-x-1">
-                  <span>🪙</span>
-                  <span>VIBE Coins</span>
-                </span>
-                <Coins className="w-4 h-4 text-[#F59E0B] group-hover:scale-125 transition-transform" />
-              </div>
-              <div className="mt-3">
-                <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
-                  {formatCoins(walletSummary.wallet.balance)}
-                </span>
-                <p className="text-[10px] text-foreground font-black mt-1 flex items-center space-x-1">
-                  <span className="group-hover:translate-x-1 transition-transform">View Wallet Ledger →</span>
-                </p>
-              </div>
-            </Link>
-
-            {/* Metric 2: Overall XP */}
-            <Link
-              href="/app/leaderboard"
-              className="p-4 bg-card text-card-foreground border-2 border-border shadow-[4px_4px_0px_var(--border)] hover:shadow-neon-pink hover:border-[#FF1B7A] active:translate-x-[2px] active:translate-y-[2px] transition-all flex flex-col justify-between group"
-            >
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] uppercase tracking-wider font-black text-[#FF1B7A] flex items-center space-x-1">
-                  <span>⭐</span>
-                  <span>VIBE XP</span>
-                </span>
-                <Sparkles className="w-4 h-4 text-[#FF1B7A] group-hover:scale-125 transition-transform" />
-              </div>
-              <div className="mt-3">
-                <span className="text-2xl sm:text-3xl font-black font-mono text-foreground">
-                  {formatXP(progression.totalXP)}
-                </span>
-                <p className="text-[10px] text-foreground font-black mt-1 flex items-center space-x-1">
-                  <span className="group-hover:translate-x-1 transition-transform">Rank #{userRank?.rank || 1} • Leaderboard →</span>
-                </p>
-              </div>
-            </Link>
-          </div>
-
-          {/* Strategic Principle Callout */}
-          <div className="p-3.5 bg-card/90 border-2 border-border shadow-[2px_2px_0px_var(--border)] text-foreground flex items-start space-x-2.5">
-            <Info className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
-            <p className="text-[11px] sm:text-xs text-foreground leading-relaxed font-bold">
-              <span className="font-black text-[#00F0FF] underline">Zone Battle Rule:</span> Any VIBE Coins you spend on experiences in your zone directly power your zone championship points!
+      {/* Welcome & Level Progress Header */}
+      <div className="p-6 rounded-3xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 border border-pink-500/20 shadow-xl relative overflow-hidden space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-400">{currentProfile.display_name}</span> 👋
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Rotaract District 3192 Pre-Event Social Hub • Connect, post & level up!
             </p>
           </div>
+
+          <div className="flex items-center space-x-3 shrink-0">
+            <div className="p-3 rounded-2xl bg-card border border-border text-center">
+              <span className="text-xs font-extrabold uppercase text-muted-foreground block">Connections</span>
+              <span className="text-lg font-black text-cyan-400 font-mono">{currentProfile.connections_count}</span>
+            </div>
+            <div className="p-3 rounded-2xl bg-card border border-border text-center">
+              <span className="text-xs font-extrabold uppercase text-muted-foreground block">XP Balance</span>
+              <span className="text-lg font-black text-amber-400 font-mono">⭐ {currentProfile.xp}</span>
+            </div>
+          </div>
         </div>
 
-        {/* Right Column: 4 Primary Action Buttons & Featured Missions */}
-        <div className="lg:col-span-7 space-y-5">
-          {/* Networking & Instagram Friends Banner */}
-          <Link
-            href="/app/friends"
-            className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo hover:bg-muted active:translate-x-[2px] active:translate-y-[2px] transition-all flex items-center justify-between group"
-          >
-            <div className="flex items-center space-x-3.5 min-w-0">
-              <div className="w-10 h-10 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0">
-                <Users className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center space-x-2">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-primary">Networking</span>
-                  <span className="text-[10px] font-mono px-1.5 py-0.5 bg-secondary text-secondary-foreground border border-border font-black">+25 XP Each</span>
-                </div>
-                <h3 className="text-xs sm:text-sm font-black text-foreground group-hover:text-primary transition-colors truncate">
-                  Connect & Follow Friends on Instagram
-                </h3>
-                <p className="text-[11px] text-muted-foreground font-medium truncate">
-                  Find fellow attendees, follow on IG & level up together
-                </p>
-              </div>
+        {/* Level Progress Bar */}
+        <div className="space-y-1.5 pt-2">
+          <div className="flex items-center justify-between text-xs font-extrabold">
+            <span className="flex items-center space-x-1.5 text-foreground">
+              <span>{levelInfo.badge}</span>
+              <span>{levelInfo.level_name}</span>
+            </span>
+            <span className="text-muted-foreground font-mono text-[11px]">
+              {currentProfile.xp} / {levelInfo.max_xp ? `${levelInfo.max_xp} XP` : "MAX"}
+            </span>
+          </div>
+          <div className="w-full h-3 rounded-full bg-secondary/80 overflow-hidden p-0.5 border border-border/50">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 transition-all duration-500 shadow-sm"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Suggested Connections Carousel / Preview */}
+      {suggestedPeople.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-cyan-400" />
+              <h3 className="font-black text-sm text-foreground">Suggested People to Meet</h3>
             </div>
-            <div className="neo-btn-primary px-3 py-1.5 text-xs font-black uppercase tracking-wider shrink-0 ml-2">
-              Connect →
-            </div>
-          </Link>
-
-          {/* Section 4: THE FOUR PRIMARY ACTION BUTTONS */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
             <Link
-              href="/app/map"
-              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#00F0FF] hover:shadow-neon-cyan active:translate-x-[2px] active:translate-y-[2px] transition-all group"
+              href="/app/discover"
+              className="text-xs font-bold text-pink-400 hover:underline flex items-center space-x-1"
             >
-              <div className="w-10 h-10 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <Compass className="w-5 h-5 text-white" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-xs font-black text-foreground leading-tight truncate uppercase">Explore Zones</h2>
-                <p className="text-[10px] text-[#00F0FF] font-mono font-bold truncate">6 Arenas</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/app/games"
-              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#8B5CF6] hover:shadow-neon-purple active:translate-x-[2px] active:translate-y-[2px] transition-all group"
-            >
-              <div className="w-10 h-10 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <Gamepad2 className="w-5 h-5 text-white" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-xs font-black text-foreground leading-tight truncate uppercase">Play Games</h2>
-                <p className="text-[10px] text-[#A78BFA] font-mono font-bold truncate">4 Mini-Games</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/app/scan"
-              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#FF1B7A] hover:shadow-neon-pink active:translate-x-[2px] active:translate-y-[2px] transition-all group"
-            >
-              <div className="w-10 h-10 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <QrCode className="w-5 h-5 text-white" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-xs font-black text-foreground leading-tight truncate uppercase">Scan Check-in</h2>
-                <p className="text-[10px] text-[#FF1B7A] font-mono font-bold truncate">QR Scanner</p>
-              </div>
-            </Link>
-
-            <Link
-              href="/app/leaderboard"
-              className="flex items-center space-x-3 p-3.5 bg-card text-card-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] hover:border-[#F59E0B] hover:shadow-neon-gold active:translate-x-[2px] active:translate-y-[2px] transition-all group"
-            >
-              <div className="w-10 h-10 bg-[#F59E0B] text-black border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform">
-                <Trophy className="w-5 h-5" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-xs font-black text-foreground leading-tight truncate uppercase">Leaderboard</h2>
-                <p className="text-[10px] text-[#FBBF24] font-mono font-bold truncate">Live Ranks</p>
-              </div>
+              <span>View All</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          {/* Quick Ways to Earn VIBE Coins (Section 9) */}
-          <div className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-black text-foreground uppercase tracking-wider flex items-center space-x-1.5">
-                <Coins className="w-4 h-4 text-foreground" />
-                <span>Ways to Earn More Coins</span>
-              </span>
-              <Link href="/app/quests" className="neo-btn-card px-2.5 py-1 text-xs font-black">
-                View Quests →
-              </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-bold">
-              <div className="p-2.5 bg-muted border-2 border-border">
-                <span className="text-foreground font-black font-mono block">+50 VIBE</span>
-                <span className="text-[10px] text-muted-foreground font-bold">Discover new zone</span>
-              </div>
-              <div className="p-2.5 bg-muted border-2 border-border">
-                <span className="text-foreground font-black font-mono block">+25 VIBE</span>
-                <span className="text-[10px] text-muted-foreground font-bold">Stall photo approve</span>
-              </div>
-              <div className="p-2.5 bg-muted border-2 border-border">
-                <span className="text-foreground font-black font-mono block">+100-500 VIBE</span>
-                <span className="text-[10px] text-muted-foreground font-bold">Games & Hidden QRs</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Featured Zone Missions */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Flame className="w-4 h-4 text-primary" />
-                <h2 className="text-sm sm:text-base font-black text-foreground tracking-tight uppercase">
-                  Featured Zone Missions
-                </h2>
-              </div>
-              <Link
-                href="/app/map"
-                className="neo-btn-card px-3 py-1 text-xs font-black"
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            {suggestedPeople.map((person) => (
+              <div
+                key={person.id}
+                className="p-3 rounded-2xl bg-card border border-border/80 text-center space-y-2 hover:border-pink-500/40 transition-all"
               >
-                <span>View All 6 Zones →</span>
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {featuredExperiences.map((exp: any) => {
-                const zoneName = exp.zones?.name || "Event Zone";
-                const sponsorName = exp.sponsors?.name;
-
-                return (
-                  <div
-                    key={exp.id}
-                    className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo flex flex-col justify-between"
-                  >
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-black text-foreground bg-muted border border-border px-2 py-0.5">
-                          🌊 {zoneName}
-                        </span>
-                        {sponsorName && (
-                          <span className="text-[10px] font-black text-secondary-foreground bg-secondary border border-border px-2 py-0.5">
-                            {sponsorName}
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="text-sm font-black text-foreground leading-snug">
-                        {exp.title}
-                      </h3>
-                      <p className="text-xs text-muted-foreground font-medium line-clamp-2">
-                        {exp.description}
-                      </p>
-                    </div>
-
-                    <div className="mt-4 pt-3 border-t-2 border-border flex items-center justify-between">
-                      <div className="flex items-center space-x-1 bg-secondary text-secondary-foreground font-mono font-black text-xs border-2 border-border px-2 py-1 shadow-[2px_2px_0px_var(--border)]">
-                        <Coins className="w-3.5 h-3.5" />
-                        <span>{exp.coin_cost} VIBE</span>
-                      </div>
-                      <Link
-                        href={`/app/scan?code=vibe-${exp.slug}`}
-                        className="neo-btn-primary px-3 py-1.5 text-xs font-black flex items-center space-x-1"
-                      >
-                        <Sparkles className="w-3 h-3" />
-                        <span>+{exp.xp_reward} XP</span>
-                        <ArrowRight className="w-3 h-3 ml-0.5" />
-                      </Link>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                <Link href={`/app/profile?id=${person.id}`}>
+                  <img
+                    src={person.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=user"}
+                    alt={person.display_name}
+                    className="w-12 h-12 rounded-full mx-auto border border-purple-500/30 object-cover hover:scale-105 transition-transform"
+                  />
+                </Link>
+                <div>
+                  <h4 className="font-extrabold text-xs text-foreground truncate">{person.display_name}</h4>
+                  <p className="text-[10px] text-muted-foreground truncate">{person.college}</p>
+                </div>
+                <div className="flex items-center justify-center space-x-1 text-[10px] font-bold text-amber-400 font-mono">
+                  <span>⭐</span>
+                  <span>{person.xp} XP</span>
+                </div>
+                <Link
+                  href={`/app/profile?id=${person.id}`}
+                  className="w-full py-1.5 rounded-xl bg-secondary/80 hover:bg-pink-500 hover:text-white text-foreground text-[11px] font-bold transition-all block text-center"
+                >
+                  View Profile
+                </Link>
+              </div>
+            ))}
           </div>
         </div>
+      )}
+
+      {/* Active Social Challenges Card */}
+      <SocialChallengesCard
+        challenges={challenges}
+        completedIds={completedChallengeIds}
+        currentProfileId={currentProfile.id}
+      />
+
+      {/* Games Quick Launcher */}
+      <div className="p-4 rounded-3xl bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 flex items-center justify-between gap-4">
+        <div className="flex items-center space-x-3">
+          <div className="p-3 rounded-2xl bg-purple-500/20 text-purple-400">
+            <Gamepad2 className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="font-black text-sm text-foreground">Casual Games Platform</h3>
+            <p className="text-xs text-muted-foreground">Play Rotaract Game, Minion Run, Memory Match & VIBE Quiz!</p>
+          </div>
+        </div>
+        <Link
+          href="/app/games"
+          className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-extrabold text-xs rounded-xl transition-all shadow-md shrink-0"
+        >
+          PLAY GAMES
+        </Link>
+      </div>
+
+      {/* VIBE Social Feed */}
+      <div className="space-y-3">
+        <h3 className="font-black text-base text-foreground flex items-center space-x-2">
+          <Flame className="w-5 h-5 text-pink-500" />
+          <span>VIBE 2026 Feed</span>
+        </h3>
+        <VibeFeed initialPosts={posts} currentProfile={currentProfile} />
       </div>
     </div>
   );

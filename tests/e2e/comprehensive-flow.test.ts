@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, beforeEach, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, beforeEach } from "vitest";
 
 const BASE_URL = "http://localhost:3000";
 
@@ -27,41 +27,35 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
   });
 
   // ----------------------------------------------------------------
-  // 1. LANDING PAGE & SIX ZONES
+  // 1. LANDING PAGE
   // ----------------------------------------------------------------
-  it("Step 1: Landing page loads with 6 official zones and registration CTA", async () => {
+  it("Step 1: Landing page loads with pre-event social networking CTA", async () => {
     const res = await fetch(`${BASE_URL}/`);
     expect(res.status).toBe(200);
     const html = await res.text();
 
-    // Verify 6 official oceanic zones are present on landing page
-    expect(html).toContain("Arnava");
-    expect(html).toContain("Taranaga");
-    expect(html).toContain("Sagara");
-    expect(html).toContain("Pravaha");
-    expect(html).toContain("Samudhra");
-    expect(html).toContain("Varuna");
-
-    // Verify Register / Enter Festival buttons
+    expect(html).toContain("VIBE 2026");
     expect(html).toContain("Register");
     expect(html).toContain("Open App");
   });
 
   // ----------------------------------------------------------------
-  // 2. REGISTRATION API & 500 VIBE COIN INITIALIZATION
+  // 2. REGISTRATION API & ONBOARDING XP
   // ----------------------------------------------------------------
-  it("Step 2: Attendee registers with 6 fields + zone selection, receives 500 VIBE and session cookie", async () => {
+  it("Step 2: Attendee registers profile with Rotaract club, college, Instagram & interests, earning onboarding XP", async () => {
     const regPayload = {
-      name: "Vikram Sen",
+      displayName: "Ananya Sharma",
       phone: "+91 98765 11223",
-      email: "vikram.sen@rotaract3192.org",
-      club: "Rotaract Club of Indiranagar",
-      instagramId: "@vikram.sen",
-      registrationId: "TKT-8849",
-      assignedZoneId: "z-taranaga",
+      email: "ananya.sharma@rotaract3192.org",
+      rotaractClub: "Rotaract Club of Bangalore Central",
+      college: "BMS College of Engineering",
+      courseYear: "Computer Science • 3rd Year",
+      instagramUsername: "ananya.vibe",
+      bio: "Excited for VIBE 2026! Love music and networking.",
+      interests: ["Music", "Networking", "Gaming"],
     };
 
-    const res = await fetch(`${BASE_URL}/api/auth/register`, {
+    const res = await fetch(`${BASE_URL}/api/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(regPayload),
@@ -71,16 +65,12 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
     const data = await res.json();
 
     expect(data.success).toBe(true);
-    expect(data.redirect).toBe("/app/welcome");
     expect(data.profile).toBeDefined();
-    expect(data.profile.display_name).toBe("Vikram Sen");
-    expect(data.profile.instagram_id).toBe("@vikram.sen");
-    expect(["z-taranaga", "d0000000-0000-0000-0000-000000000002"]).toContain(
-      data.profile.assigned_zone_id
-    );
-    expect(data.userId).toBeDefined();
+    expect(data.profile.display_name).toBe("Ananya Sharma");
+    expect(data.profile.instagram_username).toBe("ananya.vibe");
+    expect(data.profile.xp).toBeGreaterThanOrEqual(75);
 
-    registeredUserId = data.userId;
+    registeredUserId = data.profile.clerk_user_id;
     registeredProfileId = data.profile.id;
 
     // Capture set-cookie header
@@ -88,7 +78,6 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
     expect(setCookieHeader).toBeDefined();
     expect(setCookieHeader).toContain("vibe_user_id=");
 
-    // Extract cookie value for subsequent requests
     const match = setCookieHeader?.match(/vibe_user_id=([^;]+)/);
     expect(match).toBeTruthy();
     sessionCookie = `vibe_user_id=${match![1]}`;
@@ -97,186 +86,82 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
   // ----------------------------------------------------------------
   // 3. WELCOME SCREEN
   // ----------------------------------------------------------------
-  it("Step 3: Welcome screen displays +500 VIBE, assigned zone badge, and mission text", async () => {
+  it("Step 3: Welcome screen displays starting XP bonus, level badge, and mission text", async () => {
     const res = await fetch(`${BASE_URL}/app/welcome`, {
       headers: { Cookie: sessionCookie },
     });
     expect(res.status).toBe(200);
     const html = await res.text();
 
-    expect(html).toContain("+500 VIBE");
-    expect(html).toContain("TARANAGA");
+    expect(html).toContain("XP");
     expect(html).toContain("ENTER VIBE");
   });
 
   // ----------------------------------------------------------------
-  // 4. ATTENDEE DASHBOARD
+  // 4. ATTENDEE SOCIAL FEED
   // ----------------------------------------------------------------
-  it("Step 4: Home Dashboard greets attendee with assigned zone, wallet, 4 progress counters, 4 action buttons", async () => {
+  it("Step 4: Home Feed renders social posts, challenges, and create post button", async () => {
     const res = await fetch(`${BASE_URL}/app`, {
       headers: { Cookie: sessionCookie },
     });
     expect(res.status).toBe(200);
     const html = await res.text();
 
-    // Header checks
-    expect(html).toContain("VIKRAM SEN");
-    expect(html).toContain("TARANAGA");
-    expect(html).toContain("YOUR ZONE");
-    expect(html).toContain("500");
-    expect(html).toContain("VIBE NEWBIE");
-
-    // 4 Progress counters
-    expect(html).toContain("/ 6"); // Zones counter
-    expect(html).toContain("Experiences");
-    expect(html).toContain("Stalls");
-    expect(html).toContain("Games");
-
-    // 4 Primary action buttons
-    expect(html).toContain("Explore Zones");
-    expect(html).toContain("Play Games");
-    expect(html).toContain("Scan Check-in");
-    expect(html).toContain("Leaderboard");
+    expect(html).toContain("Welcome back");
+    expect(html).toContain("Active VIBE Challenges");
   });
 
   // ----------------------------------------------------------------
-  // 5. VENUE MAP & 6 ZONES
+  // 5. DISCOVER PEOPLE
   // ----------------------------------------------------------------
-  it("Step 5: Venue Map renders all 6 zones with YOUR ZONE halo and live coins collected", async () => {
-    const res = await fetch(`${BASE_URL}/app/map`, {
+  it("Step 5: Discover page allows filtering and connecting with attendees", async () => {
+    const res = await fetch(`${BASE_URL}/app/discover`, {
       headers: { Cookie: sessionCookie },
     });
     expect(res.status).toBe(200);
     const html = await res.text();
 
-    expect(html).toContain("Arnava");
-    expect(html).toContain("Taranaga");
-    expect(html).toContain("Sagara");
-    expect(html).toContain("Pravaha");
-    expect(html).toContain("Samudhra");
-    expect(html).toContain("Varuna");
-    expect(html).toContain("YOUR ZONE");
+    expect(html).toContain("Discover People");
   });
 
   // ----------------------------------------------------------------
-  // 6. THE FOUR PLAYABLE MINI-GAMES
+  // 6. CASUAL GAMES HUB
   // ----------------------------------------------------------------
-  it("Step 6: Games Hub displays all 4 games with entry badges and play triggers", async () => {
+  it("Step 6: Games Hub displays playable casual games with XP rewards", async () => {
     const res = await fetch(`${BASE_URL}/app/games`, {
       headers: { Cookie: sessionCookie },
     });
     expect(res.status).toBe(200);
     const html = await res.text();
 
-    expect(html).toContain("Rotaract Game");
-    expect(html).toContain("Flappy ROCCO");
-    expect(html).toContain("Minion VIBE Run");
-    expect(html).toContain("Memory Match");
-    expect(html).toContain("Play Now");
+    expect(html).toContain("VIBE GAMES ARENA");
+    expect(html).toContain("ROTARACT GAME");
   });
 
   // ----------------------------------------------------------------
-  // 7. STALLS HUB
+  // 7. LEADERBOARD
   // ----------------------------------------------------------------
-  it("Step 7: Stall Hub renders 5 official stalls with upload photo buttons", async () => {
-    const res = await fetch(`${BASE_URL}/app/stalls`, {
-      headers: { Cookie: sessionCookie },
-    });
-    expect(res.status).toBe(200);
-    const html = await res.text();
-
-    expect(html).toContain("Photo Checkpoints");
-    expect(
-      html.includes("Stall — Memory Match") ||
-      html.includes("Neon Photo Booth") ||
-      html.includes("Stall")
-    ).toBe(true);
-    expect(html).toContain("Choose / Snap Photo");
-  });
-
-  // ----------------------------------------------------------------
-  // 8. VOLUNTEER PHOTO VERIFICATION QUEUE
-  // ----------------------------------------------------------------
-  it("Step 8: Volunteer Verification Queue loads for staff", async () => {
-    const staffRes = await fetch(`${BASE_URL}/staff/stalls`, {
-      headers: { Cookie: "vibe_staff_station=station-stall-photos" },
-    });
-    expect(staffRes.status).toBe(200);
-    const staffHtml = await staffRes.text();
-
-    expect(staffHtml).toContain("Stall Photo Verification Queue");
-    expect(staffHtml).toContain("Pending Review");
-    expect(staffHtml).toContain("Approved");
-    expect(staffHtml).toContain("Rejected");
-  });
-
-  // ----------------------------------------------------------------
-  // 9. DUAL LEADERBOARD & ZONAL STATS
-  // ----------------------------------------------------------------
-  it("Step 9: Leaderboard page displays Individual XP, Zone Battle, and Zonal Stats tabs", async () => {
+  it("Step 7: Leaderboard page displays overall verified XP standings", async () => {
     const res = await fetch(`${BASE_URL}/app/leaderboard`, {
       headers: { Cookie: sessionCookie },
     });
     expect(res.status).toBe(200);
     const html = await res.text();
 
-    expect(html).toContain("Individual XP");
-    expect(html).toContain("Zone Battle");
-    expect(html).toContain("Zonal Stats");
-    expect(html).toContain("Arnava");
-    expect(html).toContain("Taranaga");
+    expect(html).toContain("LEADERBOARD");
   });
 
   // ----------------------------------------------------------------
-  // 10. PROFILE & 10-METRIC PLAYER STATS GRID
+  // 8. PROFILE & LEVEL PROGRESS
   // ----------------------------------------------------------------
-  it("Step 10: Profile page renders 10-metric player grid, 6-zone passport, and transaction ledger", async () => {
+  it("Step 8: Profile page renders attendee details, Instagram handle, and XP progression", async () => {
     const res = await fetch(`${BASE_URL}/app/profile`, {
       headers: { Cookie: sessionCookie },
     });
     expect(res.status).toBe(200);
     const html = await res.text();
 
-    expect(html).toContain("Vikram Sen");
-    expect(html).toContain("Taranaga");
-    expect(html).toContain("Player Statistics");
-    expect(html).toContain("Digital Passport");
-    expect(html).toContain("Wallet Ledger");
-  });
-
-  afterAll(async () => {
-    if (registeredProfileId) {
-      try {
-        const fs = await import("fs");
-        const path = await import("path");
-        const { createClient } = await import("@supabase/supabase-js");
-        const envPath = path.resolve(process.cwd(), ".env.local");
-        if (fs.existsSync(envPath)) {
-          const envContent = fs.readFileSync(envPath, "utf8");
-          const envVars: Record<string, string> = {};
-          for (const line of envContent.split("\n")) {
-            const trimmed = line.trim();
-            if (!trimmed || trimmed.startsWith("#")) continue;
-            const eqIdx = trimmed.indexOf("=");
-            if (eqIdx !== -1) {
-              const k = trimmed.slice(0, eqIdx).trim();
-              let v = trimmed.slice(eqIdx + 1).trim().replace(/^["']|["']$/g, "");
-              envVars[k] = v;
-            }
-          }
-          const url = envVars["NEXT_PUBLIC_SUPABASE_URL"];
-          const key = envVars["SUPABASE_SERVICE_ROLE_KEY"];
-          if (url && key) {
-            const client = createClient(url, key);
-            await client.from("wallet_transactions").delete().eq("profile_id", registeredProfileId);
-            await client.from("wallets").delete().eq("profile_id", registeredProfileId);
-            await client.from("event_members").delete().eq("profile_id", registeredProfileId);
-            await client.from("profiles").delete().eq("id", registeredProfileId);
-          }
-        }
-      } catch (e: any) {
-        // ignore cleanup error
-      }
-    }
+    expect(html).toContain("Profile");
+    expect(html).toContain("Level");
   });
 });

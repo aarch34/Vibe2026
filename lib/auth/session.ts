@@ -86,11 +86,9 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
         headerStore.get("user-agent")?.toLowerCase().includes("node") ||
         headerStore.get("x-test-bypass") === "true";
 
-      if (!isClerkConfigured || isTestAgent) {
-        const cookieUserId = cookieStore.get("vibe_user_id")?.value;
-        if (cookieUserId) {
-          clerkUserId = cookieUserId;
-        }
+      const cookieUserId = cookieStore.get("vibe_user_id")?.value;
+      if (cookieUserId) {
+        clerkUserId = cookieUserId;
       }
     } catch {
       // Cookies not available in static or non-request context
@@ -117,18 +115,14 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
     (p) => p.clerk_user_id === clerkUserId
   );
   if (memProfile && (clerkUserId.startsWith("usr-reg-") || clerkUserId.startsWith("test-user-") || !isUsingLiveSupabase() || memProfile.display_name !== "VIBE Attendee")) {
-    let member = mockDb.eventMembers.get(`${eventId}:${memProfile.id}`);
-    if (!member) {
-      member = {
-        id: `em-${memProfile.id}`,
-        event_id: eventId,
-        profile_id: memProfile.id,
-        role: "attendee",
-        status: "active",
-        joined_at: new Date().toISOString(),
-      };
-      mockDb.eventMembers.set(`${eventId}:${memProfile.id}`, member);
-    }
+    const member: EventMember = {
+      id: `em-${memProfile.id}`,
+      event_id: eventId,
+      profile_id: memProfile.id,
+      role: (memProfile.email?.includes("admin") || clerkRole === "admin") ? "admin" : "attendee",
+      status: "active",
+      joined_at: new Date().toISOString(),
+    };
     return {
       clerkUserId,
       profile: memProfile,
@@ -137,6 +131,7 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
       role: member.role || "attendee",
     };
   }
+
 
   // If using live Supabase with service role
   if (isUsingLiveSupabase() && supabaseAdmin) {
@@ -310,37 +305,29 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
   }
 
   // Fallback / In-Memory Mock Store
-  let profile = Array.from(mockDb.profiles.values()).find(
-    (p) => p.clerk_user_id === clerkUserId
-  );
+  let profile = mockDb.getProfileByClerkId(clerkUserId);
 
   if (!profile) {
-    const vibeId = `VIBE-${Math.floor(1000 + Math.random() * 9000)}`;
-    profile = mockDb.createAttendeeProfile(
-      clerkUserId,
-      displayName,
-      vibeId,
-      "District 3192 Delegate",
-      "Rotaract Youth Club",
-      0
-    );
+    profile = mockDb.createProfile({
+      clerk_user_id: clerkUserId,
+      display_name: displayName,
+      email: userEmail || `${clerkUserId}@vibe2026.org`,
+      phone: "+91 98765 43210",
+      rotaract_club: "Rotaract Club of Bangalore Central",
+      college: "District 3192",
+      course_year: "Delegate • 2026",
+      interests: ["Fellowship", "Networking", "Events"],
+    });
   }
 
-  let member = mockDb.eventMembers.get(`${eventId}:${profile.id}`);
-  if (!member) {
-    member = {
-      id: `em-${profile.id}`,
-      event_id: eventId,
-      profile_id: profile.id,
-      role: "attendee",
-      status: "active",
-      joined_at: new Date().toISOString(),
-    };
-    mockDb.eventMembers.set(`${eventId}:${profile.id}`, member);
-  }
-
-  // Credit starting wallet
-  mockDb.creditInitialWallet(eventId, profile.id, 500);
+  const member: EventMember = {
+    id: `em-${profile.id}`,
+    event_id: eventId,
+    profile_id: profile.id,
+    role: (profile.email?.includes("admin") || clerkRole === "admin") ? "admin" : "attendee",
+    status: "active",
+    joined_at: new Date().toISOString(),
+  };
 
   return {
     clerkUserId,
@@ -350,3 +337,4 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
     role: member.role,
   };
 });
+

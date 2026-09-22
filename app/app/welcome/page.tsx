@@ -1,115 +1,81 @@
+import React from "react";
 import Link from "next/link";
+import { Sparkles, Users, Gamepad2, Trophy, ArrowRight } from "lucide-react";
 import { getCurrentUserSession } from "@/lib/auth/session";
-import { mockDb, isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
-import { Coins, Sparkles, Trophy, Compass, ArrowRight, Waves, ShieldCheck } from "lucide-react";
+import { mockDb } from "@/lib/db/mock-store";
 
 export const dynamic = "force-dynamic";
 
 export default async function WelcomePage() {
   const session = await getCurrentUserSession();
-
-  // Resolve assigned zone name
-  let assignedZoneName: string | null = null;
-  if (session.profile.assigned_zone_id) {
-    const memZone = mockDb.zones.get(session.profile.assigned_zone_id);
-    if (memZone) {
-      assignedZoneName = memZone.name;
-    } else if (isUsingLiveSupabase() && supabaseAdmin) {
-      try {
-        const { data: z } = await supabaseAdmin
-          .from("zones")
-          .select("name")
-          .eq("id", session.profile.assigned_zone_id)
-          .maybeSingle();
-        if (z) assignedZoneName = z.name;
-      } catch {}
-    }
-  }
+  const profile = mockDb.getProfile(session.profile.id) || session.profile;
 
   return (
-    <div className="min-h-[85vh] flex flex-col items-center justify-center text-center px-4 py-8">
-      <div className="max-w-md w-full space-y-6">
-        {/* Animated Celebration Badge */}
-        <div className="inline-flex items-center space-x-2 px-4 py-1.5 bg-card border-2 border-border text-foreground text-xs font-black shadow-[2px_2px_0px_var(--border)] animate-pulse">
-          <Sparkles className="w-4 h-4 text-primary" />
-          <span>Rotaract District 3192 Presents</span>
+    <div className="min-h-[85vh] flex items-center justify-center px-4 py-8">
+      <div className="w-full max-w-lg bg-card/90 backdrop-blur-2xl border border-pink-500/30 rounded-3xl p-8 sm:p-10 text-center shadow-2xl relative overflow-hidden space-y-6">
+        {/* Glow Effects */}
+        <div className="absolute -top-20 -left-20 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-20 -right-20 w-64 h-64 bg-purple-500/20 rounded-full blur-3xl pointer-events-none" />
+
+        {/* Badge */}
+        <div className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-pink-500/20 via-purple-500/20 to-cyan-500/20 text-pink-400 border border-pink-500/30 text-xs font-extrabold shadow-sm">
+          <Sparkles className="w-4 h-4 text-amber-300 animate-spin" />
+          <span>VIBE 2026 PRE-EVENT</span>
         </div>
 
-        {/* Big Welcome Header */}
+        {/* Main Title & Subtitle */}
         <div className="space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-foreground uppercase">
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-cyan-400">
             WELCOME TO VIBE
           </h1>
-          <div className="inline-block px-4 py-1.5 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)]">
-            <p className="text-sm sm:text-base font-black flex items-center justify-center space-x-2">
-              {assignedZoneName ? (
-                <>
-                  <span>You are part of</span>
-                  <span className="underline decoration-2 underline-offset-4">
-                    🌊 {assignedZoneName.toUpperCase()}
-                  </span>
-                </>
-              ) : (
-                <span>🌊 6 Oceanic Zones Await You</span>
-              )}
-            </p>
-          </div>
-          <p className="text-xs sm:text-sm text-muted-foreground font-bold">
-            {assignedZoneName
-              ? "Your VIBE journey starts now."
-              : "Choose your oceanic zone from the Home feed and lead them to victory!"}
+          <p className="text-base font-bold text-foreground">
+            Your journey starts here.
           </p>
         </div>
 
-        {/* Coin Drop Visual Presentation */}
-        <div className="p-6 bg-card text-card-foreground border-2 border-border shadow-neo space-y-4">
-          <div className="w-16 h-16 bg-secondary text-secondary-foreground border-2 border-border shadow-[3px_3px_0px_var(--border)] mx-auto flex items-center justify-center animate-bounce">
-            <Coins className="w-8 h-8 text-foreground" />
-          </div>
-
-          <div>
-            <span className="text-3xl sm:text-4xl font-black font-mono text-foreground tracking-tight block">
-              🪙 +500 VIBE
-            </span>
-            <span className="text-xs font-black uppercase tracking-wider text-muted-foreground">
-              Starting Coin Wallet Credited
-            </span>
-          </div>
-
-          <div className="flex items-center justify-center space-x-4 pt-3 border-t-2 border-border text-xs font-mono font-bold">
-            <div className="flex items-center space-x-1.5 text-foreground">
-              <Sparkles className="w-4 h-4 text-primary" />
-              <span>⭐ 0 XP</span>
+        {/* Value Proposition */}
+        <div className="p-4 rounded-2xl bg-secondary/50 border border-border/60 text-sm text-muted-foreground space-y-2">
+          <p className="font-semibold text-foreground">
+            Meet people. Make connections. Play games. Earn XP.
+          </p>
+          <div className="grid grid-cols-3 gap-2 pt-2 text-center text-xs">
+            <div className="p-2 rounded-xl bg-background/60 border border-border/40">
+              <Users className="w-5 h-5 mx-auto text-cyan-400 mb-1" />
+              <span className="font-bold text-foreground">Networking</span>
             </div>
-            <span className="text-muted-foreground">•</span>
-            <div className="flex items-center space-x-1.5 text-foreground">
-              <ShieldCheck className="w-4 h-4 text-primary" />
-              <span>Level 1 VIBE Newbie</span>
+            <div className="p-2 rounded-xl bg-background/60 border border-border/40">
+              <Gamepad2 className="w-5 h-5 mx-auto text-pink-400 mb-1" />
+              <span className="font-bold text-foreground">Mobile Games</span>
+            </div>
+            <div className="p-2 rounded-xl bg-background/60 border border-border/40">
+              <Trophy className="w-5 h-5 mx-auto text-amber-400 mb-1" />
+              <span className="font-bold text-foreground">Leaderboard</span>
             </div>
           </div>
         </div>
 
-        {/* Mission Briefing */}
-        <div className="p-4 bg-card text-card-foreground border-2 border-border shadow-neo text-left space-y-2">
-          <div className="flex items-center space-x-2 text-xs font-black text-foreground uppercase tracking-wider">
-            <Compass className="w-4 h-4 text-primary" />
-            <span>Your Festival Mission</span>
+        {/* Starting XP Card */}
+        <div className="p-5 rounded-2xl bg-gradient-to-br from-amber-500/10 via-purple-500/10 to-pink-500/10 border border-amber-500/30 text-center space-y-1 shadow-inner">
+          <span className="text-xs font-extrabold uppercase tracking-widest text-amber-400">
+            Starting Gamification Balance
+          </span>
+          <div className="flex items-center justify-center space-x-2 text-3xl font-black text-amber-300 font-mono">
+            <span>⭐</span>
+            <span>{profile.xp || 75} XP</span>
           </div>
-          <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-            Explore VIBE, complete experiences, interact with stalls, play games and help your zone climb to the top of the VIBE Zone Battle!
+          <p className="text-[11px] text-muted-foreground">
+            +75 XP awarded for completing your profile registration!
           </p>
         </div>
 
-        {/* Action Button */}
-        <div>
-          <Link
-            href="/app"
-            className="neo-btn-primary w-full py-4 text-base font-black uppercase tracking-wider flex items-center justify-center space-x-2 shadow-[4px_4px_0px_var(--border)] active:translate-x-[2px] active:translate-y-[2px]"
-          >
-            <span>ENTER VIBE</span>
-            <ArrowRight className="w-5 h-5" />
-          </Link>
-        </div>
+        {/* CTA Button */}
+        <Link
+          href="/app"
+          className="w-full py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 text-white font-black text-base rounded-2xl transition-all shadow-xl shadow-pink-500/25 flex items-center justify-center space-x-2 group"
+        >
+          <span>ENTER VIBE</span>
+          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+        </Link>
       </div>
     </div>
   );
