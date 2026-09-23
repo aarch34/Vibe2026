@@ -8,6 +8,7 @@ export const dynamic = "force-dynamic";
 export default async function GamesPage() {
   const session = await getCurrentUserSession();
   const currentProfile = mockDb.getProfile(session.profile.id) || session.profile;
+  const initialSummary = mockDb.getGameSummary(currentProfile.id);
 
-  return <GamesHub currentProfileId={currentProfile.id} />;
+  return <GamesHub currentProfile={currentProfile} initialSummary={initialSummary} />;
 }

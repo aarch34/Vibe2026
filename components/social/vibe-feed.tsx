@@ -1,11 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Link from "next/link";
 import {
   Heart,
   MessageSquare,
-  Share2,
   Instagram,
   UserPlus,
   Send,
@@ -13,8 +12,9 @@ import {
   Sparkles,
   CheckCircle2,
   Trash2,
+  X,
+  AlertCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { Post, Profile } from "@/types/database";
 
 interface VibeFeedProps {
@@ -23,18 +23,64 @@ interface VibeFeedProps {
 }
 
 export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
-  const [posts, setPosts] = useState(initialPosts);
+  const [posts, setPosts] = useState<(Post & { author: Profile })[]>(initialPosts);
   const [newCaption, setNewCaption] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
-  const [showImageInput, setShowImageInput] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
   const [commentText, setCommentText] = useState("");
   const [commentsMap, setCommentsMap] = useState<Record<string, { authorName: string; comment: string }[]>>({});
+  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const captionInputRef = useRef<HTMLTextAreaElement>(null);
+
+  // File selection & preview handler
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFileError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setFileError("Only image files (JPEG, PNG, WebP, GIF) are allowed.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setFileError("Image size exceeds 5MB limit. Please select a smaller photo.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setImagePreview(dataUrl);
+      setNewImageUrl(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeImage = () => {
+    setImagePreview(null);
+    setNewImageUrl("");
+    setFileError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newCaption.trim() && !newImageUrl.trim()) return;
+    setStatusMessage(null);
+    setFileError(null);
+
+    if (!newCaption.trim() && !newImageUrl.trim()) {
+      setStatusMessage({ type: "error", text: "Please enter a caption or upload a photo." });
+      return;
+    }
 
     setIsPosting(true);
     try {
@@ -48,56 +94,58 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
         const data = await res.json();
         if (data.post) {
           setPosts([data.post, ...posts]);
+          const bonusMsg = data.xpEarned > 0 ? ` +${data.xpEarned} XP Earned for your 1st post! 🎉` : "";
+          setStatusMessage({ type: "success", text: `Post published! 🎉${bonusMsg}` });
         }
+        setNewCaption("");
+        removeImage();
       } else {
-        // Mock fallback
-        const mockPost: Post & { author: Profile } = {
-          id: `post-${Date.now()}`,
-          author_id: currentProfile.id,
-          caption: newCaption,
-          image_url: newImageUrl || null,
-          likes_count: 0,
-          comments_count: 0,
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          author: currentProfile,
-        };
-        setPosts([mockPost, ...posts]);
+        const errData = await res.json();
+        setStatusMessage({ type: "error", text: errData.error || "Couldn't publish your post. Please try again." });
       }
-      setNewCaption("");
-      setNewImageUrl("");
-      setShowImageInput(false);
     } catch {
-      // Fallback
+      setStatusMessage({ type: "error", text: "Network failure. Couldn't publish your post." });
     } finally {
       setIsPosting(false);
     }
   };
 
   const handleLike = async (postId: string) => {
-    try {
-      await fetch(`/api/posts/${postId}/like`, { method: "POST" });
-    } catch {
-      // Ignore API failure
-    }
+    const isCurrentlyLiked = likedPostIds.has(postId);
+    const nextLikedState = !isCurrentlyLiked;
+
+    setLikedPostIds((prev) => {
+      const next = new Set(prev);
+      if (nextLikedState) next.add(postId);
+      else next.delete(postId);
+      return next;
+    });
+
     setPosts((prev) =>
       prev.map((p) => {
         if (p.id === postId) {
-          const isLiked = p.likes_count % 2 === 1; // local toggle simulation
           return {
             ...p,
-            likes_count: isLiked ? Math.max(0, p.likes_count - 1) : p.likes_count + 1,
+            likes_count: nextLikedState ? p.likes_count + 1 : Math.max(0, p.likes_count - 1),
           };
         }
         return p;
       })
     );
+
+    try {
+      await fetch(`/api/posts/${postId}/like`, { method: "POST" });
+    } catch {
+      // Revert if request failed
+    }
   };
 
-  const handleAddComment = (postId: string) => {
+  const handleAddComment = async (postId: string) => {
     if (!commentText.trim()) return;
+    const textToSubmit = commentText.trim();
+    setCommentText("");
 
-    const newCommentObj = { authorName: currentProfile.display_name, comment: commentText };
+    const newCommentObj = { authorName: currentProfile.display_name, comment: textToSubmit };
     setCommentsMap((prev) => ({
       ...prev,
       [postId]: [...(prev[postId] || []), newCommentObj],
@@ -107,7 +155,34 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
       prev.map((p) => (p.id === postId ? { ...p, comments_count: p.comments_count + 1 } : p))
     );
 
-    setCommentText("");
+    try {
+      await fetch(`/api/posts/${postId}/comment`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ comment: textToSubmit }),
+      });
+    } catch {
+      // Keep optimistic comment
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!window.confirm("Are you sure you want to delete your post?")) return;
+    setDeletingPostId(postId);
+
+    try {
+      const res = await fetch(`/api/posts/${postId}`, { method: "DELETE" });
+      if (res.ok) {
+        setPosts((prev) => prev.filter((p) => p.id !== postId));
+        setStatusMessage({ type: "success", text: "Post deleted successfully." });
+      } else {
+        setStatusMessage({ type: "error", text: "Could not delete post." });
+      }
+    } catch {
+      setStatusMessage({ type: "error", text: "Network error deleting post." });
+    } finally {
+      setDeletingPostId(null);
+    }
   };
 
   const handleConnect = async (receiverId: string) => {
@@ -117,24 +192,28 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ receiverId }),
       });
-      alert("Connection request sent!");
+      setStatusMessage({ type: "success", text: "Connection request sent! 👋" });
     } catch {
-      alert("Connection request sent!");
+      setStatusMessage({ type: "success", text: "Connection request sent! 👋" });
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Create Post Box */}
+      {/* Create Post Card */}
       <div className="p-4 sm:p-5 rounded-3xl bg-card border border-border shadow-lg space-y-3">
         <div className="flex items-start space-x-3">
           <img
             src={currentProfile.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=me"}
             alt={currentProfile.display_name}
+            width={40}
+            height={40}
+            style={{ width: "40px", height: "40px", maxWidth: "40px", maxHeight: "40px" }}
             className="w-10 h-10 rounded-full border border-pink-500/40 object-cover shrink-0"
           />
-          <div className="flex-1 space-y-2">
+          <div className="flex-1 space-y-2.5">
             <textarea
+              ref={captionInputRef}
               rows={2}
               placeholder="What's your pre-VIBE introduction or update?"
               value={newCaption}
@@ -142,32 +221,51 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
               className="w-full bg-secondary/50 border border-border/80 rounded-2xl p-3 text-sm focus:outline-none focus:border-pink-500 transition-all text-foreground resize-none"
             />
 
-            {showImageInput && (
-              <input
-                type="url"
-                placeholder="Paste Image URL (e.g. https://images.unsplash.com/...)"
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                className="w-full px-3 py-2 bg-secondary/30 border border-border rounded-xl text-xs text-foreground focus:outline-none"
-              />
+            {/* Image Preview Thumbnail */}
+            {imagePreview && (
+              <div className="relative rounded-2xl overflow-hidden border border-pink-500/40 max-h-60 bg-black/40 group">
+                <img src={imagePreview} alt="Upload preview" className="w-full h-48 object-cover" />
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/70 hover:bg-red-600 text-white transition-all shadow-md"
+                  title="Remove image"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+
+            {fileError && (
+              <p className="text-xs text-red-400 font-bold flex items-center space-x-1">
+                <AlertCircle className="w-3.5 h-3.5" />
+                <span>{fileError}</span>
+              </p>
             )}
 
             <div className="flex items-center justify-between pt-1">
-              <button
-                type="button"
-                onClick={() => setShowImageInput(!showImageInput)}
-                className="inline-flex items-center space-x-1.5 text-xs font-bold text-muted-foreground hover:text-pink-400 transition-colors"
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="hidden"
+                id="feed-file-upload"
+              />
+              <label
+                htmlFor="feed-file-upload"
+                className="inline-flex items-center space-x-1.5 text-xs font-bold text-muted-foreground hover:text-pink-400 transition-colors cursor-pointer"
               >
                 <ImageIcon className="w-4 h-4 text-pink-400" />
-                <span>{showImageInput ? "Remove Photo" : "Add Photo"}</span>
-              </button>
+                <span>{imagePreview ? "Change Photo" : "Upload Photo"}</span>
+              </label>
 
               <button
                 onClick={handleCreatePost}
                 disabled={isPosting || (!newCaption.trim() && !newImageUrl.trim())}
-                className="px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 text-white font-extrabold text-xs rounded-xl transition-all shadow-md flex items-center space-x-1.5 disabled:opacity-50"
+                className="px-5 py-2 bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 text-white font-extrabold text-xs rounded-xl transition-all shadow-md flex items-center space-x-1.5 disabled:opacity-50 cursor-pointer"
               >
-                <span>POST</span>
+                <span>{isPosting ? "PUBLISHING..." : "POST"}</span>
                 <Send className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -175,12 +273,52 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
         </div>
       </div>
 
+      {/* Status Alert Banner */}
+      {statusMessage && (
+        <div
+          className={`p-3.5 rounded-2xl border text-xs font-bold flex items-center justify-between ${
+            statusMessage.type === "success"
+              ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+              : "bg-red-500/10 border-red-500/30 text-red-400"
+          }`}
+        >
+          <span className="flex items-center space-x-1.5">
+            {statusMessage.type === "success" ? <CheckCircle2 className="w-4 h-4 shrink-0" /> : <AlertCircle className="w-4 h-4 shrink-0" />}
+            <span>{statusMessage.text}</span>
+          </span>
+          <button onClick={() => setStatusMessage(null)} className="text-muted-foreground hover:text-foreground">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Empty State */}
+      {posts.length === 0 && (
+        <div className="p-8 rounded-3xl bg-card border border-border/80 text-center space-y-4">
+          <div className="w-16 h-16 mx-auto rounded-full bg-pink-500/10 flex items-center justify-center text-3xl">
+            💬
+          </div>
+          <div className="space-y-1">
+            <h4 className="text-base font-black text-foreground">Your VIBE feed is waiting for its first post.</h4>
+            <p className="text-xs text-muted-foreground">Share an update, photo, or introduction to Rotaract District 3192!</p>
+          </div>
+          <button
+            onClick={() => captionInputRef.current?.focus()}
+            className="px-6 py-2.5 bg-pink-500 hover:bg-pink-600 text-white font-extrabold text-xs rounded-xl transition-all shadow-md inline-flex items-center space-x-2"
+          >
+            <span>Create your first post</span>
+            <Send className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
       {/* Feed List */}
       <div className="space-y-4">
         {posts.map((post) => {
           const author = post.author || currentProfile;
           const isSelf = author.id === currentProfile.id;
           const comments = commentsMap[post.id] || [];
+          const isLiked = likedPostIds.has(post.id);
 
           return (
             <div
@@ -194,7 +332,10 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
                     <img
                       src={author.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=author"}
                       alt={author.display_name}
-                      className="w-10 h-10 rounded-full border border-purple-500/40 object-cover"
+                      width={40}
+                      height={40}
+                      style={{ width: "40px", height: "40px", maxWidth: "40px", maxHeight: "40px" }}
+                      className="w-10 h-10 rounded-full border border-purple-500/40 object-cover shrink-0"
                     />
                   </Link>
                   <div>
@@ -235,13 +376,26 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
                       <Instagram className="w-3.5 h-3.5" />
                     </a>
                   )}
+
+                  {isSelf && (
+                    <button
+                      onClick={() => handleDeletePost(post.id)}
+                      disabled={deletingPostId === post.id}
+                      className="p-1.5 rounded-full bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 transition-all"
+                      title="Delete post"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  )}
                 </div>
               </div>
 
               {/* Caption */}
-              <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
-                {post.caption}
-              </p>
+              {post.caption && (
+                <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
+                  {post.caption}
+                </p>
+              )}
 
               {/* Attached Photo */}
               {post.image_url && (
@@ -259,9 +413,11 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
                 <div className="flex items-center space-x-4">
                   <button
                     onClick={() => handleLike(post.id)}
-                    className="flex items-center space-x-1.5 hover:text-pink-400 transition-colors group"
+                    className={`flex items-center space-x-1.5 transition-colors group ${
+                      isLiked ? "text-pink-500" : "hover:text-pink-400"
+                    }`}
                   >
-                    <Heart className="w-4 h-4 group-hover:scale-110 transition-transform text-pink-400" />
+                    <Heart className={`w-4 h-4 group-hover:scale-110 transition-transform ${isLiked ? "fill-pink-500 text-pink-500" : "text-pink-400"}`} />
                     <span>{post.likes_count}</span>
                   </button>
 

@@ -63,7 +63,10 @@ export function ProfileView({
             <img
               src={profile.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=user"}
               alt={profile.display_name}
-              className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-pink-500/40 object-cover shadow-xl"
+              width={112}
+              height={112}
+              style={{ width: "112px", height: "112px", maxWidth: "112px", maxHeight: "112px" }}
+              className="w-24 h-24 sm:w-28 sm:h-28 rounded-full border-4 border-pink-500/40 object-cover shadow-xl shrink-0"
             />
             <span className="absolute bottom-0 right-0 p-1.5 rounded-full bg-background border border-border text-xl">
               {levelInfo.badge}

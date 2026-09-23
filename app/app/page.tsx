@@ -98,7 +98,10 @@ export default async function AttendeeHomePage() {
                   <img
                     src={person.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=user"}
                     alt={person.display_name}
-                    className="w-12 h-12 rounded-full mx-auto border border-purple-500/30 object-cover hover:scale-105 transition-transform"
+                    width={48}
+                    height={48}
+                    style={{ width: "48px", height: "48px", maxWidth: "48px", maxHeight: "48px" }}
+                    className="w-12 h-12 rounded-full mx-auto border border-purple-500/30 object-cover hover:scale-105 transition-transform shrink-0"
                   />
                 </Link>
                 <div>

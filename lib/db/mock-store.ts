@@ -511,9 +511,9 @@ class VibeMemoryDatabase {
     });
   }
 
-  createPost(authorId: string, caption: string, imageUrl?: string | null): Post {
+  createPost(authorId: string, caption: string, imageUrl?: string | null): { post: Post; xpEarned: number } {
     const post: Post = {
-      id: `post-${Date.now()}`,
+      id: `post-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       author_id: authorId,
       caption,
       image_url: imageUrl || null,
@@ -525,17 +525,23 @@ class VibeMemoryDatabase {
 
     this.posts.unshift(post);
 
+    let xpEarned = 0;
     const author = this.getProfile(authorId);
     if (author) {
       author.posts_count += 1;
 
-      // First Post XP (+50 XP)
+      // First Post XP (+50 XP) - Awarded ONLY ONCE per user
       if (author.posts_count === 1) {
+        xpEarned = 50;
         this.addXpToProfile(authorId, 50, "First VIBE Post published! +50 XP");
       }
     }
 
-    return post;
+    return { post, xpEarned };
+  }
+
+  hasUserLikedPost(postId: string, profileId: string): boolean {
+    return this.postLikes.some((l) => l.post_id === postId && l.profile_id === profileId);
   }
 
   likePost(postId: string, profileId: string) {
@@ -671,26 +677,41 @@ class VibeMemoryDatabase {
 
   // --- GAMES & XP PERFORMANCE METHODS ---
 
-  submitGameScore(profileId: string, gameType: GameType, score: number, maxScore: number) {
-    let xpEarned = 0;
+  submitGameScore(profileId: string, gameType: GameType, score: number, maxScore: number, timeSeconds?: number) {
+    let potentialXp = 25;
 
     if (gameType === "rotaract_game" || gameType === "vibe_quiz") {
       const pct = (score / maxScore) * 100;
-      if (pct >= 81) xpEarned = 150;
-      else if (pct >= 61) xpEarned = 100;
-      else if (pct >= 31) xpEarned = 50;
-      else xpEarned = 25;
+      if (pct >= 81) potentialXp = 150;
+      else if (pct >= 61) potentialXp = 100;
+      else if (pct >= 31) potentialXp = 50;
+      else potentialXp = 25;
     } else if (gameType === "minion_game") {
-      const ratio = Math.min(1, score / 1000);
-      xpEarned = Math.min(100, Math.max(25, Math.floor(ratio * 100)));
+      if (score >= 1000) potentialXp = 100;
+      else if (score >= 600) potentialXp = 75;
+      else if (score >= 300) potentialXp = 50;
+      else potentialXp = 25;
     } else if (gameType === "memory_game") {
-      if (score >= 900) xpEarned = 100;
-      else if (score >= 600) xpEarned = 75;
-      else xpEarned = 50;
+      potentialXp = 50; // Base completion
+      if (timeSeconds && timeSeconds <= 25) potentialXp = 100;
+      else if (timeSeconds && timeSeconds <= 40) potentialXp = 75;
+      else if (score >= 900) potentialXp = 100;
+      else if (score >= 600) potentialXp = 75;
     }
 
+    // Anti-Abuse XP Rule: Only award incremental XP if beating previous highest XP tier
+    const previousSessions = this.gameSessions.filter(
+      (gs) => gs.profile_id === profileId && gs.game_type === gameType
+    );
+
+    const prevMaxXp = previousSessions.reduce((max, gs) => Math.max(max, gs.xp_earned), 0);
+    const prevBestScore = previousSessions.reduce((max, gs) => Math.max(max, gs.score), 0);
+
+    const xpEarned = Math.max(0, potentialXp - prevMaxXp);
+    const isPersonalBest = previousSessions.length === 0 || score > prevBestScore;
+
     const session: GameSession = {
-      id: `gs-${Date.now()}`,
+      id: `gs-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       profile_id: profileId,
       game_type: gameType,
       score,
@@ -704,14 +725,46 @@ class VibeMemoryDatabase {
     const profile = this.getProfile(profileId);
     if (profile) {
       profile.games_played_count += 1;
-      this.addXpToProfile(
-        profileId,
-        xpEarned,
-        `Played ${gameType.replace("_", " ").toUpperCase()} (Score: ${score})`
-      );
+      if (xpEarned > 0) {
+        this.addXpToProfile(
+          profileId,
+          xpEarned,
+          `Played ${gameType.replace("_", " ").toUpperCase()} (+${xpEarned} XP)`
+        );
+      }
     }
 
-    return { success: true, xpEarned, session };
+    return {
+      success: true,
+      xpEarned,
+      potentialXp,
+      isPersonalBest,
+      prevBestScore: Math.max(prevBestScore, score),
+      session,
+    };
+  }
+
+  getGameSummary(profileId: string) {
+    const summary = {
+      rotaract_game: { bestScore: 0, maxScore: 10, totalXp: 0, attempts: 0, completed: false },
+      minion_game: { bestScore: 0, maxScore: 1500, totalXp: 0, attempts: 0, completed: false },
+      memory_game: { bestScore: 0, maxScore: 1000, bestTimeSeconds: 0, totalXp: 0, attempts: 0, completed: false },
+      vibe_quiz: { bestScore: 0, maxScore: 10, totalXp: 0, attempts: 0, completed: false },
+    };
+
+    this.gameSessions
+      .filter((gs) => gs.profile_id === profileId)
+      .forEach((gs) => {
+        const item = summary[gs.game_type as keyof typeof summary];
+        if (item) {
+          item.attempts += 1;
+          item.completed = true;
+          item.bestScore = Math.max(item.bestScore, gs.score);
+          item.totalXp += gs.xp_earned;
+        }
+      });
+
+    return summary;
   }
 
   getGameHighScores(profileId: string) {

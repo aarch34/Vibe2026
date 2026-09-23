@@ -1,21 +1,21 @@
 "use client";
 
 import React, { useState } from "react";
-import { CheckCircle2, XCircle, Trophy, Sparkles, RotateCcw } from "lucide-react";
+import { Trophy, Sparkles, RotateCcw, ArrowRight } from "lucide-react";
 
 interface RotaractGameProps {
-  onScoreSubmitted: (score: number, maxScore: number, xp: number) => void;
+  onScoreSubmitted: (score: number, maxScore: number, xp: number) => Promise<void>;
   onClose: () => void;
 }
 
-const QUESTIONS = [
+const ROTARACT_QUESTIONS = [
   {
-    q: "What is the motto of Rotary International?",
+    q: "What is the official motto of Rotary International and Rotaract?",
     options: ["Service Above Self", "Leadership First", "Youth Empowerment", "Fellowship & Beyond"],
     correct: 0,
   },
   {
-    q: "Rotaract was officially founded in which year?",
+    q: "In which year was Rotaract officially founded by Rotary International?",
     options: ["1968", "1975", "1980", "1992"],
     correct: 0,
   },
@@ -26,12 +26,37 @@ const QUESTIONS = [
   },
   {
     q: "What is the primary theme of Rotaract fellowship?",
-    options: ["Fellowship Through Service", "Profit & Commerce", "Strict Examination", "Solo Achievement"],
+    options: ["Fellowship Through Service", "Commercial Trading", "Strict Examinations", "Solo Achievements"],
     correct: 0,
   },
   {
-    q: "What is the age group traditionally served by Rotaract clubs?",
-    options: ["18 to 30+", "10 to 15", "40 to 60", "Any age"],
+    q: "What is the traditional age group served by Rotaract clubs worldwide?",
+    options: ["18 to 30+", "10 to 15", "40 to 60", "Under 12"],
+    correct: 0,
+  },
+  {
+    q: "What is the Four-Way Test's first question?",
+    options: ["Is it the TRUTH?", "Is it FAIR to all concerned?", "Will it build GOODWILL?", "Will it be BENEFICIAL?"],
+    correct: 0,
+  },
+  {
+    q: "What is the emblem/symbol of Rotary International?",
+    options: ["Wheel with 24 cogs", "Anchor", "Star", "Torch of Light"],
+    correct: 0,
+  },
+  {
+    q: "What is the primary annual gathering event for Rotaract District 3192?",
+    options: ["VIBE 2026 & District Conference", "Global Summit", "Winter Festival", "Youth Expo"],
+    correct: 0,
+  },
+  {
+    q: "Which of the following is one of Rotary's 7 Areas of Focus?",
+    options: ["Peacebuilding and Conflict Prevention", "Space Exploration", "Stock Trading", "Automobile Racing"],
+    correct: 0,
+  },
+  {
+    q: "What key avenue of service focuses on international understanding and peace?",
+    options: ["International Service", "Club Service", "Community Service", "Vocational Service"],
     correct: 0,
   },
 ];
@@ -42,22 +67,23 @@ export function RotaractGame({ onScoreSubmitted, onClose }: RotaractGameProps) {
   const [score, setScore] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
   const [xpEarned, setXpEarned] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleNext = () => {
-    if (selectedOpt === null) return;
+  const handleNext = async () => {
+    if (selectedOpt === null || isSubmitting) return;
 
     let newScore = score;
-    if (selectedOpt === QUESTIONS[currentIdx].correct) {
+    if (selectedOpt === ROTARACT_QUESTIONS[currentIdx].correct) {
       newScore += 1;
       setScore(newScore);
     }
 
-    if (currentIdx + 1 < QUESTIONS.length) {
+    if (currentIdx + 1 < ROTARACT_QUESTIONS.length) {
       setCurrentIdx(currentIdx + 1);
       setSelectedOpt(null);
     } else {
-      // Calculate XP
-      const pct = (newScore / QUESTIONS.length) * 100;
+      setIsSubmitting(true);
+      const pct = (newScore / ROTARACT_QUESTIONS.length) * 100;
       let xp = 25;
       if (pct >= 81) xp = 150;
       else if (pct >= 61) xp = 100;
@@ -65,8 +91,20 @@ export function RotaractGame({ onScoreSubmitted, onClose }: RotaractGameProps) {
 
       setXpEarned(xp);
       setIsFinished(true);
-      onScoreSubmitted(newScore, QUESTIONS.length, xp);
+      try {
+        await onScoreSubmitted(newScore, ROTARACT_QUESTIONS.length, xp);
+      } finally {
+        setIsSubmitting(false);
+      }
     }
+  };
+
+  const restartGame = () => {
+    setCurrentIdx(0);
+    setSelectedOpt(null);
+    setScore(0);
+    setIsFinished(false);
+    setXpEarned(0);
   };
 
   return (
@@ -74,7 +112,7 @@ export function RotaractGame({ onScoreSubmitted, onClose }: RotaractGameProps) {
       <div className="flex items-center justify-between border-b border-border pb-3">
         <h3 className="font-black text-lg text-foreground flex items-center space-x-2">
           <span>⚙️</span>
-          <span>ROTARACT KNOWLEDGE GAME</span>
+          <span>ROTARACT GAME</span>
         </h3>
         <button onClick={onClose} className="text-xs font-bold text-muted-foreground hover:text-foreground">
           Close
@@ -84,16 +122,16 @@ export function RotaractGame({ onScoreSubmitted, onClose }: RotaractGameProps) {
       {!isFinished ? (
         <div className="space-y-5">
           <div className="flex items-center justify-between text-xs font-extrabold text-muted-foreground">
-            <span>Question {currentIdx + 1} of {QUESTIONS.length}</span>
+            <span>Question {currentIdx + 1}/{ROTARACT_QUESTIONS.length}</span>
             <span className="font-mono text-purple-400">Score: {score}</span>
           </div>
 
-          <h4 className="font-black text-base text-foreground">
-            {QUESTIONS[currentIdx].q}
+          <h4 className="font-black text-base text-foreground leading-snug">
+            {ROTARACT_QUESTIONS[currentIdx].q}
           </h4>
 
           <div className="space-y-2.5">
-            {QUESTIONS[currentIdx].options.map((opt, i) => (
+            {ROTARACT_QUESTIONS[currentIdx].options.map((opt, i) => (
               <button
                 key={i}
                 onClick={() => setSelectedOpt(i)}
@@ -103,6 +141,9 @@ export function RotaractGame({ onScoreSubmitted, onClose }: RotaractGameProps) {
                     : "bg-secondary/60 text-foreground border-border/80 hover:bg-secondary"
                 }`}
               >
+                <span className="font-mono mr-2 text-purple-400">
+                  {String.fromCharCode(65 + i)}.
+                </span>
                 {opt}
               </button>
             ))}
@@ -110,25 +151,35 @@ export function RotaractGame({ onScoreSubmitted, onClose }: RotaractGameProps) {
 
           <button
             onClick={handleNext}
-            disabled={selectedOpt === null}
-            className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:brightness-110 text-white font-extrabold text-sm rounded-xl transition-all disabled:opacity-50"
+            disabled={selectedOpt === null || isSubmitting}
+            className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-500 hover:brightness-110 text-white font-extrabold text-sm rounded-xl transition-all disabled:opacity-50 flex items-center justify-center space-x-2"
           >
-            {currentIdx + 1 === QUESTIONS.length ? "SUBMIT QUIZ" : "NEXT QUESTION"}
+            <span>{currentIdx + 1 === ROTARACT_QUESTIONS.length ? (isSubmitting ? "SUBMITTING..." : "SUBMIT QUIZ") : "NEXT QUESTION"}</span>
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       ) : (
-        <div className="text-center py-6 space-y-4">
+        <div className="text-center py-6 space-y-5">
           <Trophy className="w-16 h-16 mx-auto text-amber-400 animate-bounce" />
-          <h4 className="text-2xl font-black text-foreground">Quiz Completed!</h4>
-          <p className="text-sm text-muted-foreground">
-            You scored <span className="font-bold text-foreground">{score} / {QUESTIONS.length}</span> ({Math.round((score / QUESTIONS.length) * 100)}%)
-          </p>
-
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 border border-amber-500/40 inline-block text-amber-300 font-mono text-xl font-black">
-            +${xpEarned} XP EARNED! ⭐
+          <h4 className="text-2xl font-black text-foreground tracking-tight">ROTARACT GAME COMPLETE</h4>
+          
+          <div className="space-y-1">
+            <p className="text-sm text-muted-foreground">Score:</p>
+            <p className="text-3xl font-black font-mono text-foreground">{score} / {ROTARACT_QUESTIONS.length}</p>
           </div>
 
-          <div className="pt-2">
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/40 inline-block text-purple-300 font-mono text-xl font-black">
+            XP EARNED: +{xpEarned} XP
+          </div>
+
+          <div className="flex items-center justify-center space-x-3 pt-3">
+            <button
+              onClick={restartGame}
+              className="px-5 py-2.5 bg-secondary hover:bg-secondary/80 text-foreground font-bold text-xs rounded-xl flex items-center space-x-1.5 transition-all"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>PLAY AGAIN</span>
+            </button>
             <button
               onClick={onClose}
               className="px-6 py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-xs rounded-xl transition-all"

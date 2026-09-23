@@ -16,14 +16,15 @@ export async function POST(req: Request) {
     const session = await getCurrentUserSession();
     const { caption, imageUrl } = await req.json();
 
-    if (!caption && !imageUrl) {
+    if (!caption?.trim() && !imageUrl?.trim()) {
       return NextResponse.json({ success: false, error: "Caption or Image required" }, { status: 400 });
     }
 
-    const post = mockDb.createPost(session.profile.id, caption || "", imageUrl);
-    const fullPost = { ...post, author: mockDb.getProfile(session.profile.id) || session.profile };
+    const { post, xpEarned } = mockDb.createPost(session.profile.id, caption?.trim() || "", imageUrl?.trim());
+    const author = mockDb.getProfile(session.profile.id) || session.profile;
+    const fullPost = { ...post, author };
 
-    return NextResponse.json({ success: true, post: fullPost });
+    return NextResponse.json({ success: true, post: fullPost, xpEarned });
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }
