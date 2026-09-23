@@ -20,7 +20,6 @@ if (isClerkReady) {
       "/",
       "/sign-in(.*)",
       "/sign-up(.*)",
-      "/register(.*)",
       "/api/webhooks(.*)",
       "/staff/login(.*)",
       "/admin/login(.*)",

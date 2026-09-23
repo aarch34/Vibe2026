@@ -67,7 +67,7 @@ export default function SignUpPage() {
                   Sign Up with Clerk
                 </h2>
                 <p className="text-xs text-muted-foreground font-medium">
-                  Create your attendee profile and get 500 starting VIBE Coins.
+                  Create your attendee profile to connect, play games, and earn XP.
                 </p>
               </div>
             </div>
