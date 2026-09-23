@@ -283,9 +283,55 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
       }
     }
 
+    // Ensure mockDb has a normalized representation of this Supabase profile
+    let memProfile = mockDb.getProfile(profile.id) || mockDb.getProfileByClerkId(clerkUserId);
+    if (!memProfile) {
+      const username = (profile.display_name?.toLowerCase().replace(/[^a-z0-9]/g, "_") || "user") + "_" + (profile.vibe_id ? profile.vibe_id.replace(/[^0-9]/g, "").slice(0, 4) : "2026");
+      memProfile = {
+        id: profile.id,
+        clerk_user_id: clerkUserId,
+        vibe_id: profile.vibe_id || `VB2026-${Math.floor(100 + Math.random() * 900)}`,
+        display_name: profile.display_name || displayName,
+        username,
+        avatar_url: (profile as any).avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(profile.display_name || "user")}`,
+        avatar_media_id: profile.avatar_media_id || null,
+        email: profile.email || userEmail || "",
+        phone: profile.phone || "+91 98765 43210",
+        rotaract_club: (profile as any).club || (profile as any).rotaract_club || "Rotaract District 3192",
+        college: profile.college || "District 3192",
+        course_year: (profile as any).course_year || "Delegate • 2026",
+        instagram_username: (profile as any).instagram_id || (profile as any).instagram_username || null,
+        bio: (profile as any).bio || null,
+        interests: (profile as any).interests || ["Fellowship", "Networking", "Events"],
+        skills: (profile as any).skills || [],
+        hobbies: (profile as any).hobbies || [],
+        favorite_music: (profile as any).favorite_music || [],
+        favorite_movies: (profile as any).favorite_movies || [],
+        city: (profile as any).city || "Bengaluru",
+        is_discoverable: (profile as any).is_discoverable ?? true,
+        xp: (profile as any).xp ?? 100,
+        level_number: (profile as any).level_number ?? 1,
+        level_name: (profile as any).level_name ?? "VIBE NEWBIE",
+        connections_count: (profile as any).connections_count ?? 0,
+        posts_count: (profile as any).posts_count ?? 0,
+        games_played_count: (profile as any).games_played_count ?? 0,
+        registration_id: profile.registration_id || null,
+        profile_completed: Boolean((profile as any).bio && (profile as any).interests?.length > 0),
+        created_at: profile.created_at || new Date().toISOString(),
+        updated_at: profile.updated_at || new Date().toISOString(),
+      };
+      mockDb.profiles.set(memProfile.id, memProfile);
+      mockDb.clerkToProfileMap.set(clerkUserId, memProfile.id);
+    } else {
+      if (profile.display_name) memProfile.display_name = profile.display_name;
+      if (profile.college) memProfile.college = profile.college;
+      if ((profile as any).club) memProfile.rotaract_club = (profile as any).club;
+      if ((profile as any).instagram_id) memProfile.instagram_username = (profile as any).instagram_id;
+    }
+
     const resolvedSession: CurrentUserSession = {
       clerkUserId,
-      profile,
+      profile: memProfile,
       member: member || {
         id: `em-${profile.id}`,
         event_id: eventId,

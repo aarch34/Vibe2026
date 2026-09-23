@@ -42,6 +42,7 @@ export interface Profile {
   posts_count: number;
   games_played_count: number;
   registration_id?: string | null;
+  profile_completed?: boolean;
   created_at: string;
   updated_at: string;
 }

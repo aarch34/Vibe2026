@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Sparkles,
@@ -17,10 +17,12 @@ import {
   Heart,
   Calendar,
   CheckCircle2,
+  Pencil,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Profile, Post, Level } from "@/types/database";
 import { calculateLevel } from "@/lib/db/mock-store";
+import { EditProfileModal } from "@/components/attendee/edit-profile-modal";
 
 interface ProfileViewProps {
   profile: Profile;
@@ -35,12 +37,20 @@ export function ProfileView({
   userPosts,
   highScores,
 }: ProfileViewProps) {
-  const levelInfo = calculateLevel(profile.xp);
-  const [isDiscoverable, setIsDiscoverable] = useState(profile.is_discoverable);
+  const [currentProfile, setCurrentProfile] = useState<Profile>(profile);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDiscoverable, setIsDiscoverable] = useState(currentProfile.is_discoverable);
 
+  // Sync internal state when server-passed profile prop updates
+  useEffect(() => {
+    setCurrentProfile(profile);
+    setIsDiscoverable(profile.is_discoverable);
+  }, [profile]);
+
+  const levelInfo = calculateLevel(currentProfile.xp);
   const minXp = levelInfo.min_xp;
   const maxXp = levelInfo.max_xp || 3000;
-  const currentLevelXp = Math.max(0, profile.xp - minXp);
+  const currentLevelXp = Math.max(0, currentProfile.xp - minXp);
   const totalLevelRange = Math.max(1, maxXp - minXp);
   const progressPercent = Math.min(100, Math.floor((currentLevelXp / totalLevelRange) * 100));
 
@@ -61,8 +71,11 @@ export function ProfileView({
           {/* Avatar */}
           <div className="relative shrink-0">
             <img
-              src={profile.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=user"}
-              alt={profile.display_name}
+              src={
+                currentProfile.avatar_url ||
+                `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentProfile.display_name || "user")}`
+              }
+              alt={currentProfile.display_name}
               width={112}
               height={112}
               style={{ width: "112px", height: "112px", maxWidth: "112px", maxHeight: "112px" }}
@@ -75,44 +88,66 @@ export function ProfileView({
 
           {/* User Info */}
           <div className="flex-1 space-y-2">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <h1 className="text-2xl sm:text-3xl font-black text-foreground">{profile.display_name}</h1>
-                <span className="text-xs font-mono text-muted-foreground block">@{profile.username}</span>
+                <h1 className="text-2xl sm:text-3xl font-black text-foreground">
+                  {currentProfile.display_name}
+                </h1>
+                <span className="text-xs font-mono text-muted-foreground block">
+                  @{currentProfile.username}
+                </span>
               </div>
 
-              {/* Instagram Button */}
-              {profile.instagram_username && (
-                <a
-                  href={`https://instagram.com/${profile.instagram_username}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 text-white font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all self-center sm:self-auto"
-                >
-                  <Instagram className="w-4 h-4" />
-                  <span>VIEW INSTAGRAM</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </a>
-              )}
+              {/* Action Buttons: Edit Profile & View Instagram */}
+              <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 self-center sm:self-auto">
+                {isSelf && (
+                  <button
+                    onClick={() => setIsEditModalOpen(true)}
+                    className="px-4 py-2 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 text-pink-400 font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                    <span>EDIT PROFILE</span>
+                  </button>
+                )}
+
+                {currentProfile.instagram_username && (
+                  <a
+                    href={`https://instagram.com/${currentProfile.instagram_username}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 text-white font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all"
+                  >
+                    <Instagram className="w-4 h-4" />
+                    <span>VIEW INSTAGRAM</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                )}
+              </div>
             </div>
 
             {/* Academic & Club Details */}
             <div className="text-xs text-muted-foreground space-y-0.5">
-              <p className="font-bold text-foreground">{profile.college} • {profile.course_year}</p>
-              <p className="font-semibold text-purple-400">{profile.rotaract_club} {profile.city && `• ${profile.city}`}</p>
+              <p className="font-bold text-foreground">
+                {currentProfile.college || "Delegate"}{" "}
+                {currentProfile.course_year && `• ${currentProfile.course_year}`}
+              </p>
+              <p className="font-semibold text-purple-400">
+                {currentProfile.rotaract_club || "Rotaract District 3192"}{" "}
+                {currentProfile.city && `• ${currentProfile.city}`}
+              </p>
             </div>
 
             {/* Bio */}
-            {profile.bio && (
+            {currentProfile.bio && (
               <p className="text-xs text-foreground/90 leading-relaxed max-w-xl pt-1">
-                "{profile.bio}"
+                "{currentProfile.bio}"
               </p>
             )}
 
             {/* Interests Tags */}
-            {profile.interests && profile.interests.length > 0 && (
+            {currentProfile.interests && currentProfile.interests.length > 0 && (
               <div className="flex flex-wrap gap-1.5 pt-2 justify-center sm:justify-start">
-                {profile.interests.map((tag) => (
+                {currentProfile.interests.map((tag) => (
                   <span
                     key={tag}
                     className="px-2.5 py-1 rounded-full bg-secondary text-pink-400 border border-pink-500/20 text-[11px] font-bold"
@@ -134,7 +169,7 @@ export function ProfileView({
                 Level {levelInfo.level_number}: {levelInfo.level_name}
               </span>
             </span>
-            <span className="text-amber-400 font-mono text-sm">⭐ {profile.xp} XP</span>
+            <span className="text-amber-400 font-mono text-sm">⭐ {currentProfile.xp} XP</span>
           </div>
 
           <div className="w-full h-3 rounded-full bg-background overflow-hidden p-0.5 border border-border/60">
@@ -149,13 +184,17 @@ export function ProfileView({
         {isSelf && (
           <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/50 text-xs">
             <span className="font-bold text-muted-foreground flex items-center space-x-1.5">
-              {isDiscoverable ? <Globe className="w-4 h-4 text-cyan-400" /> : <Lock className="w-4 h-4 text-pink-400" />}
+              {isDiscoverable ? (
+                <Globe className="w-4 h-4 text-cyan-400" />
+              ) : (
+                <Lock className="w-4 h-4 text-pink-400" />
+              )}
               <span>Discoverable in People Search</span>
             </span>
             <button
               onClick={toggleDiscoverable}
               className={cn(
-                "px-3 py-1 rounded-full font-extrabold text-[11px] transition-all",
+                "px-3 py-1 rounded-full font-extrabold text-[11px] transition-all cursor-pointer",
                 isDiscoverable
                   ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
                   : "bg-pink-500/20 text-pink-400 border border-pink-500/40"
@@ -172,25 +211,33 @@ export function ProfileView({
         <div className="p-4 rounded-2xl bg-card border border-border text-center space-y-1">
           <Users className="w-5 h-5 mx-auto text-cyan-400" />
           <span className="text-xs font-bold text-muted-foreground block">Connections</span>
-          <span className="text-xl font-black text-foreground font-mono">{profile.connections_count}</span>
+          <span className="text-xl font-black text-foreground font-mono">
+            {currentProfile.connections_count}
+          </span>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border text-center space-y-1">
           <MessageSquare className="w-5 h-5 mx-auto text-pink-400" />
           <span className="text-xs font-bold text-muted-foreground block">VIBE Posts</span>
-          <span className="text-xl font-black text-foreground font-mono">{profile.posts_count}</span>
+          <span className="text-xl font-black text-foreground font-mono">
+            {currentProfile.posts_count}
+          </span>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border text-center space-y-1">
           <Gamepad2 className="w-5 h-5 mx-auto text-purple-400" />
           <span className="text-xs font-bold text-muted-foreground block">Games Played</span>
-          <span className="text-xl font-black text-foreground font-mono">{profile.games_played_count}</span>
+          <span className="text-xl font-black text-foreground font-mono">
+            {currentProfile.games_played_count}
+          </span>
         </div>
 
         <div className="p-4 rounded-2xl bg-card border border-border text-center space-y-1">
           <Trophy className="w-5 h-5 mx-auto text-amber-400" />
           <span className="text-xs font-bold text-muted-foreground block">Total XP</span>
-          <span className="text-xl font-black text-amber-400 font-mono">⭐ {profile.xp}</span>
+          <span className="text-xl font-black text-amber-400 font-mono">
+            ⭐ {currentProfile.xp}
+          </span>
         </div>
       </div>
 
@@ -204,57 +251,68 @@ export function ProfileView({
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
           <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60">
             <span className="text-muted-foreground block font-semibold mb-1">Rotaract Game</span>
-            <span className="font-mono font-black text-purple-400 text-base">{highScores.rotaract_game || 0}</span>
+            <span className="font-mono font-black text-purple-400 text-base">
+              {highScores.rotaract_game || 0}
+            </span>
           </div>
 
           <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60">
             <span className="text-muted-foreground block font-semibold mb-1">Minion Run</span>
-            <span className="font-mono font-black text-yellow-400 text-base">{highScores.minion_game || 0}</span>
+            <span className="font-mono font-black text-yellow-400 text-base">
+              {highScores.minion_game || 0}
+            </span>
           </div>
 
           <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60">
             <span className="text-muted-foreground block font-semibold mb-1">Memory Match</span>
-            <span className="font-mono font-black text-pink-400 text-base">{highScores.memory_game || 0}</span>
+            <span className="font-mono font-black text-pink-400 text-base">
+              {highScores.memory_game || 0}
+            </span>
           </div>
 
           <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60">
             <span className="text-muted-foreground block font-semibold mb-1">VIBE Quiz</span>
-            <span className="font-mono font-black text-cyan-400 text-base">{highScores.vibe_quiz || 0}</span>
+            <span className="font-mono font-black text-cyan-400 text-base">
+              {highScores.vibe_quiz || 0}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Optional Details (Skills, Hobbies, Music, Movies) */}
-      {(profile.skills?.length || profile.hobbies?.length || profile.favorite_music?.length || profile.favorite_movies?.length) ? (
+      {currentProfile.skills?.length ||
+      currentProfile.hobbies?.length ||
+      currentProfile.favorite_music?.length ||
+      currentProfile.favorite_movies?.length ? (
         <div className="p-5 rounded-3xl bg-card border border-border space-y-3 text-xs">
           <h3 className="font-black text-sm text-foreground">Favorites & Skills</h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {profile.skills?.length ? (
+            {currentProfile.skills?.length ? (
               <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40">
                 <span className="font-bold text-cyan-400 block mb-1">Skills</span>
-                <span className="text-foreground">{profile.skills.join(", ")}</span>
+                <span className="text-foreground">{currentProfile.skills.join(", ")}</span>
               </div>
             ) : null}
 
-            {profile.hobbies?.length ? (
+            {currentProfile.hobbies?.length ? (
               <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40">
                 <span className="font-bold text-pink-400 block mb-1">Hobbies</span>
-                <span className="text-foreground">{profile.hobbies.join(", ")}</span>
+                <span className="text-foreground">{currentProfile.hobbies.join(", ")}</span>
               </div>
             ) : null}
 
-            {profile.favorite_music?.length ? (
+            {currentProfile.favorite_music?.length ? (
               <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40">
                 <span className="font-bold text-purple-400 block mb-1">Favorite Music</span>
-                <span className="text-foreground">{profile.favorite_music.join(", ")}</span>
+                <span className="text-foreground">{currentProfile.favorite_music.join(", ")}</span>
               </div>
             ) : null}
 
-            {profile.favorite_movies?.length ? (
+            {currentProfile.favorite_movies?.length ? (
               <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40">
                 <span className="font-bold text-amber-400 block mb-1">Favorite Movies</span>
-                <span className="text-foreground">{profile.favorite_movies.join(", ")}</span>
+                <span className="text-foreground">{currentProfile.favorite_movies.join(", ")}</span>
               </div>
             ) : null}
           </div>
@@ -271,19 +329,40 @@ export function ProfileView({
           </div>
         ) : (
           userPosts.map((post) => (
-            <div key={post.id} className="p-4 rounded-2xl bg-card border border-border space-y-2 text-xs">
+            <div
+              key={post.id}
+              className="p-4 rounded-2xl bg-card border border-border space-y-2 text-xs"
+            >
               <p className="text-foreground font-medium">{post.caption}</p>
               {post.image_url && (
-                <img src={post.image_url} alt="Post image" className="w-full max-h-60 object-cover rounded-xl" />
+                <img
+                  src={post.image_url}
+                  alt="Post image"
+                  className="w-full max-h-60 object-cover rounded-xl"
+                />
               )}
               <div className="flex items-center justify-between text-muted-foreground pt-1">
-                <span>{post.likes_count} Likes • {post.comments_count} Comments</span>
-                <span className="font-mono text-[10px]">{new Date(post.created_at).toLocaleDateString()}</span>
+                <span>
+                  {post.likes_count} Likes • {post.comments_count} Comments
+                </span>
+                <span className="font-mono text-[10px]">
+                  {new Date(post.created_at).toLocaleDateString()}
+                </span>
               </div>
             </div>
           ))
         )}
       </div>
+
+      {/* Edit Profile Modal Dialog */}
+      {isSelf && (
+        <EditProfileModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          profile={currentProfile}
+          onProfileUpdated={(updated) => setCurrentProfile(updated)}
+        />
+      )}
     </div>
   );
 }

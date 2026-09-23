@@ -105,6 +105,24 @@ class VibeMemoryDatabase {
     return undefined;
   }
 
+  getProfileByUsername(username: string): Profile | undefined {
+    const clean = username.trim().toLowerCase();
+    for (const p of Array.from(this.profiles.values())) {
+      if (p.username && p.username.toLowerCase() === clean) return p;
+    }
+    return undefined;
+  }
+
+  isUsernameTaken(username: string, excludeProfileId?: string): boolean {
+    const clean = username.trim().toLowerCase();
+    for (const p of Array.from(this.profiles.values())) {
+      if (p.username && p.username.toLowerCase() === clean && p.id !== excludeProfileId) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   createProfile(data: {
     clerk_user_id: string;
     display_name: string;
@@ -166,6 +184,7 @@ class VibeMemoryDatabase {
       posts_count: 0,
       games_played_count: 0,
       registration_id: `REG-${Math.floor(10000 + Math.random() * 90000)}`,
+      profile_completed: Boolean(data.bio && data.interests && data.interests.length > 0),
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
