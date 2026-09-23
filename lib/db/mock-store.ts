@@ -956,4 +956,11 @@ class VibeMemoryDatabase {
   }
 }
 
-export const mockDb = new VibeMemoryDatabase();
+declare global {
+  // eslint-disable-next-line no-var
+  var __vibeMockDb: VibeMemoryDatabase | undefined;
+}
+
+export const mockDb =
+  globalThis.__vibeMockDb || (globalThis.__vibeMockDb = new VibeMemoryDatabase());
+

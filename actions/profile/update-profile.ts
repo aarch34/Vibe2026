@@ -35,6 +35,7 @@ import { cleanInstagramUsername, parseStringArray } from "@/lib/profile/utils";
 export async function updateAttendeeProfile(
   input: FormData | ProfileUpdateInput
 ): Promise<UpdateProfileResult> {
+
   try {
     const session = await getCurrentUserSession();
     if (!session || !session.profile || !session.profile.id) {
@@ -299,4 +300,10 @@ export async function updateAttendeeProfile(
       error: error?.message || "Couldn't update your profile. Please try again.",
     };
   }
+}
+
+export async function updateProfileAction(
+  input: FormData | ProfileUpdateInput
+): Promise<UpdateProfileResult> {
+  return updateAttendeeProfile(input);
 }

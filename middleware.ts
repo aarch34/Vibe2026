@@ -20,6 +20,7 @@ if (isClerkReady) {
       "/",
       "/sign-in(.*)",
       "/sign-up(.*)",
+      "/register(.*)",
       "/api/webhooks(.*)",
       "/staff/login(.*)",
       "/admin/login(.*)",
@@ -114,16 +115,10 @@ if (isClerkReady) {
       // 5. Protect Attendee App (/app/*)
       if (isAppRoute(req)) {
         const authData = auth();
-        const isTestAgent =
-          req.headers.get("user-agent")?.toLowerCase().includes("node") ||
-          req.headers.get("x-test-bypass") === "true";
-        const devCookie = isTestAgent ? req.cookies.get("vibe_user_id")?.value : null;
+        const attendeeCookie = req.cookies.get("vibe_user_id")?.value;
 
-        if (!authData.userId && !devCookie) {
+        if (!authData.userId && !attendeeCookie) {
           const res = authData.redirectToSignIn({ returnBackUrl: req.url });
-          if (req.cookies.has("vibe_user_id")) {
-            res.cookies.delete("vibe_user_id");
-          }
           return res;
         }
         return nextWithHeaders();
