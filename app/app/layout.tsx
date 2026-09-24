@@ -3,6 +3,7 @@ import { getCurrentUserSession } from "@/lib/auth/session";
 import { mockDb, calculateLevel } from "@/lib/db/mock-store";
 import { TopHeader } from "@/components/attendee/top-header";
 import { AttendeeBottomNav } from "@/components/attendee/bottom-nav";
+import { InstallPWA } from "@/components/ui/install-pwa";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +34,7 @@ export default async function AttendeeLayout({
         {children}
       </main>
       <AttendeeBottomNav />
+      <InstallPWA />
     </div>
   );
 }
