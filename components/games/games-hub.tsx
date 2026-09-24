@@ -37,7 +37,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
       const res = await fetch("/api/games/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ gameType, score, maxScore, timeSeconds }),
+        body: JSON.stringify({ gameType, score, maxScore, xp, timeSeconds }),
       });
 
       if (res.ok) {

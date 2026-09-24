@@ -326,13 +326,22 @@ export function ProfileView({
               {/* Action Buttons: Edit Profile & View Instagram */}
               <div className="flex flex-wrap items-center justify-center sm:justify-end gap-2 self-center sm:self-auto">
                 {isSelf && (
-                  <button
-                    onClick={() => setIsEditModalOpen(true)}
-                    className="px-4 py-2 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 text-pink-400 font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                    <span>EDIT PROFILE</span>
-                  </button>
+                  <>
+                    <Link
+                      href="/app/leaderboard"
+                      className="px-4 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-400 font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
+                    >
+                      <Trophy className="w-3.5 h-3.5" />
+                      <span>LEADERBOARD</span>
+                    </Link>
+                    <button
+                      onClick={() => setIsEditModalOpen(true)}
+                      className="px-4 py-2 rounded-xl bg-pink-500/15 hover:bg-pink-500/25 border border-pink-500/30 text-pink-400 font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span>EDIT PROFILE</span>
+                    </button>
+                  </>
                 )}
 
                 {!isSelf && (

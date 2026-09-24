@@ -20,11 +20,11 @@ import {
 import { cleanInstagramUsername } from "@/lib/profile/utils";
 
 export function calculateLevel(xp: number) {
-  if (xp >= 2500) return { level_number: 6, level_name: "VIBE LEGEND", badge: "👑", min_xp: 2500, max_xp: null };
-  if (xp >= 1500) return { level_number: 5, level_name: "VIBE ICON", badge: "💫", min_xp: 1500, max_xp: 2499 };
-  if (xp >= 1000) return { level_number: 4, level_name: "VIBE RIDER", badge: "⚡", min_xp: 1000, max_xp: 1499 };
-  if (xp >= 500) return { level_number: 3, level_name: "VIBE SEEKER", badge: "🔥", min_xp: 500, max_xp: 999 };
-  if (xp >= 250) return { level_number: 2, level_name: "VIBE EXPLORER", badge: "✨", min_xp: 250, max_xp: 499 };
+  if (xp >= 4000) return { level_number: 6, level_name: "VIBE LEGEND", badge: "👑", min_xp: 4000, max_xp: null };
+  if (xp >= 2500) return { level_number: 5, level_name: "VIBE ICON", badge: "💫", min_xp: 2500, max_xp: 3999 };
+  if (xp >= 1500) return { level_number: 4, level_name: "VIBE RIDER", badge: "⚡", min_xp: 1500, max_xp: 2499 };
+  if (xp >= 750) return { level_number: 3, level_name: "VIBE SEEKER", badge: "🔥", min_xp: 750, max_xp: 1499 };
+  if (xp >= 250) return { level_number: 2, level_name: "VIBE EXPLORER", badge: "✨", min_xp: 250, max_xp: 749 };
   return { level_number: 1, level_name: "VIBE NEWBIE", badge: "🌱", min_xp: 0, max_xp: 249 };
 }
 

@@ -56,7 +56,7 @@ export function DashboardWelcome({
             <span>{levelInfo.level_name}</span>
           </span>
           <span className="text-muted-foreground font-mono text-[11px]">
-            {xp} / {levelInfo.max_xp ? `${levelInfo.max_xp} XP` : "MAX"}
+            {xp} / {levelInfo.max_xp ? `${levelInfo.max_xp + 1} XP` : "MAX"}
           </span>
         </div>
         <div className="w-full h-3 rounded-full bg-secondary/80 overflow-hidden p-0.5 border border-border/50">

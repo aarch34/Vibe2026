@@ -8,7 +8,7 @@ import { GameType } from "@/types/database";
 export async function POST(req: Request) {
   try {
     const session = await getCurrentUserSession();
-    const { gameType, score, maxScore, timeSeconds } = await req.json();
+    const { gameType, score, maxScore, xp, timeSeconds } = await req.json();
 
     if (!gameType || score === undefined) {
       return NextResponse.json({ success: false, error: "gameType and score required" }, { status: 400 });
@@ -27,20 +27,26 @@ export async function POST(req: Request) {
     };
     const title = gameTitles[gameType] || "VIBE Game";
 
-    if (gameType === "rotaract_quiz") {
-      const pct = numMax > 0 ? (numScore / numMax) * 100 : 0;
-      if (pct >= 90) xpAwarded = 150;
-      else if (pct >= 70) xpAwarded = 100;
-      else if (pct >= 40) xpAwarded = 75;
-      else if (pct >= 20) xpAwarded = 50;
-      else xpAwarded = 25;
-    } else if (gameType === "flappy_rocco") {
-      if (numScore >= 1000) xpAwarded = 125;
-      else if (numScore >= 600) xpAwarded = 100;
-      else if (numScore >= 300) xpAwarded = 75;
-      else if (numScore >= 100) xpAwarded = 50;
-      else if (numScore >= 5) xpAwarded = 25;
-      else xpAwarded = 0;
+    // Use frontend-calculated XP to match the UI perfectly,
+    // otherwise fallback to backend conservative calculation
+    let xpAwarded = typeof xp === "number" ? xp : 25;
+    
+    if (typeof xp !== "number") {
+      if (gameType === "rotaract_quiz") {
+        const pct = numMax > 0 ? (numScore / numMax) * 100 : 0;
+        if (pct >= 90) xpAwarded = 150;
+        else if (pct >= 70) xpAwarded = 100;
+        else if (pct >= 40) xpAwarded = 75;
+        else if (pct >= 20) xpAwarded = 50;
+        else xpAwarded = 25;
+      } else if (gameType === "flappy_rocco") {
+        if (numScore >= 1000) xpAwarded = 125;
+        else if (numScore >= 600) xpAwarded = 100;
+        else if (numScore >= 300) xpAwarded = 75;
+        else if (numScore >= 100) xpAwarded = 50;
+        else if (numScore >= 5) xpAwarded = 25;
+        else xpAwarded = 0;
+      }
     }
 
     // 1. Update in-memory mockDb
