@@ -121,37 +121,66 @@ export async function POST(req: Request) {
     // 4. Sync with Live Supabase if configured
     if (isUsingLiveSupabase() && supabaseAdmin) {
       try {
-        const { data: supaProfile, error: supaErr } = await supabaseAdmin
-          .from("profiles")
-          .upsert(
-            {
-              clerk_user_id: validClerkUserId,
-              vibe_id: profile.vibe_id,
-              display_name: profile.display_name,
-              email: profile.email,
-              phone: profile.phone,
-              rotaract_club: profile.rotaract_club,
-              college: profile.college,
-              course_year: profile.course_year,
-              instagram_username: cleanIg,
-              username: resolvedUsername,
-              bio: profile.bio,
-              interests: profile.interests,
-              skills: profile.skills,
-              hobbies: profile.hobbies,
-              city: profile.city,
-              avatar_url: profile.avatar_url,
-              profile_completed: true,
-              is_discoverable: true,
-              xp: profile.xp || 100,
-              level_number: profile.level_number || 1,
-              level_name: profile.level_name || "VIBE NEWBIE",
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: "clerk_user_id" }
-          )
-          .select()
-          .single();
+        let supaProfile = null;
+        let supaErr = null;
+        let attempts = 0;
+        let currentUsername = resolvedUsername;
+        let currentVibeId = profile.vibe_id;
+
+        while (attempts < 3) {
+          const { data, error } = await supabaseAdmin
+            .from("profiles")
+            .upsert(
+              {
+                clerk_user_id: validClerkUserId,
+                vibe_id: currentVibeId,
+                display_name: profile.display_name,
+                email: profile.email,
+                phone: profile.phone,
+                rotaract_club: profile.rotaract_club,
+                college: profile.college,
+                course_year: profile.course_year,
+                instagram_username: cleanIg,
+                username: currentUsername,
+                bio: profile.bio,
+                interests: profile.interests,
+                skills: profile.skills,
+                hobbies: profile.hobbies,
+                city: profile.city,
+                avatar_url: profile.avatar_url,
+                profile_completed: true,
+                is_discoverable: true,
+                xp: profile.xp || 100,
+                level_number: profile.level_number || 1,
+                level_name: profile.level_name || "VIBE NEWBIE",
+                updated_at: new Date().toISOString(),
+              },
+              { onConflict: "clerk_user_id" }
+            )
+            .select()
+            .single();
+
+          if (error) {
+            if (error.code === '23505') {
+              if (error.message.includes('username')) {
+                currentUsername = `${currentUsername}_${Math.floor(Math.random() * 1000)}`;
+              } else if (error.message.includes('vibe_id')) {
+                currentVibeId = `VB2026-${Math.floor(1000 + Math.random() * 9000)}`;
+              } else {
+                supaErr = error;
+                break;
+              }
+              attempts++;
+              continue;
+            } else {
+              supaErr = error;
+              break;
+            }
+          }
+          
+          supaProfile = data;
+          break;
+        }
 
         if (supaErr) {
           console.error("Supabase profile upsert error on /api/register:", supaErr);

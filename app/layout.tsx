@@ -35,6 +35,10 @@ export const metadata: Metadata = {
   appleWebApp: {
     title: "VIBE 2026",
     statusBarStyle: "black-translucent",
+    capable: true,
+  },
+  other: {
+    "mobile-web-app-capable": "yes",
   },
 };
 
