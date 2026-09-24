@@ -7,51 +7,101 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
 
-    let clerkUserId = body.clerkUserId;
+    // 1. Resolve Clerk User ID from auth() header/session or body fallback
+    let fetchedClerkId: string | null = null;
     try {
       const { auth } = await import("@clerk/nextjs/server");
       const authData = auth();
       if (authData?.userId) {
-        clerkUserId = authData.userId;
+        fetchedClerkId = authData.userId;
       }
     } catch {
-      // fallback
+      // Clerk deferral
     }
 
-    if (!clerkUserId) {
-      clerkUserId = body.clerkUserId || `usr-reg-${Date.now()}`;
-    }
-
+    const validClerkUserId: string = fetchedClerkId || body.clerkUserId || `usr-reg-${Date.now()}`;
     const eventId = "a0000000-0000-0000-0000-000000000001";
 
-    const profile = mockDb.createProfile({
-      clerk_user_id: clerkUserId,
-      display_name: body.fullName || body.displayName || "VIBE Member",
-      email: body.email || "delegate@rotaract3192.org",
-      phone: body.phone || "+91 98765 43210",
-      rotaract_club: body.rotaractClub || "Rotaract District 3192",
-      college: body.college || "Rotaract District 3192",
-      course_year: body.courseYear || "Student",
-      instagram_username: body.instagramUsername || null,
-      bio: body.bio || null,
-      interests: body.interests || [],
-      skills: body.skills ? (Array.isArray(body.skills) ? body.skills : body.skills.split(",").map((s: string) => s.trim())) : [],
-      hobbies: body.hobbies ? (Array.isArray(body.hobbies) ? body.hobbies : body.hobbies.split(",").map((h: string) => h.trim())) : [],
-      favorite_music: body.favoriteMusic ? (Array.isArray(body.favoriteMusic) ? body.favoriteMusic : body.favoriteMusic.split(",").map((m: string) => m.trim())) : [],
-      favorite_movies: body.favoriteMovies ? (Array.isArray(body.favoriteMovies) ? body.favoriteMovies : body.favoriteMovies.split(",").map((m: string) => m.trim())) : [],
-      city: body.city || "Bengaluru",
-      avatar_url: body.avatarUrl || null,
-    });
+    // 2. Prevent duplicate profile creation for the same Clerk User
+    let existingProfile = mockDb.getProfileByClerkId(validClerkUserId);
+    if (existingProfile && existingProfile.profile_completed && existingProfile.display_name !== "VIBE Attendee") {
+      const response = NextResponse.json({ success: true, profile: existingProfile, alreadyRegistered: true });
+      response.cookies.set("vibe_user_id", validClerkUserId, {
+        path: "/",
+        httpOnly: true,
+        maxAge: 60 * 60 * 24 * 30, // 30 days
+      });
+      return response;
+    }
+
+    // 3. Create or update VIBE Profile in mock DB
+    const displayName = body.fullName || body.displayName || "VIBE Member";
+    const email = body.email || "delegate@rotaract3192.org";
+    const phone = body.phone || "+91 98765 43210";
+    const rotaractClub = body.rotaractClub || "Rotaract District 3192";
+    const college = body.college || body.rotaractClub || "Rotaract District 3192";
+    const courseYear = body.courseYear || body.designation || "Student";
+    const rawInstagram = body.instagramUsername || null;
+    const instagramUsername = rawInstagram ? rawInstagram.replace(/^@/, "").trim() : null;
+    const bio = body.bio || null;
+    const interests = body.interests && body.interests.length > 0 ? body.interests : ["Music", "Gaming"];
+    const avatarUrl =
+      body.avatarUrl ||
+      `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName)}`;
+
+    let profile;
+    if (existingProfile) {
+      profile =
+        mockDb.updateProfile(existingProfile.id, {
+          display_name: displayName,
+          email,
+          phone,
+          rotaract_club: rotaractClub,
+          college,
+          course_year: courseYear,
+          instagram_username: instagramUsername,
+          bio,
+          interests,
+          avatar_url: avatarUrl,
+          profile_completed: true,
+        }) || existingProfile;
+    } else {
+      profile = mockDb.createProfile({
+        clerk_user_id: validClerkUserId,
+        display_name: displayName,
+        email,
+        phone,
+        rotaract_club: rotaractClub,
+        college,
+        course_year: courseYear,
+        instagram_username: instagramUsername,
+        bio,
+        interests,
+        skills: body.skills
+          ? Array.isArray(body.skills)
+            ? body.skills
+            : body.skills.split(",").map((s: string) => s.trim())
+          : [],
+        hobbies: body.hobbies
+          ? Array.isArray(body.hobbies)
+            ? body.hobbies
+            : body.hobbies.split(",").map((h: string) => h.trim())
+          : [],
+        city: body.city || "Bengaluru",
+        avatar_url: avatarUrl,
+      });
+    }
 
     profile.profile_completed = true;
 
+    // 4. Sync with Live Supabase if configured
     if (isUsingLiveSupabase() && supabaseAdmin) {
       try {
         const { data: supaProfile, error: supaErr } = await supabaseAdmin
           .from("profiles")
           .upsert(
             {
-              clerk_user_id: clerkUserId,
+              clerk_user_id: validClerkUserId,
               vibe_id: profile.vibe_id,
               display_name: profile.display_name,
               email: profile.email,
@@ -88,7 +138,7 @@ export async function POST(req: Request) {
           mockDb.profiles.delete(profile.id);
           profile.id = supaProfile.id;
           mockDb.profiles.set(supaProfile.id, profile);
-          mockDb.clerkToProfileMap.set(clerkUserId, supaProfile.id);
+          mockDb.clerkToProfileMap.set(validClerkUserId, supaProfile.id);
 
           // Add to event_members
           await supabaseAdmin.from("event_members").upsert(
@@ -124,10 +174,11 @@ export async function POST(req: Request) {
       }
     }
 
-    invalidateSessionCache(clerkUserId);
+    // Invalidate session cache for this user
+    invalidateSessionCache(validClerkUserId);
 
     const response = NextResponse.json({ success: true, profile });
-    response.cookies.set("vibe_user_id", clerkUserId, {
+    response.cookies.set("vibe_user_id", validClerkUserId, {
       path: "/",
       httpOnly: true,
       maxAge: 60 * 60 * 24 * 30, // 30 days

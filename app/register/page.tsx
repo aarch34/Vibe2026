@@ -1,14 +1,15 @@
 import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
-import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { RegisterClient } from "@/components/auth/register-client";
+import { getCurrentUserSession } from "@/lib/auth/session";
+import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "Register & Festival Onboarding • VIBE 2026",
+  title: "Register & Onboarding • VIBE 2026",
   description:
-    "Claim 500 VIBE coins, choose your oceanic zone, and enter the Rotaract District 3192 festival.",
+    "Create your profile, connect with attendees, play games, and earn XP for VIBE 2026.",
 };
 
 const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || "";
@@ -62,6 +63,20 @@ export default async function RegisterPage() {
         throw err;
       }
       console.warn("Clerk user resolution on /register:", err);
+    }
+  } else {
+    // Non-Clerk fallback
+    try {
+      const session = await getCurrentUserSession();
+      if (
+        session?.profile?.profile_completed &&
+        session.profile.display_name !== "VIBE Member" &&
+        session.profile.display_name !== "VIBE Attendee"
+      ) {
+        redirect("/app");
+      }
+    } catch {
+      // allow onboarding
     }
   }
 

@@ -1,91 +1,114 @@
 import Link from "next/link";
 import {
   Sparkles,
-  QrCode,
   Trophy,
-  Compass,
   ArrowRight,
-  Shield,
-  Coins,
   Flame,
   Users,
   Gamepad2,
-  Lock,
-  Waves,
-  Activity,
+  Share2,
+  UserPlus,
+  MessageSquare,
+  Heart,
+  Brain,
+  Award,
+  GraduationCap,
+  HelpCircle,
   Zap,
-  Radio,
-  Music,
+  Star,
+  CheckCircle2,
+  ChevronRight,
+  ShieldCheck,
 } from "lucide-react";
 import { OceanicParticlesCanvas } from "@/components/ui/oceanic-particles-canvas";
 
 export default function LandingPage() {
-  const officialZones = [
+  const vibeGames = [
     {
-      name: "Arnava",
-      tagline: "The Rising Tide",
-      badge: "Zone 01",
-      icon: Waves,
-      desc: "High-intensity cooperative team challenges and aquatic wave tags.",
-      accent: "#00F0FF",
+      id: "rotaract-game",
+      name: "Rotaract Game",
+      tagline: "District Lore Trivia",
+      desc: "Test your knowledge of Rotaract history, milestones, and district lore.",
+      xp: "Up to +250 XP",
+      icon: GraduationCap,
+      color: "#00F0FF",
       borderHover: "hover:border-[#00F0FF] hover:shadow-neon-cyan",
-      bgGradient: "from-cyan-950/40 to-card",
-      textClass: "text-[#00F0FF]",
+      bgGradient: "from-cyan-950/40 via-card to-card",
     },
     {
-      name: "Taranaga",
-      tagline: "The Electric Ripple",
-      badge: "Zone 02",
-      icon: Activity,
-      desc: "Rapid rhythm face-offs, dance confrontations, and soundwave beat drops.",
-      accent: "#8B5CF6",
-      borderHover: "hover:border-[#8B5CF6] hover:shadow-neon-purple",
-      bgGradient: "from-purple-950/40 to-card",
-      textClass: "text-[#A78BFA]",
-    },
-    {
-      name: "Sagara",
-      tagline: "The Deep Ocean",
-      badge: "Zone 03",
-      icon: Compass,
-      desc: "Mystery deep dive riddles, cryptographic cipher puzzles, and lost sea crests.",
-      accent: "#38BDF8",
-      borderHover: "hover:border-[#38BDF8] hover:shadow-neon-cyan",
-      bgGradient: "from-sky-950/40 to-card",
-      textClass: "text-[#38BDF8]",
-    },
-    {
-      name: "Pravaha",
-      tagline: "The Rushing Current",
-      badge: "Zone 04",
-      icon: Zap,
-      desc: "Adrenaline agility sprints, reflex agility rapids, and laser hurdles.",
-      accent: "#10B981",
-      borderHover: "hover:border-[#10B981] hover:shadow-[4px_4px_0px_#10B981]",
-      bgGradient: "from-emerald-950/40 to-card",
-      textClass: "text-[#34D399]",
-    },
-    {
-      name: "Samudhra",
-      tagline: "The Endless Ocean",
-      badge: "Zone 05",
-      icon: Users,
-      desc: "Fellowship arena, 360 glam creator photo rigs, and social Instagram friend connect.",
-      accent: "#F59E0B",
-      borderHover: "hover:border-[#F59E0B] hover:shadow-neon-gold",
-      bgGradient: "from-amber-950/40 to-card",
-      textClass: "text-[#FBBF24]",
-    },
-    {
-      name: "Varuna",
-      tagline: "The Celestial Waters",
-      badge: "Zone 06",
-      icon: Sparkles,
-      desc: "The festival crown zone, mainstage midnight showdown, and grand championship coronation.",
-      accent: "#FF1B7A",
+      id: "minion-game",
+      name: "VIBE Minion Game",
+      tagline: "30s Arcade Runner",
+      desc: "Tap target minions quickly before time runs out in this fast-paced arcade runner.",
+      xp: "Up to +300 XP",
+      icon: Gamepad2,
+      color: "#FF1B7A",
       borderHover: "hover:border-[#FF1B7A] hover:shadow-neon-pink",
-      bgGradient: "from-pink-950/40 to-card",
-      textClass: "text-[#FF1B7A]",
+      bgGradient: "from-pink-950/40 via-card to-card",
+    },
+    {
+      id: "memory-game",
+      name: "Memory Game",
+      tagline: "Card Match Sprint",
+      desc: "Flip and match pairs of VIBE cards in record time to prove your memory skills.",
+      xp: "Up to +200 XP",
+      icon: Brain,
+      color: "#8B5CF6",
+      borderHover: "hover:border-[#8B5CF6] hover:shadow-neon-purple",
+      bgGradient: "from-purple-950/40 via-card to-card",
+    },
+    {
+      id: "vibe-quiz",
+      name: "VIBE Quiz",
+      tagline: "Festival Knowledge",
+      desc: "Show off your knowledge about VIBE 2026 event rules, schedule, and secrets.",
+      xp: "Up to +250 XP",
+      icon: HelpCircle,
+      color: "#F59E0B",
+      borderHover: "hover:border-[#F59E0B] hover:shadow-neon-gold",
+      bgGradient: "from-amber-950/40 via-card to-card",
+    },
+  ];
+
+  const xpLevels = [
+    { name: "VIBE NEWBIE", xp: "0 XP", badge: "LVL 1", color: "#94A3B8" },
+    { name: "VIBE EXPLORER", xp: "100 XP", badge: "LVL 2", color: "#38BDF8" },
+    { name: "VIBE SEEKER", xp: "300 XP", badge: "LVL 3", color: "#34D399" },
+    { name: "VIBE RIDER", xp: "600 XP", badge: "LVL 4", color: "#FBBF24" },
+    { name: "VIBE ICON", xp: "1000 XP", badge: "LVL 5", color: "#A78BFA" },
+    { name: "VIBE LEGEND", xp: "1500+ XP", badge: "MAX", color: "#FF1B7A" },
+  ];
+
+  const featuredProfiles = [
+    {
+      name: "Aarav Sharma",
+      username: "@aarav_vibe",
+      college: "RV College of Engineering",
+      club: "RC Koramangala",
+      xp: "850 XP",
+      level: "VIBE RIDER",
+      interests: ["Music", "Gaming", "Coding"],
+      avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    },
+    {
+      name: "Ananya Rao",
+      username: "@ananya_r",
+      college: "PES University",
+      club: "RC Bangalore South",
+      xp: "1240 XP",
+      level: "VIBE ICON",
+      interests: ["Dance", "Photography", "Travel"],
+      avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80",
+    },
+    {
+      name: "Rohan Verma",
+      username: "@rohan_v",
+      college: "BMS College of Engg",
+      club: "RC Indiranagar",
+      xp: "620 XP",
+      level: "VIBE RIDER",
+      interests: ["Sports", "Art", "Fitness"],
+      avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80",
     },
   ];
 
@@ -99,7 +122,7 @@ export default function LandingPage() {
       <div className="absolute top-1/3 left-10 w-[450px] h-[450px] bg-[#8B5CF6]/12 blur-[130px] pointer-events-none -z-10" />
       <div className="absolute bottom-20 right-10 w-[500px] h-[500px] bg-[#00F0FF]/10 blur-[150px] pointer-events-none -z-10" />
 
-      {/* Top Header */}
+      {/* Top Header Navbar */}
       <header className="px-4 sm:px-8 py-3.5 border-b-2 border-border bg-card/90 backdrop-blur-2xl sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
@@ -113,25 +136,33 @@ export default function LandingPage() {
             </Link>
           </div>
 
-          <div className="flex items-center space-x-3 sm:space-x-4 text-xs font-black">
-            {/* Live Indicator Pill */}
-            <div className="hidden md:inline-flex items-center space-x-2 px-3 py-1 bg-muted border-2 border-border text-foreground text-[10px] uppercase tracking-wider font-mono">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>LIVE ARENA</span>
-            </div>
+          {/* Desktop & Mobile Navigation */}
+          <nav className="flex items-center space-x-2 sm:space-x-4 text-xs font-black">
+            <Link
+              href="/app/discover"
+              className="text-muted-foreground hover:text-foreground transition-colors hidden md:inline-block uppercase tracking-wider text-[11px]"
+            >
+              Discover
+            </Link>
+            <Link
+              href="/app/games"
+              className="text-muted-foreground hover:text-foreground transition-colors hidden md:inline-block uppercase tracking-wider text-[11px]"
+            >
+              Games
+            </Link>
+            <Link
+              href="/app"
+              className="text-muted-foreground hover:text-foreground transition-colors hidden md:inline-block uppercase tracking-wider text-[11px]"
+            >
+              Feed
+            </Link>
+            <Link
+              href="/app/leaderboard"
+              className="text-muted-foreground hover:text-foreground transition-colors hidden md:inline-block uppercase tracking-wider text-[11px]"
+            >
+              Leaderboard
+            </Link>
 
-            <Link
-              href="/staff"
-              className="text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block uppercase tracking-wider text-[11px]"
-            >
-              Zonal Heads
-            </Link>
-            <Link
-              href="/admin"
-              className="text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block uppercase tracking-wider text-[11px]"
-            >
-              Admin
-            </Link>
             <Link
               href="/sign-in"
               className="text-muted-foreground hover:text-foreground transition-colors hidden sm:inline-block uppercase tracking-wider text-[11px]"
@@ -141,234 +172,541 @@ export default function LandingPage() {
             <Link
               href="/register"
               id="join-vibe-nav-btn"
-              className="neo-btn-primary px-4 py-2 text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_var(--border)] hover:shadow-neon-pink transition-all"
+              className="neo-btn-primary px-4 py-2 text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_var(--border)] hover:shadow-neon-pink transition-all flex items-center space-x-1.5"
             >
-              Join VIBE
+              <span>JOIN VIBE</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          </nav>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-12 sm:py-20 flex-1 flex flex-col items-center text-center justify-center space-y-12 relative z-10">
-        {/* District & Event Pill */}
-        <div className="inline-flex items-center space-x-2.5 px-4 py-1.5 bg-card/95 border-2 border-border text-foreground text-xs font-black shadow-[3px_3px_0px_var(--border)]">
-          <Sparkles className="w-4 h-4 text-[#00F0FF] animate-spin" />
-          <span className="tracking-wide">Rotaract District 3192 Presents ROCCO 2026</span>
-          <span className="hidden sm:inline text-muted-foreground">•</span>
-          <span className="hidden sm:inline text-primary font-mono">OCTOBER FESTIVAL</span>
-        </div>
-
-        {/* Hero Title & Subheading */}
-        <div className="space-y-4 max-w-3xl">
-          <h1 className="text-4xl sm:text-7xl font-black tracking-tight leading-[1.05] uppercase">
-            <span className="text-foreground block drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
-              ROCCO '26
-            </span>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF1B7A] via-[#A855F7] to-[#00F0FF] block mt-1 drop-shadow-[0_0_25px_rgba(255,27,122,0.35)]">
-              Don't Just Attend. Experience VIBE.
-            </span>
-          </h1>
-          <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
-            The physical fresher party venue at ROCCO is transformed into a live oceanic game arena.
-            Explore 6 factions, scan QR checkpoints, compete in arcade mini-games, earn XP, and power your zone to victory!
-          </p>
-        </div>
-
-        {/* Primary CTAs */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
-          <Link
-            href="/register"
-            id="join-vibe-hero-btn"
-            className="neo-btn-primary w-full sm:w-auto px-8 py-4 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2.5 shadow-[5px_5px_0px_#000] hover:shadow-neon-pink active:translate-x-[2px] active:translate-y-[2px] transition-all group"
-          >
-            <span>JOIN VIBE</span>
-            <span className="text-xs opacity-90">• Claim 500 Coins</span>
-            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-          </Link>
-
-          <Link
-            href="/app"
-            className="neo-btn-secondary w-full sm:w-auto px-7 py-4 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2.5 shadow-[5px_5px_0px_#000] hover:shadow-neon-purple active:translate-x-[2px] active:translate-y-[2px] transition-all"
-          >
-            <Sparkles className="w-4 h-4 text-[#00F0FF]" />
-            <span>Enter App Dashboard</span>
-          </Link>
-        </div>
-
-        {/* Live Arena Metrics Ticker */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 w-full max-w-3xl">
-          <div className="p-4 bg-card/90 backdrop-blur-md border-2 border-border shadow-[3px_3px_0px_var(--border)] text-left space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#00F0FF] font-black block">Factions</span>
-            <span className="text-2xl font-black font-mono text-foreground">6 Oceanic</span>
-            <span className="text-[10px] text-muted-foreground block font-bold">Zones in Battle</span>
+      {/* Main Container */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 sm:py-16 flex-1 flex flex-col items-center text-center justify-center space-y-16 relative z-10">
+        
+        {/* HERO SECTION */}
+        <section className="space-y-8 flex flex-col items-center max-w-3xl">
+          {/* Event Badge */}
+          <div className="inline-flex items-center space-x-2 px-4 py-1.5 bg-card/95 border-2 border-border text-foreground text-xs font-black shadow-[3px_3px_0px_var(--border)]">
+            <Sparkles className="w-4 h-4 text-[#00F0FF] animate-spin" />
+            <span className="tracking-wide">Rotaract District 3192 Presents ROCCO 2026</span>
+            <span className="hidden sm:inline text-muted-foreground">•</span>
+            <span className="hidden sm:inline text-primary font-mono">PRE-EVENT PLATFORM</span>
           </div>
 
-          <div className="p-4 bg-card/90 backdrop-blur-md border-2 border-border shadow-[3px_3px_0px_var(--border)] text-left space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#FF1B7A] font-black block">Starter Wallet</span>
-            <span className="text-2xl font-black font-mono text-foreground">500 VIBE</span>
-            <span className="text-[10px] text-muted-foreground block font-bold">Coins on signup</span>
-          </div>
-
-          <div className="p-4 bg-card/90 backdrop-blur-md border-2 border-border shadow-[3px_3px_0px_var(--border)] text-left space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#A855F7] font-black block">Arcade Games</span>
-            <span className="text-2xl font-black font-mono text-foreground">4 Mini-Games</span>
-            <span className="text-[10px] text-muted-foreground block font-bold">Free to play for XP</span>
-          </div>
-
-          <div className="p-4 bg-card/90 backdrop-blur-md border-2 border-border shadow-[3px_3px_0px_var(--border)] text-left space-y-1">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-[#10B981] font-black block">Live Verification</span>
-            <span className="text-2xl font-black font-mono text-foreground">12 Zonal Staff</span>
-            <span className="text-[10px] text-muted-foreground block font-bold">Booth check-in stations</span>
-          </div>
-        </div>
-
-        {/* The 6 Official Zones Showcase with Interactive 3D Cards */}
-        <div className="w-full max-w-4xl pt-6 space-y-4 text-left">
-          <div className="flex items-center justify-between border-b-2 border-border pb-3">
-            <div>
-              <span className="text-[11px] font-mono uppercase tracking-wider text-[#00F0FF] font-black block">
-                Faction Battlegrounds
+          {/* Hero Headline */}
+          <div className="space-y-4">
+            <h1 className="text-4xl sm:text-7xl font-black tracking-tight leading-[1.05] uppercase">
+              <span className="text-foreground block drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
+                ROCCO '26
               </span>
-              <h2 className="text-lg sm:text-xl font-black uppercase text-foreground">
-                The 6 Official Oceanic Zones
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF1B7A] via-[#A855F7] to-[#00F0FF] block mt-1 drop-shadow-[0_0_25px_rgba(255,27,122,0.35)]">
+                DON'T JUST ATTEND.
+                <br />
+                CONNECT. PLAY. VIBE.
+              </span>
+            </h1>
+            <p className="text-sm sm:text-lg text-muted-foreground leading-relaxed max-w-2xl mx-auto font-medium">
+              Your pre-VIBE experience starts here. Connect with people, share your moments, play games, and climb the XP leaderboard before you even step into the event.
+            </p>
+          </div>
+
+          {/* Primary CTAs */}
+          <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+            <Link
+              href="/register"
+              id="join-vibe-hero-btn"
+              className="neo-btn-primary w-full sm:w-auto px-8 py-4 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2.5 shadow-[5px_5px_0px_#000] hover:shadow-neon-pink active:translate-x-[2px] active:translate-y-[2px] transition-all group"
+            >
+              <span>JOIN VIBE</span>
+              <span className="text-xs opacity-90">• Claim 500 Coins</span>
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+
+            <Link
+              href="/app"
+              className="neo-btn-secondary w-full sm:w-auto px-7 py-4 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2.5 shadow-[5px_5px_0px_#000] hover:shadow-neon-purple active:translate-x-[2px] active:translate-y-[2px] transition-all"
+            >
+              <Sparkles className="w-4 h-4 text-[#00F0FF]" />
+              <span>ENTER VIBE →</span>
+            </Link>
+          </div>
+        </section>
+
+        {/* HERO FEATURE HIGHLIGHTS */}
+        <section className="w-full max-w-4xl grid grid-cols-1 sm:grid-cols-3 gap-4 text-left">
+          <div className="p-5 bg-card/95 border-2 border-border shadow-[4px_4px_0px_var(--border)] hover:border-[#00F0FF] hover:shadow-neon-cyan transition-all space-y-2.5">
+            <div className="w-10 h-10 bg-[#00F0FF]/15 text-[#00F0FF] border-2 border-[#00F0FF]/40 flex items-center justify-center font-black">
+              <Users className="w-5 h-5" />
+            </div>
+            <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
+              CONNECT
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+              Meet people before the event. Discover attendees, send connection requests, build your network and find people with similar interests.
+            </p>
+          </div>
+
+          <div className="p-5 bg-card/95 border-2 border-border shadow-[4px_4px_0px_var(--border)] hover:border-[#FF1B7A] hover:shadow-neon-pink transition-all space-y-2.5">
+            <div className="w-10 h-10 bg-[#FF1B7A]/15 text-[#FF1B7A] border-2 border-[#FF1B7A]/40 flex items-center justify-center font-black">
+              <Gamepad2 className="w-5 h-5" />
+            </div>
+            <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
+              PLAY
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+              Challenge yourself. Play the four VIBE games and earn XP through gameplay and trivia challenges.
+            </p>
+          </div>
+
+          <div className="p-5 bg-card/95 border-2 border-border shadow-[4px_4px_0px_var(--border)] hover:border-[#8B5CF6] hover:shadow-neon-purple transition-all space-y-2.5">
+            <div className="w-10 h-10 bg-[#8B5CF6]/15 text-[#8B5CF6] border-2 border-[#8B5CF6]/40 flex items-center justify-center font-black">
+              <Share2 className="w-5 h-5" />
+            </div>
+            <h3 className="text-lg font-black uppercase tracking-tight text-foreground">
+              VIBE
+            </h3>
+            <p className="text-xs text-muted-foreground leading-relaxed font-medium">
+              Share your experience. Post photos, introduce yourself, interact with the community and build your VIBE profile.
+            </p>
+          </div>
+        </section>
+
+        {/* 4-STEP HOW IT WORKS */}
+        <section className="w-full max-w-4xl space-y-6 text-left border-t-2 border-border pt-12">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-[#00F0FF] font-black block">
+              Pre-Event Journey
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground">
+              YOUR VIBE STARTS BEFORE THE EVENT
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+              Don't wait until event day to meet people. Start connecting, posting, playing and climbing the XP leaderboard before you arrive.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
+            <div className="p-4 bg-card/90 border-2 border-border shadow-[3px_3px_0px_var(--border)] space-y-2">
+              <span className="text-xs font-mono font-black text-[#FF1B7A] block">01</span>
+              <h4 className="text-sm font-black uppercase text-foreground">CREATE YOUR PROFILE</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Set up your VIBE profile and tell people who you are, your college, club, and interests.
+              </p>
+            </div>
+
+            <div className="p-4 bg-card/90 border-2 border-border shadow-[3px_3px_0px_var(--border)] space-y-2">
+              <span className="text-xs font-mono font-black text-[#8B5CF6] block">02</span>
+              <h4 className="text-sm font-black uppercase text-foreground">CONNECT</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Discover attendees, find common interests and send connection requests.
+              </p>
+            </div>
+
+            <div className="p-4 bg-card/90 border-2 border-border shadow-[3px_3px_0px_var(--border)] space-y-2">
+              <span className="text-xs font-mono font-black text-[#00F0FF] block">03</span>
+              <h4 className="text-sm font-black uppercase text-foreground">PLAY</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Take on VIBE's 4 arcade & trivia games to earn XP and climb ranks.
+              </p>
+            </div>
+
+            <div className="p-4 bg-card/90 border-2 border-border shadow-[3px_3px_0px_var(--border)] space-y-2">
+              <span className="text-xs font-mono font-black text-[#10B981] block">04</span>
+              <h4 className="text-sm font-black uppercase text-foreground">SHOW UP CONNECTED</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Arrive at the event already knowing people and ready to celebrate together.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* GAMES SECTION */}
+        <section className="w-full max-w-4xl space-y-6 text-left border-t-2 border-border pt-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#A855F7] font-black block">
+                VIBE Arena
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground">
+                PLAY. EARN XP. LEVEL UP.
               </h2>
             </div>
             <Link
-              href="/app/map"
-              className="neo-btn-card px-3.5 py-1.5 text-xs font-black text-foreground hover:shadow-neon-cyan transition-all"
+              href="/app/games"
+              className="neo-btn-card px-4 py-2 text-xs font-black text-foreground hover:shadow-neon-purple transition-all inline-flex items-center space-x-1.5 self-start sm:self-auto"
             >
-              Explore Map →
+              <span>EXPLORE GAMES</span>
+              <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {officialZones.map((z) => {
-              const Icon = z.icon;
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {vibeGames.map((game) => {
+              const Icon = game.icon;
               return (
-                <Link
-                  key={z.name}
-                  href="/register"
-                  className={`p-4 bg-gradient-to-br ${z.bgGradient} border-2 border-border shadow-[4px_4px_0px_var(--border)] transition-all duration-200 ${z.borderHover} group relative flex flex-col justify-between space-y-3 cursor-pointer`}
+                <div
+                  key={game.id}
+                  className={`p-5 bg-gradient-to-br ${game.bgGradient} border-2 border-border shadow-[4px_4px_0px_var(--border)] transition-all duration-200 ${game.borderHover} flex flex-col justify-between space-y-4`}
                 >
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-mono font-black px-2 py-0.5 bg-muted border border-border text-foreground">
-                        {z.badge}
+                      <span className="text-[10px] font-mono font-black px-2.5 py-0.5 bg-muted border border-border text-foreground">
+                        {game.tagline}
                       </span>
                       <div
-                        className="w-8 h-8 rounded-none border-2 border-border flex items-center justify-center transition-transform group-hover:scale-110"
-                        style={{ backgroundColor: z.accent, color: "#000" }}
+                        className="w-9 h-9 rounded-none border-2 border-border flex items-center justify-center"
+                        style={{ backgroundColor: game.color, color: "#000" }}
                       >
-                        <Icon className="w-4 h-4" />
+                        <Icon className="w-5 h-5" />
                       </div>
                     </div>
 
                     <div>
-                      <h3 className={`text-base font-black uppercase tracking-tight ${z.textClass}`}>
-                        {z.name}
+                      <h3 className="text-lg font-black uppercase text-foreground">
+                        {game.name}
                       </h3>
-                      <p className="text-[11px] font-bold text-foreground tracking-wide">
-                        {z.tagline}
+                      <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                        {game.desc}
                       </p>
                     </div>
-
-                    <p className="text-xs text-muted-foreground leading-relaxed">
-                      {z.desc}
-                    </p>
                   </div>
 
-                  <div className="pt-2 border-t border-border/60 flex items-center justify-between text-[10px] font-mono font-bold text-muted-foreground">
-                    <span>Faction Arena</span>
-                    <span className="group-hover:translate-x-1 transition-transform text-foreground font-black">
-                      Join Zone →
+                  <div className="pt-3 border-t border-border/60 flex items-center justify-between">
+                    <span className="text-xs font-mono font-black text-amber-400">
+                      {game.xp}
                     </span>
+                    <Link
+                      href="/app/games"
+                      className="text-xs font-black uppercase tracking-wider text-foreground hover:text-primary transition-colors flex items-center space-x-1"
+                    >
+                      <span>PLAY NOW</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
-        </div>
+        </section>
 
-        {/* The 4 Pillars of VIBE */}
-        <div className="w-full max-w-4xl pt-8 space-y-4 text-left">
-          <span className="text-[11px] font-mono uppercase tracking-wider text-[#FF1B7A] font-black block">
-            Core Mechanics
-          </span>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-5 bg-card/95 border-2 border-border shadow-[4px_4px_0px_var(--border)] space-y-2.5">
-              <div className="w-10 h-10 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
-                <Coins className="w-5 h-5" />
-              </div>
-              <h4 className="text-base font-black text-foreground uppercase">
-                1. Gamified Dual Currency
-              </h4>
-              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                Start with <strong className="text-foreground font-black">500 VIBE Coins</strong>. Spend coins to power up your zone in the Zone Battle or unlock exclusive festival privileges, while earning non-spendable <strong className="text-foreground font-black">XP</strong> to level up your personal festival rank.
+        {/* NETWORKING SECTION */}
+        <section className="w-full max-w-4xl space-y-6 text-left border-t-2 border-border pt-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#00F0FF] font-black block">
+                Discover Community
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground">
+                MEET YOUR VIBE PEOPLE
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
+                Discover people from across the VIBE community, connect with new friends, explore profiles and build your network before the event.
               </p>
             </div>
+            <Link
+              href="/app/discover"
+              className="neo-btn-card px-4 py-2 text-xs font-black text-foreground hover:shadow-neon-cyan transition-all inline-flex items-center space-x-1.5 self-start sm:self-auto shrink-0"
+            >
+              <span>DISCOVER ATTENDEES</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
-            <div className="p-5 bg-card/95 border-2 border-border shadow-[4px_4px_0px_var(--border)] space-y-2.5">
-              <div className="w-10 h-10 bg-secondary text-secondary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
-                <QrCode className="w-5 h-5" />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {featuredProfiles.map((p) => (
+              <div
+                key={p.username}
+                className="p-4 bg-card/95 border-2 border-border shadow-[4px_4px_0px_var(--border)] hover:border-[#00F0FF] transition-all space-y-3"
+              >
+                <div className="flex items-center space-x-3">
+                  {/* Avatar */}
+                  <div className="w-12 h-12 border-2 border-border overflow-hidden bg-muted shrink-0">
+                    <img
+                      src={p.avatar}
+                      alt={p.name}
+                      className="w-full h-full object-cover"
+                      style={{ width: "100%", height: "100%" }}
+                    />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-black text-foreground">{p.name}</h4>
+                    <p className="text-[11px] text-muted-foreground font-mono">{p.username}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-1 text-xs">
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>College:</span>
+                    <span className="font-bold text-foreground truncate max-w-[150px]">{p.college}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-muted-foreground">
+                    <span>Rotaract:</span>
+                    <span className="font-bold text-foreground truncate max-w-[150px]">{p.club}</span>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {p.interests.map((tag) => (
+                    <span
+                      key={tag}
+                      className="text-[10px] font-bold px-2 py-0.5 bg-muted text-muted-foreground border border-border"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+
+                <div className="pt-2 border-t border-border/60 flex items-center justify-between text-xs font-mono font-bold">
+                  <span className="text-amber-400">{p.xp}</span>
+                  <span className="px-2 py-0.5 bg-primary/20 text-primary border border-primary/40 text-[10px]">
+                    {p.level}
+                  </span>
+                </div>
               </div>
-              <h4 className="text-base font-black text-foreground uppercase">
-                2. Real-World Checkpoints
-              </h4>
-              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                Locate physical QR stands at each of the 6 Oceanic zones and partner stalls. Every scan instantly verifies your attendance, earns you experience stamps, and boosts your Zone Battle standing.
+            ))}
+          </div>
+        </section>
+
+        {/* SOCIAL FEED SECTION */}
+        <section className="w-full max-w-4xl space-y-6 text-left border-t-2 border-border pt-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-[#FF1B7A] font-black block">
+                Social Hub
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground">
+                SHARE YOUR VIBE
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
+                Post your moments, introduce yourself, share photos and see what everyone else is up to before the event.
               </p>
             </div>
+            <Link
+              href="/app"
+              className="neo-btn-card px-4 py-2 text-xs font-black text-foreground hover:shadow-neon-pink transition-all inline-flex items-center space-x-1.5 self-start sm:self-auto shrink-0"
+            >
+              <span>EXPLORE THE FEED</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
 
-            <div className="p-5 bg-card/95 border-2 border-border shadow-[4px_4px_0px_var(--border)] space-y-2.5">
-              <div className="w-10 h-10 bg-accent text-accent-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
-                <Gamepad2 className="w-5 h-5" />
+          {/* Sample Feed Post Mockup */}
+          <div className="p-5 bg-card/95 border-2 border-border shadow-[4px_4px_0px_var(--border)] max-w-2xl mx-auto space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 border-2 border-border overflow-hidden bg-primary/20 shrink-0">
+                  <img
+                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
+                    alt="Author"
+                    className="w-full h-full object-cover"
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                </div>
+                <div>
+                  <h4 className="text-sm font-black text-foreground">Aarav Sharma</h4>
+                  <p className="text-[11px] text-muted-foreground font-mono">@aarav_vibe • 2h ago</p>
+                </div>
               </div>
-              <h4 className="text-base font-black text-foreground uppercase">
-                3. Festival Arcade Hub
-              </h4>
-              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                Between DJ drops and stage shows, play <strong className="text-foreground font-black">Minion VIBE Run</strong>, <strong className="text-foreground font-black">Memory Match</strong>, and <strong className="text-foreground font-black">ROCCO Festival Quiz</strong> right from your phone. Zero downloads needed.
-              </p>
+              <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 bg-pink-500/20 text-pink-400 border border-pink-500/30">
+                +50 XP Post
+              </span>
             </div>
 
-            <div className="p-5 bg-card/95 border-2 border-border shadow-[4px_4px_0px_var(--border)] space-y-2.5">
-              <div className="w-10 h-10 bg-muted text-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] flex items-center justify-center">
-                <Trophy className="w-5 h-5 text-primary" />
+            <p className="text-xs sm:text-sm text-foreground leading-relaxed">
+              Super excited for ROCCO '26! Who else is coming from Koramangala Rotaract? Let's connect and play games on VIBE! 🎉✨
+            </p>
+
+            <div className="h-48 sm:h-64 border-2 border-border overflow-hidden relative bg-muted">
+              <img
+                src="https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&auto=format&fit=crop&q=80"
+                alt="VIBE Fest Preview"
+                className="w-full h-full object-cover"
+                style={{ width: "100%", height: "100%" }}
+              />
+            </div>
+
+            <div className="flex items-center space-x-6 text-xs font-bold text-muted-foreground pt-1 border-t border-border/60">
+              <div className="flex items-center space-x-1.5 text-pink-400">
+                <Heart className="w-4 h-4 fill-pink-400" />
+                <span>24 Likes</span>
               </div>
-              <h4 className="text-base font-black text-foreground uppercase">
-                4. Live Oceanic Leaderboard
-              </h4>
-              <p className="text-xs text-muted-foreground leading-relaxed font-medium">
-                Compete for individual glory as the <strong className="text-foreground font-black">Festival MVP</strong>, or team up with your zone peers to take down the other 5 oceanic factions on the live venue jumbotron!
-              </p>
+              <div className="flex items-center space-x-1.5">
+                <MessageSquare className="w-4 h-4" />
+                <span>8 Comments</span>
+              </div>
             </div>
           </div>
-        </div>
+        </section>
+
+        {/* XP SECTION */}
+        <section className="w-full max-w-4xl space-y-6 text-left border-t-2 border-border pt-12">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-[#10B981] font-black block">
+              Gamification System
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground">
+              EARN XP. LEVEL UP.
+            </h2>
+            <p className="text-xs sm:text-sm text-muted-foreground font-medium">
+              Every connection, challenge, post and game brings you closer to the next VIBE level.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-2">
+            {xpLevels.map((lvl) => (
+              <div
+                key={lvl.name}
+                className="p-3 bg-card/90 border-2 border-border shadow-[3px_3px_0px_var(--border)] text-center space-y-1.5"
+              >
+                <span
+                  className="text-[10px] font-mono font-black px-2 py-0.5 border border-border inline-block"
+                  style={{ color: lvl.color }}
+                >
+                  {lvl.badge}
+                </span>
+                <h4 className="text-xs font-black text-foreground uppercase tracking-tight truncate">
+                  {lvl.name}
+                </h4>
+                <p className="text-[11px] font-mono font-bold text-muted-foreground">
+                  {lvl.xp}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* LEADERBOARD SECTION */}
+        <section className="w-full max-w-4xl space-y-6 text-left border-t-2 border-border pt-12">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+            <div>
+              <span className="text-[11px] font-mono uppercase tracking-wider text-amber-400 font-black block">
+                Rankings
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground">
+                WHO'S LEADING THE VIBE?
+              </h2>
+              <p className="text-xs sm:text-sm text-muted-foreground font-medium mt-1">
+                Earn XP through networking, social challenges and games and see where you stand.
+              </p>
+            </div>
+            <Link
+              href="/app/leaderboard"
+              className="neo-btn-card px-4 py-2 text-xs font-black text-foreground hover:shadow-neon-gold transition-all inline-flex items-center space-x-1.5 self-start sm:self-auto shrink-0"
+            >
+              <span>VIEW LEADERBOARD</span>
+              <Trophy className="w-4 h-4 text-amber-400" />
+            </Link>
+          </div>
+        </section>
+
+        {/* EVENT INFORMATION: BEFORE VIBE vs AT VIBE */}
+        <section className="w-full max-w-4xl space-y-6 text-left border-t-2 border-border pt-12">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-[11px] font-mono uppercase tracking-widest text-[#00F0FF] font-black block">
+              Event Timeline
+            </span>
+            <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-foreground">
+              BEFORE VIBE vs AT VIBE
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+            <div className="p-6 bg-gradient-to-br from-purple-950/30 via-card to-card border-2 border-border shadow-[4px_4px_0px_var(--border)] space-y-4">
+              <div className="flex items-center space-x-2 text-[#00F0FF]">
+                <Zap className="w-5 h-5" />
+                <h3 className="text-lg font-black uppercase">BEFORE VIBE</h3>
+              </div>
+              <ul className="space-y-2.5 text-xs text-muted-foreground font-medium">
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
+                  <span>Build your attendee profile & add interests</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
+                  <span>Discover attendees & send connection requests</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
+                  <span>Play 4 arcade & trivia games for XP</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#00F0FF] shrink-0 mt-0.5" />
+                  <span>Share posts on the VIBE social feed</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="p-6 bg-gradient-to-br from-pink-950/30 via-card to-card border-2 border-border shadow-[4px_4px_0px_var(--border)] space-y-4">
+              <div className="flex items-center space-x-2 text-[#FF1B7A]">
+                <Sparkles className="w-5 h-5" />
+                <h3 className="text-lg font-black uppercase">AT VIBE</h3>
+              </div>
+              <ul className="space-y-2.5 text-xs text-muted-foreground font-medium">
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF1B7A] shrink-0 mt-0.5" />
+                  <span>Meet your pre-event connections live</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF1B7A] shrink-0 mt-0.5" />
+                  <span>Experience mainstage music & DJ drops</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF1B7A] shrink-0 mt-0.5" />
+                  <span>Celebrate Rotaract District 3192 festival</span>
+                </li>
+                <li className="flex items-start space-x-2">
+                  <CheckCircle2 className="w-4 h-4 text-[#FF1B7A] shrink-0 mt-0.5" />
+                  <span>Show up connected with friends already made</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
       </main>
 
       {/* Footer */}
       <footer className="py-8 border-t-2 border-border bg-card/95 text-center text-xs text-muted-foreground relative z-10">
-        <div className="max-w-4xl mx-auto px-4 space-y-3">
-          <div className="flex items-center justify-center space-x-6 font-black text-foreground uppercase tracking-wider text-[11px]">
-            <Link href="/staff" className="hover:text-primary transition-colors">
-              Zonal Staff Portal
+        <div className="max-w-4xl mx-auto px-4 space-y-4">
+          <div className="flex flex-wrap items-center justify-center gap-4 font-black text-foreground uppercase tracking-wider text-[11px]">
+            <Link href="/" className="hover:text-primary transition-colors">
+              Home
             </Link>
             <span>•</span>
-            <Link href="/admin" className="hover:text-primary transition-colors">
-              Admin Command Center
+            <Link href="/register" className="hover:text-primary transition-colors">
+              Register
+            </Link>
+            <span>•</span>
+            <Link href="/app/discover" className="hover:text-primary transition-colors">
+              Discover
+            </Link>
+            <span>•</span>
+            <Link href="/app/games" className="hover:text-primary transition-colors">
+              Games
             </Link>
             <span>•</span>
             <Link href="/app" className="hover:text-primary transition-colors">
-              Attendee App
+              Feed
+            </Link>
+            <span>•</span>
+            <Link href="/app/leaderboard" className="hover:text-primary transition-colors">
+              Leaderboard
+            </Link>
+            <span>•</span>
+            <Link href="/sign-in" className="hover:text-primary transition-colors">
+              Sign In
+            </Link>
+            <span>•</span>
+            <Link href="/app" className="hover:text-primary transition-colors">
+              Open App
             </Link>
           </div>
           <p className="text-[11px] text-muted-foreground font-mono">
-            © 2026 Rotaract District 3192 • ROCCO Freshers • VIBE Oceanic Platform
+            © 2026 Rotaract District 3192 • ROCCO Freshers • VIBE Pre-Event Platform
           </p>
         </div>
       </footer>
     </div>
   );
 }
-

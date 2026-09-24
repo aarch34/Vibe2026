@@ -17,8 +17,8 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ROCCO 2026 • EXPERIENCE VIBE",
-  description: "Rotaract District 3192 Freshers Party. Gamified mobile-first event platform with 6 zones, live leaderboards, and mini-games!",
+  title: "ROCCO '26 | VIBE 2026",
+  description: "Connect, play and experience VIBE before the big event. Meet people, share your moments, play games and earn XP.",
   manifest: "/manifest.json",
   icons: {
     icon: "/favicon.ico",

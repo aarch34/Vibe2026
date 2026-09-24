@@ -26,6 +26,7 @@ interface TopHeaderProps {
   levelName?: string;
   badgeIcon?: string;
   displayName?: string;
+  avatarUrl?: string | null;
   notifications?: Notification[];
 }
 
@@ -35,6 +36,7 @@ export function TopHeader({
   levelName = "VIBE NEWBIE",
   badgeIcon = "🌱",
   displayName,
+  avatarUrl,
   notifications = [],
 }: TopHeaderProps) {
   const pathname = usePathname();
@@ -146,7 +148,7 @@ export function TopHeader({
             </button>
 
             {/* User Nav */}
-            <UserNav vibeId={vibeId} displayName={displayName} />
+            <UserNav vibeId={vibeId} displayName={displayName} avatarUrl={avatarUrl} />
           </div>
         </div>
       </header>

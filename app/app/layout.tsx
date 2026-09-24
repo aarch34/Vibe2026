@@ -25,6 +25,7 @@ export default async function AttendeeLayout({
         levelName={levelInfo.level_name}
         badgeIcon={levelInfo.badge}
         displayName={profile?.display_name || "VIBE Member"}
+        avatarUrl={profile?.avatar_url}
         notifications={notifications}
       />
 
