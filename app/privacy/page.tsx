@@ -126,7 +126,7 @@ export default function PrivacyPolicyPage() {
                 { color: "purple", label: "Identity & Profile", desc: "Full Name, Username, VIBE ID (Accreditation Code), Profile Photograph" },
                 { color: "pink", label: "Contact & Affiliation", desc: "Email address, Phone number, College / University, Rotaract Club, Designation" },
                 { color: "cyan", label: "Social & Networking", desc: "Instagram handle (optional), Bio, User-uploaded event photos, Captions, Comments, Post Likes" },
-                { color: "amber", label: "Gamification & Engagement", desc: "Arcade Game scores, XP progression, Level tier, Leaderboard ranking, VIBE Coins balance" },
+                { color: "amber", label: "Gamification & Engagement", desc: "Arcade Game scores, XP progression, Level tier, Leaderboard ranking" },
               ].map(({ color, label, desc }) => (
                 <div key={label} className="p-3.5 rounded-2xl bg-secondary/30 border border-border/70 space-y-1">
                   <span className={`font-bold text-${color}-400 block`}>{label}</span>
@@ -190,7 +190,7 @@ export default function PrivacyPolicyPage() {
               <div className="flex gap-2 items-start">
                 <Clock className="w-3.5 h-3.5 text-purple-400 shrink-0 mt-0.5" />
                 <p className="text-muted-foreground">
-                  Financial transaction logs (coins / XP audit trails) may be retained for up to <strong className="text-foreground">3 years</strong> as
+                  Financial transaction logs (XP audit trails) may be retained for up to <strong className="text-foreground">3 years</strong> as
                   required by applicable accounting and audit laws in India.
                 </p>
               </div>

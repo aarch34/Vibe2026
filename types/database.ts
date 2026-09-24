@@ -43,6 +43,7 @@ export interface Profile {
   games_played_count: number;
   registration_id?: string | null;
   profile_completed?: boolean;
+  is_banned?: boolean;
   created_at: string;
   updated_at: string;
 }

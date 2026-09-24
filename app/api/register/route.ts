@@ -204,24 +204,7 @@ export async function POST(req: Request) {
             },
             { onConflict: "event_id,profile_id" }
           );
-
-          // Credit starter 500 VIBE Coins to attendee wallet
-          try {
-            await supabaseAdmin.rpc("fn_credit_initial_wallet", {
-              p_event_id: eventId,
-              p_profile_id: supaProfile.id,
-              p_initial_amount: 500,
-            });
-          } catch {
-            await supabaseAdmin.from("wallets").upsert(
-              {
-                event_id: eventId,
-                profile_id: supaProfile.id,
-                balance: 500,
-              },
-              { onConflict: "event_id,profile_id" }
-            );
-          }
+          // Added to event_members
         }
       } catch (dbErr) {
         console.warn("Supabase registration sync warning:", dbErr);

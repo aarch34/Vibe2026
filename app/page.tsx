@@ -245,7 +245,6 @@ export default function LandingPage() {
               className="neo-btn-primary w-full sm:w-auto px-8 py-4 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2.5 shadow-[5px_5px_0px_#000] hover:shadow-neon-pink active:translate-x-[2px] active:translate-y-[2px] transition-all group"
             >
               <span>JOIN VIBE</span>
-              <span className="text-xs opacity-90">• Claim 500 Coins</span>
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
 

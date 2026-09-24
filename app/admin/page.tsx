@@ -13,15 +13,20 @@ import {
   CheckCircle,
   FileText,
   Zap,
+  Trash2,
+  Ban,
+  UserCheck
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { AdminXpAdjustment, Profile } from "@/types/database";
+import { AdminXpAdjustment, Profile, Post } from "@/types/database";
+import Image from "next/image";
 
 export default function AdminDashboardPage() {
-  const [activeTab, setActiveTab] = useState<"users" | "social" | "networking" | "games" | "xp">("users");
+  const [activeTab, setActiveTab] = useState<"users" | "social" | "networking" | "games" | "xp" | "leaderboard">("users");
   const [stats, setStats] = useState<any>(null);
   const [adjustments, setAdjustments] = useState<AdminXpAdjustment[]>([]);
   const [usersList, setUsersList] = useState<Profile[]>([]);
+  const [postsList, setPostsList] = useState<(Post & { profile: Profile })[]>([]);
 
   // Adjustment Form State
   const [targetUserId, setTargetUserId] = useState("");
@@ -33,7 +38,8 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     fetchAdminData();
-  }, []);
+    if (activeTab === "social") fetchPosts();
+  }, [activeTab]);
 
   const fetchAdminData = async () => {
     try {
@@ -44,6 +50,18 @@ export default function AdminDashboardPage() {
         setAdjustments(data.adjustments || []);
         setUsersList(data.users || []);
         if (data.users?.[0]) setTargetUserId(data.users[0].id);
+      }
+    } catch {
+      // Fallback
+    }
+  };
+
+  const fetchPosts = async () => {
+    try {
+      const res = await fetch("/api/admin/posts");
+      if (res.ok) {
+        const data = await res.json();
+        setPostsList(data.posts || []);
       }
     } catch {
       // Fallback
@@ -77,6 +95,44 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleToggleBan = async (profileId: string, isCurrentlyBanned: boolean) => {
+    const confirmMsg = isCurrentlyBanned 
+      ? "Are you sure you want to UNBAN this user?" 
+      : "Are you sure you want to BAN this user? They will not be able to access the app.";
+    
+    if (!confirm(confirmMsg)) return;
+
+    try {
+      const res = await fetch("/api/admin/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profileId, isBanned: !isCurrentlyBanned }),
+      });
+      if (res.ok) {
+        fetchAdminData();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeletePost = async (postId: string) => {
+    if (!confirm("Are you sure you want to delete this post? This cannot be undone.")) return;
+
+    try {
+      const res = await fetch("/api/admin/posts", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ postId }),
+      });
+      if (res.ok) {
+        fetchPosts();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div className="max-w-6xl mx-auto space-y-6 py-6 px-4">
       {/* Admin Title */}
@@ -87,7 +143,7 @@ export default function AdminDashboardPage() {
             <h1 className="text-2xl font-black text-foreground">VIBE 2026 ADMIN DASHBOARD</h1>
           </div>
           <p className="text-xs text-muted-foreground">
-            Platform metrics for Users, Social Feed, Networking, Games, and Verified Audit Logged XP Adjustments.
+            Platform metrics, User Moderation, Social Feed Moderation, and XP Adjustments.
           </p>
         </div>
 
@@ -99,11 +155,12 @@ export default function AdminDashboardPage() {
       {/* Tabs */}
       <div className="flex items-center space-x-2 overflow-x-auto pb-1 no-scrollbar">
         {[
-          { id: "users", label: "USERS", icon: Users },
-          { id: "social", label: "SOCIAL", icon: MessageSquare },
+          { id: "users", label: "USERS & MODERATION", icon: Users },
+          { id: "leaderboard", label: "LEADERBOARD", icon: Trophy },
+          { id: "social", label: "SOCIAL FEED MODERATION", icon: MessageSquare },
           { id: "networking", label: "NETWORKING", icon: Share2 },
           { id: "games", label: "GAMES", icon: Gamepad2 },
-          { id: "xp", label: "XP & AUDIT", icon: Trophy },
+          { id: "xp", label: "XP & AUDIT", icon: Zap },
         ].map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -131,91 +188,248 @@ export default function AdminDashboardPage() {
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
               <span className="text-xs font-bold text-muted-foreground block">Total Users</span>
-              <span className="text-2xl font-black text-foreground font-mono">{stats?.users?.totalUsers || 4}</span>
+              <span className="text-2xl font-black text-foreground font-mono">{stats?.users?.totalUsers || usersList.length}</span>
             </div>
             <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
               <span className="text-xs font-bold text-muted-foreground block">Active Users</span>
-              <span className="text-2xl font-black text-cyan-400 font-mono">{stats?.users?.activeUsers || 4}</span>
+              <span className="text-2xl font-black text-cyan-400 font-mono">{stats?.users?.activeUsers || usersList.length}</span>
             </div>
-            <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-              <span className="text-xs font-bold text-muted-foreground block">Profiles Completed</span>
-              <span className="text-2xl font-black text-emerald-400 font-mono">{stats?.users?.profilesCompleted || 4}</span>
-            </div>
-            <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-              <span className="text-xs font-bold text-muted-foreground block">Total Connections</span>
-              <span className="text-2xl font-black text-pink-400 font-mono">{stats?.users?.totalConnections || 2}</span>
-            </div>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-card border border-border space-y-4 overflow-x-auto">
+            <h3 className="font-black text-lg text-foreground flex items-center space-x-2 mb-4">
+              <Users className="w-5 h-5 text-purple-400" />
+              <span>User Directory & Moderation</span>
+            </h3>
+            
+            <table className="w-full text-left border-collapse min-w-[800px]">
+              <thead>
+                <tr className="border-b border-border/50 text-xs text-muted-foreground">
+                  <th className="py-3 px-4 font-bold">Profile</th>
+                  <th className="py-3 px-4 font-bold">Club / College</th>
+                  <th className="py-3 px-4 font-bold">Level / XP</th>
+                  <th className="py-3 px-4 font-bold">Status</th>
+                  <th className="py-3 px-4 font-bold text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usersList.map((user) => (
+                  <tr key={user.id} className="border-b border-border/30 hover:bg-muted/50 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden shrink-0">
+                          {user.avatar_url ? (
+                            <Image src={user.avatar_url} alt={user.display_name} width={32} height={32} className="object-cover w-full h-full" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-xs font-bold bg-primary text-primary-foreground">
+                              {user.display_name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-bold text-sm text-foreground">{user.display_name}</div>
+                          <div className="text-xs text-muted-foreground">@{user.username}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-xs text-muted-foreground">
+                      <div className="font-bold text-foreground">{user.rotaract_club || "N/A"}</div>
+                      <div>{user.college || "N/A"}</div>
+                    </td>
+                    <td className="py-3 px-4 text-xs">
+                      <div className="font-bold text-purple-400">{user.level_name}</div>
+                      <div className="text-muted-foreground font-mono">{user.xp} XP</div>
+                    </td>
+                    <td className="py-3 px-4 text-xs font-bold">
+                      {user.is_banned ? (
+                        <span className="text-red-500 bg-red-500/10 px-2 py-1 rounded-md">Banned</span>
+                      ) : (
+                        <span className="text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-md">Active</span>
+                      )}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <button
+                        onClick={() => handleToggleBan(user.id, !!user.is_banned)}
+                        className={cn(
+                          "px-3 py-1.5 rounded-lg text-xs font-bold transition-all inline-flex items-center space-x-1",
+                          user.is_banned 
+                            ? "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30" 
+                            : "bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                        )}
+                      >
+                        {user.is_banned ? (
+                          <>
+                            <UserCheck className="w-3.5 h-3.5" />
+                            <span>Unban</span>
+                          </>
+                        ) : (
+                          <>
+                            <Ban className="w-3.5 h-3.5" />
+                            <span>Ban</span>
+                          </>
+                        )}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+                {usersList.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-muted-foreground text-sm">
+                      No users found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
 
-      {/* TAB 2: SOCIAL */}
+      {/* TAB 2: LEADERBOARD */}
+      {activeTab === "leaderboard" && (
+        <div className="space-y-6">
+          <div className="p-6 rounded-3xl bg-card border border-border space-y-4 overflow-x-auto">
+            <h3 className="font-black text-lg text-foreground flex items-center space-x-2 mb-4">
+              <Trophy className="w-5 h-5 text-amber-400" />
+              <span>Global XP Leaderboard</span>
+            </h3>
+            
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr className="border-b border-border/50 text-xs text-muted-foreground">
+                  <th className="py-3 px-4 font-bold w-16 text-center">Rank</th>
+                  <th className="py-3 px-4 font-bold">Profile</th>
+                  <th className="py-3 px-4 font-bold">Level</th>
+                  <th className="py-3 px-4 font-bold text-right">Total XP</th>
+                </tr>
+              </thead>
+              <tbody>
+                {usersList
+                  .sort((a, b) => b.xp - a.xp)
+                  .map((user, idx) => (
+                  <tr key={user.id} className="border-b border-border/30 hover:bg-muted/50 transition-colors">
+                    <td className="py-3 px-4 text-center font-black text-lg text-muted-foreground">
+                      {idx === 0 && <span className="text-amber-400">#1</span>}
+                      {idx === 1 && <span className="text-zinc-400">#2</span>}
+                      {idx === 2 && <span className="text-orange-400">#3</span>}
+                      {idx > 2 && <span>#{idx + 1}</span>}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="flex items-center space-x-3">
+                        <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden shrink-0 border-2 border-border">
+                          {user.avatar_url ? (
+                            <Image src={user.avatar_url} alt={user.display_name} width={40} height={40} className="object-cover w-full h-full" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-sm font-bold bg-primary text-primary-foreground">
+                              {user.display_name.charAt(0)}
+                            </div>
+                          )}
+                        </div>
+                        <div>
+                          <div className="font-bold text-sm text-foreground">{user.display_name}</div>
+                          <div className="text-xs text-muted-foreground">@{user.username}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4 text-sm font-bold text-purple-400">
+                      {user.level_name}
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <div className="inline-block px-3 py-1 bg-amber-500/20 text-amber-400 rounded-lg font-mono font-black text-sm border border-amber-500/30">
+                        {user.xp} XP
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* TAB 3: SOCIAL MODERATION */}
       {activeTab === "social" && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Total Posts</span>
-            <span className="text-2xl font-black text-foreground font-mono">{stats?.social?.totalPosts || 3}</span>
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
+              <span className="text-xs font-bold text-muted-foreground block">Total Posts</span>
+              <span className="text-2xl font-black text-foreground font-mono">{postsList.length}</span>
+            </div>
           </div>
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Photos Uploaded</span>
-            <span className="text-2xl font-black text-pink-400 font-mono">{stats?.social?.photosUploaded || 2}</span>
-          </div>
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Comments</span>
-            <span className="text-2xl font-black text-purple-400 font-mono">{stats?.social?.commentsCount || 2}</span>
-          </div>
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Likes</span>
-            <span className="text-2xl font-black text-amber-400 font-mono">{stats?.social?.likesCount || 2}</span>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {postsList.length === 0 ? (
+              <div className="col-span-full text-center py-10 text-muted-foreground bg-card rounded-3xl border border-border border-dashed">
+                No posts found on the platform.
+              </div>
+            ) : (
+              postsList.map((post) => (
+                <div key={post.id} className="p-4 rounded-3xl bg-card border border-border shadow-sm space-y-3 flex flex-col">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden shrink-0">
+                        {post.profile?.avatar_url ? (
+                          <Image src={post.profile.avatar_url} alt={post.profile.display_name} width={32} height={32} className="object-cover w-full h-full" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-xs font-bold bg-primary text-primary-foreground">
+                            {post.profile?.display_name?.charAt(0) || "?"}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <div className="font-bold text-sm">{post.profile?.display_name || "Unknown"}</div>
+                        <div className="text-[10px] text-muted-foreground">{new Date(post.created_at).toLocaleString()}</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => handleDeletePost(post.id)}
+                      className="p-2 bg-red-500/10 text-red-500 hover:bg-red-500/20 rounded-full transition-colors"
+                      title="Delete Post"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  <div className="text-sm text-foreground flex-1">
+                    {post.caption}
+                  </div>
+                  
+                  {post.image_url && (
+                    <div className="w-full h-48 bg-secondary rounded-xl overflow-hidden relative mt-2">
+                      <Image src={post.image_url} alt="Post image" fill className="object-cover" />
+                    </div>
+                  )}
+                  
+                  <div className="flex items-center space-x-4 pt-2 border-t border-border/50 text-xs font-bold text-muted-foreground">
+                    <span>❤️ {post.likes_count}</span>
+                    <span>💬 {post.comments_count}</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       )}
 
-      {/* TAB 3: NETWORKING */}
+      {/* TAB 4: NETWORKING */}
       {activeTab === "networking" && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Requests Sent</span>
-            <span className="text-2xl font-black text-foreground font-mono">{stats?.networking?.connectionReqsSent || 2}</span>
-          </div>
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Requests Accepted</span>
-            <span className="text-2xl font-black text-emerald-400 font-mono">{stats?.networking?.connectionReqsAccepted || 2}</span>
-          </div>
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Avg Connections</span>
-            <span className="text-2xl font-black text-cyan-400 font-mono">{stats?.networking?.avgConnections || "1.5"}</span>
-          </div>
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Most Connected User</span>
-            <span className="text-sm font-black text-purple-400">Rohan Kulkarni (26)</span>
+          <div className="col-span-full p-8 text-center text-muted-foreground bg-card border border-border rounded-3xl border-dashed">
+            Networking Analytics temporarily unavailable in this view.
           </div>
         </div>
       )}
 
-      {/* TAB 4: GAMES */}
+      {/* TAB 5: GAMES */}
       {activeTab === "games" && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Games Played</span>
-            <span className="text-2xl font-black text-foreground font-mono">{stats?.games?.gamesPlayed || 5}</span>
-          </div>
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">XP Generated per Game</span>
-            <span className="text-2xl font-black text-amber-400 font-mono">⭐ {stats?.games?.xpFromGames || 450}</span>
-          </div>
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Rotaract Quiz High</span>
-            <span className="text-2xl font-black text-purple-400 font-mono">150 XP</span>
-          </div>
-          <div className="p-5 rounded-3xl bg-card border border-border text-center space-y-1">
-            <span className="text-xs font-bold text-muted-foreground block">Minion Run Record</span>
-            <span className="text-2xl font-black text-yellow-400 font-mono">2450 PTS</span>
+          <div className="col-span-full p-8 text-center text-muted-foreground bg-card border border-border rounded-3xl border-dashed">
+            Games Analytics temporarily unavailable in this view.
           </div>
         </div>
       )}
 
-      {/* TAB 5: XP & AUDIT ADJUSTMENT */}
+      {/* TAB 6: XP & AUDIT ADJUSTMENT */}
       {activeTab === "xp" && (
         <div className="space-y-6">
           {/* Manual XP Adjustment Form */}

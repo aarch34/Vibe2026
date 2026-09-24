@@ -18,6 +18,28 @@ export default async function AttendeeLayout({
   const levelInfo = calculateLevel(userXp);
   const notifications = profile?.id ? mockDb.getNotifications(profile.id) : [];
 
+  if (profile?.is_banned) {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center p-6 text-center">
+        <div className="max-w-md p-8 rounded-3xl bg-card border-2 border-red-500/30 shadow-2xl space-y-6">
+          <div className="w-16 h-16 bg-red-500/20 text-red-500 rounded-full flex items-center justify-center mx-auto">
+            <span className="text-3xl">⛔</span>
+          </div>
+          <div>
+            <h1 className="text-2xl font-black text-red-500 uppercase tracking-wider mb-2">Account Suspended</h1>
+            <p className="text-muted-foreground text-sm">
+              Your account has been restricted by an administrator due to violations of our community guidelines. 
+              You can no longer access VIBE 2026.
+            </p>
+          </div>
+          <div className="pt-4 border-t border-border">
+            <p className="text-xs text-muted-foreground">If you believe this is a mistake, please contact the district administration.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-pink-500 selection:text-white">
       <TopHeader
