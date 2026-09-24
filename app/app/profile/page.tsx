@@ -53,12 +53,25 @@ export default async function ProfilePage({
   const userPosts = await socialStore.getUserPostsAsync(targetProfile.id);
   const highScores = mockDb.getGameHighScores(targetProfile.id);
 
+  let initialConnectionStatus: "connected" | "pending" | "none" = "none";
+  if (!isSelf && targetProfile.id) {
+    const rawStatus = await socialStore.getConnectionStatusAsync(currentProfile.id, targetProfile.id);
+    if (rawStatus === "connected") {
+      initialConnectionStatus = "connected";
+    } else if (rawStatus === "pending_sent") {
+      initialConnectionStatus = "pending";
+    } else {
+      initialConnectionStatus = "none";
+    }
+  }
+
   return (
     <ProfileView
       profile={targetProfile}
       isSelf={isSelf}
       userPosts={userPosts}
       highScores={highScores}
+      initialConnectionStatus={initialConnectionStatus}
     />
   );
 }

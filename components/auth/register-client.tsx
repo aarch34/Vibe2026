@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import {
@@ -192,7 +193,17 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
 
       <div className="w-full max-w-lg bg-card/95 backdrop-blur-2xl border-2 border-border shadow-[6px_6px_0px_var(--border)] p-6 sm:p-8 relative z-10 space-y-6">
         {/* Header */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 flex flex-col items-center">
+          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-pink-500/50 shadow-[0_0_20px_rgba(255,27,122,0.4)] bg-black/60 p-0.5 mb-1">
+            <Image
+              src="/images/vibe-logo.png"
+              alt="VIBE 2026 Logo"
+              width={64}
+              height={64}
+              className="w-full h-full object-contain"
+              priority
+            />
+          </div>
           <div className="inline-flex items-center space-x-2 px-3 py-1 bg-primary/10 border border-primary/30 text-primary text-xs font-mono font-black uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
             <span>VIBE 2026 Pre-Event Network</span>

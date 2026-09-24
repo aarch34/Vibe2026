@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import { Gamepad2, Trophy, Sparkles, Play, AlertCircle } from "lucide-react";
-import { MinionGame } from "./minion-game";
+import { FlappyRocco } from "./flappy-rocco";
 import { VibeQuiz } from "./vibe-quiz";
 import { GameType, Profile } from "@/types/database";
 
@@ -124,7 +125,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
 
       {/* Active Game Views */}
       {activeGame === "flappy_rocco" && (
-        <MinionGame
+        <FlappyRocco
           onScoreSubmitted={(s, m, xp) => handleScoreSubmit("flappy_rocco", s, m, xp)}
           onClose={() => setActiveGame(null)}
         />
@@ -145,14 +146,22 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
           <div className="p-6 rounded-3xl bg-gradient-to-br from-amber-900/30 to-card border border-amber-500/30 shadow-lg space-y-4 hover:border-amber-400 transition-all flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-4xl">🐦</span>
+                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-md bg-black/40 relative">
+                  <Image
+                    src="/images/games/roco.png"
+                    alt="ROCO Mascot"
+                    fill
+                    className="object-cover"
+                    priority
+                  />
+                </div>
                 <span className="text-xs font-black text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30">
                   25–125 XP
                 </span>
               </div>
               <h3 className="text-xl font-black text-foreground">1. ROCO FLAPPIE</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Tap to keep ROCO flying through the pipes! Fast-reaction arcade action — tap glowing VIBE energy stars in 30 seconds and set a personal best.
+                Guide ROCO the raccoon through neon towers! Tap to flap, dodge obstacles, collect popcorn for bonus points, and earn milestone XP.
               </p>
 
               <div className="p-3 rounded-2xl bg-secondary/40 border border-border/60 text-[11px] font-mono space-y-1">

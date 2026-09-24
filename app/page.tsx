@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
   Sparkles,
   Trophy,
@@ -126,12 +127,22 @@ export default function LandingPage() {
       <header className="px-4 sm:px-8 py-3.5 border-b-2 border-border bg-card/90 backdrop-blur-2xl sticky top-0 z-50">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Link href="/" className="flex items-center space-x-2 group">
+            <Link href="/" className="flex items-center space-x-2.5 group">
+              <div className="relative w-8 h-8 rounded-full overflow-hidden border border-pink-500/40 shadow-[0_0_12px_rgba(255,27,122,0.4)] group-hover:scale-105 group-hover:border-cyan-400/60 transition-all flex-shrink-0 bg-black/40">
+                <Image
+                  src="/images/vibe-logo.png"
+                  alt="VIBE 2026 Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain w-full h-full scale-105"
+                  priority
+                />
+              </div>
               <span className="text-2xl sm:text-3xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-[#FF1B7A] via-[#8B5CF6] to-[#00F0FF] font-mono drop-shadow-[0_0_15px_rgba(255,27,122,0.4)]">
-                ROCCO
+                VIBE
               </span>
               <span className="text-[10px] uppercase tracking-widest font-black px-2.5 py-0.5 bg-primary text-primary-foreground border-2 border-border shadow-[2px_2px_0px_var(--border)] group-hover:brightness-110 transition-all">
-                VIBE 2026
+                '26
               </span>
             </Link>
           </div>
@@ -186,10 +197,25 @@ export default function LandingPage() {
         
         {/* HERO SECTION */}
         <section className="space-y-8 flex flex-col items-center max-w-3xl">
+          {/* Official VIBE Logo Emblem */}
+          <div className="relative group">
+            <div className="absolute -inset-1.5 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 rounded-full blur-xl opacity-75 group-hover:opacity-100 transition duration-500 animate-pulse" />
+            <div className="relative w-32 h-32 sm:w-40 sm:h-40 rounded-full overflow-hidden border-2 border-pink-500/60 shadow-[0_0_35px_rgba(255,27,122,0.45)] bg-black/60 backdrop-blur-md flex items-center justify-center p-1">
+              <Image
+                src="/images/vibe-logo.png"
+                alt="VIBE 2026 Rotaract Freshers Party"
+                width={160}
+                height={160}
+                priority
+                className="w-full h-full object-contain scale-105 group-hover:scale-110 transition-transform duration-300"
+              />
+            </div>
+          </div>
+
           {/* Event Badge */}
           <div className="inline-flex items-center space-x-2 px-4 py-1.5 bg-card/95 border-2 border-border text-foreground text-xs font-black shadow-[3px_3px_0px_var(--border)]">
             <Sparkles className="w-4 h-4 text-[#00F0FF] animate-spin" />
-            <span className="tracking-wide">Rotaract District 3192 Presents ROCCO 2026</span>
+            <span className="tracking-wide">Rotaract District 3192 Presents VIBE 2026</span>
             <span className="hidden sm:inline text-muted-foreground">•</span>
             <span className="hidden sm:inline text-primary font-mono">PRE-EVENT PLATFORM</span>
           </div>

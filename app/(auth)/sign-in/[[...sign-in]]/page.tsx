@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { SignIn } from "@clerk/nextjs";
 import { LogIn, ArrowRight } from "lucide-react";
 
@@ -18,14 +19,26 @@ export default function SignInPage() {
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col justify-center items-center p-4 selection:bg-primary selection:text-primary-foreground">
       {/* Brand Header */}
-      <div className="w-full max-w-md mb-6 text-center space-y-2">
-        <Link href="/" className="inline-flex items-center space-x-2 group">
-          <span className="text-3xl font-mono font-black tracking-wider text-foreground group-hover:text-primary transition-colors">
-            ROCCO
-          </span>
-          <span className="text-xs uppercase tracking-widest font-black px-2 py-0.5 bg-primary text-primary-foreground border-2 border-border shadow-neo">
-            VIBE '26
-          </span>
+      <div className="w-full max-w-md mb-6 text-center space-y-3 flex flex-col items-center">
+        <Link href="/" className="group flex flex-col items-center space-y-2">
+          <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-pink-500/50 shadow-[0_0_20px_rgba(255,27,122,0.4)] bg-black/60 group-hover:scale-105 transition-transform p-0.5">
+            <Image
+              src="/images/vibe-logo.png"
+              alt="VIBE 2026 Logo"
+              width={64}
+              height={64}
+              className="w-full h-full object-contain"
+              priority
+            />
+          </div>
+          <div className="flex items-center space-x-2">
+            <span className="text-2xl font-mono font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-cyan-400 group-hover:brightness-125 transition-all">
+              VIBE
+            </span>
+            <span className="text-xs uppercase tracking-widest font-black px-2 py-0.5 bg-primary text-primary-foreground border-2 border-border shadow-neo">
+              '26
+            </span>
+          </div>
         </Link>
         <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
           Sign In to Your Attendee Account

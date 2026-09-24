@@ -17,12 +17,26 @@ const spaceMono = Space_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "ROCCO '26 | VIBE 2026",
+  title: "VIBE 2026 | Rotaract Freshers Party",
   description: "Connect, play and experience VIBE before the big event. Meet people, share your moments, play games and earn XP.",
-  manifest: "/manifest.json",
+  manifest: "/site.webmanifest",
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
     apple: "/apple-touch-icon.png",
+  },
+  openGraph: {
+    title: "VIBE 2026 — Rotaract Freshers Party",
+    description: "Connect, play and experience VIBE before the big event. Ride the wave, own the vibe.",
+    images: [{ url: "/images/vibe-og.jpg", width: 1200, height: 630, alt: "VIBE 2026 Rotaract Freshers Party" }],
+  },
+  appleWebApp: {
+    title: "VIBE 2026",
+    statusBarStyle: "black-translucent",
   },
 };
 

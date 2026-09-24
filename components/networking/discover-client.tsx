@@ -10,6 +10,7 @@ interface DiscoverClientProps {
   currentProfile: Profile;
   initialProfiles: Profile[];
   incomingRequests: { request: ConnectionRequest; sender?: Profile }[];
+  initialConnectionStates?: Record<string, "connected" | "pending" | "none">;
 }
 
 const INTEREST_FILTERS = ["all", "Music", "Dance", "Gaming", "Photography", "Coding", "Fashion", "Sports", "Art"];
@@ -18,12 +19,15 @@ export function DiscoverClient({
   currentProfile,
   initialProfiles,
   incomingRequests: initialIncoming,
+  initialConnectionStates = {},
 }: DiscoverClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedInterest, setSelectedInterest] = useState("all");
   const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
   const [incoming, setIncoming] = useState(initialIncoming);
-  const [connectionStates, setConnectionStates] = useState<Record<string, "none" | "pending" | "connected">>({});
+  const [connectionStates, setConnectionStates] = useState<Record<string, "none" | "pending" | "connected">>(
+    initialConnectionStates
+  );
 
   const filteredProfiles = profiles.filter((p) => {
     if (p.id === currentProfile.id) return false;

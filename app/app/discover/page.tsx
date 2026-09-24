@@ -12,12 +12,14 @@ export default async function DiscoverPage() {
   const currentProfile = mockDb.getProfile(session.profile.id) || session.profile;
   const initialProfiles = await getAllDiscoverableProfiles(currentProfile.id);
   const requests = await socialStore.getConnectionRequestsAsync(currentProfile.id);
+  const initialConnectionStates = await socialStore.getUserConnectionMapAsync(currentProfile.id);
 
   return (
     <DiscoverClient
       currentProfile={currentProfile}
       initialProfiles={initialProfiles}
       incomingRequests={requests.incoming}
+      initialConnectionStates={initialConnectionStates}
     />
   );
 }

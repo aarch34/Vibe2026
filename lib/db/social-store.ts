@@ -459,6 +459,16 @@ class PersistentSocialStore {
             message: "First VIBE Post published! 🎉 +50 XP",
             link: "/app",
           });
+        } else {
+          xpEarned = 20;
+          updates.xp = (prof?.xp || 100) + 20;
+          await this.createNotification({
+            profile_id: authorId,
+            type: "xp_earned",
+            title: "+20 XP Earned! ⭐",
+            message: "Published a VIBE Post! 📸 +20 XP",
+            link: "/app",
+          });
         }
 
         await supabaseAdmin.from("profiles").update(updates).eq("id", authorId);
@@ -476,6 +486,9 @@ class PersistentSocialStore {
       if (authorPosts.length === 0) {
         xpEarned = 50;
         await this.addXp(authorId, 50, "First VIBE Post published! 🎉 +50 XP");
+      } else {
+        xpEarned = 20;
+        await this.addXp(authorId, 20, "Published a VIBE Post! 📸 +20 XP");
       }
     }
 
@@ -916,6 +929,13 @@ class PersistentSocialStore {
       });
     }
 
+    // Award XP for genuine interaction: +10 XP to commenter, +5 XP to post author
+    await this.addXp(profileId, 10, "Commented on a VIBE post! 💬 +10 XP");
+    const targetAuthorId = post?.author_id;
+    if (targetAuthorId && targetAuthorId !== profileId) {
+      await this.addXp(targetAuthorId, 5, "Received a comment on your post! 💬 +5 XP");
+    }
+
     return { success: true, comment, commentsCount };
   }
 
@@ -1328,6 +1348,108 @@ class PersistentSocialStore {
     }
 
     return Array.from(connectedMap.values());
+  }
+
+  async getConnectionStatusAsync(
+    senderId: string,
+    receiverId: string
+  ): Promise<"connected" | "pending_sent" | "pending_received" | "none"> {
+    if (!senderId || !receiverId || senderId === receiverId) return "none";
+
+    // 1. Supabase check if live
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(senderId) && isUUID(receiverId)) {
+      try {
+        const { data: conn } = await (supabaseAdmin as any)
+          .from("connections")
+          .select("id")
+          .or(`and(user_id_1.eq.${senderId},user_id_2.eq.${receiverId}),and(user_id_1.eq.${receiverId},user_id_2.eq.${senderId})`)
+          .maybeSingle();
+
+        if (conn) return "connected";
+
+        const { data: req } = await (supabaseAdmin as any)
+          .from("connection_requests")
+          .select("sender_id, receiver_id, status")
+          .eq("status", "pending")
+          .or(`and(sender_id.eq.${senderId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${senderId})`)
+          .maybeSingle();
+
+        if (req) {
+          return req.sender_id === senderId ? "pending_sent" : "pending_received";
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase getConnectionStatusAsync error:", err);
+      }
+    }
+
+    // 2. Check in-memory store
+    return mockDb.getConnectionStatus(senderId, receiverId);
+  }
+
+  async getUserConnectionMapAsync(
+    userId: string
+  ): Promise<Record<string, "connected" | "pending" | "none">> {
+    const map: Record<string, "connected" | "pending" | "none"> = {};
+    if (!userId) return map;
+
+    // 1. Supabase check
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(userId)) {
+      try {
+        const { data: conns } = await (supabaseAdmin as any)
+          .from("connections")
+          .select("user_id_1, user_id_2")
+          .or(`user_id_1.eq.${userId},user_id_2.eq.${userId}`);
+
+        if (conns) {
+          conns.forEach((c: any) => {
+            const other = c.user_id_1 === userId ? c.user_id_2 : c.user_id_1;
+            map[other] = "connected";
+          });
+        }
+
+        const { data: reqs } = await (supabaseAdmin as any)
+          .from("connection_requests")
+          .select("sender_id, receiver_id, status")
+          .eq("status", "pending")
+          .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`);
+
+        if (reqs) {
+          reqs.forEach((r: any) => {
+            const other = r.sender_id === userId ? r.receiver_id : r.sender_id;
+            if (!map[other]) {
+              map[other] = "pending";
+            }
+          });
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase getUserConnectionMapAsync error:", err);
+      }
+    }
+
+    // 2. Merge local
+    this.data.connections.forEach((c) => {
+      if (c.user_id_1 === userId) map[c.user_id_2] = "connected";
+      if (c.user_id_2 === userId) map[c.user_id_1] = "connected";
+    });
+    mockDb.connections.forEach((c) => {
+      if (c.user_id_1 === userId) map[c.user_id_2] = "connected";
+      if (c.user_id_2 === userId) map[c.user_id_1] = "connected";
+    });
+
+    this.data.connectionRequests.forEach((r) => {
+      if (r.status === "pending") {
+        if (r.sender_id === userId && !map[r.receiver_id]) map[r.receiver_id] = "pending";
+        if (r.receiver_id === userId && !map[r.sender_id]) map[r.sender_id] = "pending";
+      }
+    });
+    mockDb.connectionRequests.forEach((r) => {
+      if (r.status === "pending") {
+        if (r.sender_id === userId && !map[r.receiver_id]) map[r.receiver_id] = "pending";
+        if (r.receiver_id === userId && !map[r.sender_id]) map[r.sender_id] = "pending";
+      }
+    });
+
+    return map;
   }
 
   // --- NOTIFICATIONS (SUPABASE + LOCAL) ---

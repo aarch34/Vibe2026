@@ -41,6 +41,7 @@ interface ProfileViewProps {
   isSelf: boolean;
   userPosts: Post[];
   highScores: Record<string, number>;
+  initialConnectionStatus?: "connected" | "pending" | "none";
 }
 
 export function ProfileView({
@@ -48,12 +49,15 @@ export function ProfileView({
   isSelf,
   userPosts,
   highScores,
+  initialConnectionStatus = "none",
 }: ProfileViewProps) {
   const router = useRouter();
   const [currentProfile, setCurrentProfile] = useState<Profile>(profile);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDiscoverable, setIsDiscoverable] = useState(currentProfile.is_discoverable);
-  const [connectionStatus, setConnectionStatus] = useState<"none" | "pending" | "connected">("none");
+  const [connectionStatus, setConnectionStatus] = useState<"none" | "pending" | "connected">(
+    initialConnectionStatus
+  );
 
   // DPDP Modals & State
   const [isErasureModalOpen, setIsErasureModalOpen] = useState(false);
@@ -83,7 +87,10 @@ export function ProfileView({
   useEffect(() => {
     setCurrentProfile(profile);
     setIsDiscoverable(profile.is_discoverable);
-  }, [profile]);
+    if (initialConnectionStatus) {
+      setConnectionStatus(initialConnectionStatus);
+    }
+  }, [profile, initialConnectionStatus]);
 
   const levelInfo = calculateLevel(currentProfile.xp);
   const minXp = levelInfo.min_xp;
@@ -276,7 +283,7 @@ export function ProfileView({
                   {currentProfile.display_name}
                 </h1>
                 <span className="text-xs font-mono text-muted-foreground block">
-                  @{currentProfile.username}
+                  @{currentProfile.instagram_username || currentProfile.username}
                 </span>
               </div>
 
@@ -321,6 +328,15 @@ export function ProfileView({
                     href={`https://instagram.com/${currentProfile.instagram_username}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => {
+                      if (!isSelf) {
+                        fetch("/api/profile/instagram-click", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ targetProfileId: currentProfile.id }),
+                        }).catch(() => {});
+                      }
+                    }}
                     className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 text-white font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all"
                   >
                     <Instagram className="w-4 h-4" />

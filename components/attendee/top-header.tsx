@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   Sparkles,
@@ -225,7 +226,17 @@ export function TopHeader({
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           {/* Brand Logo & VIBE ID */}
           <div className="flex items-center space-x-3">
-            <Link href="/app" className="flex items-center space-x-1.5 group">
+            <Link href="/app" className="flex items-center space-x-2.5 group">
+              <div className="relative w-8 h-8 rounded-full overflow-hidden border border-pink-500/40 shadow-[0_0_12px_rgba(255,27,122,0.4)] group-hover:scale-105 group-hover:border-cyan-400/60 transition-all flex-shrink-0 bg-black/40">
+                <Image
+                  src="/images/vibe-logo.png"
+                  alt="VIBE 2026 Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain w-full h-full scale-105"
+                  priority
+                />
+              </div>
               <span className="text-2xl font-black tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-pink-500 via-purple-400 to-cyan-400 group-hover:brightness-125 transition-all font-mono drop-shadow-[0_0_15px_rgba(236,72,153,0.3)]">
                 VIBE
               </span>

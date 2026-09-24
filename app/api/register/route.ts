@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { mockDb } from "@/lib/db/mock-store";
 import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { invalidateSessionCache } from "@/lib/auth/session";
+import { cleanInstagramUsername } from "@/lib/profile/utils";
+import { normalizeSupabaseProfile } from "@/lib/db/profiles";
 
 export async function POST(req: Request) {
   try {
@@ -24,6 +26,23 @@ export async function POST(req: Request) {
 
     // 2. Prevent duplicate profile creation for the same Clerk User
     let existingProfile = mockDb.getProfileByClerkId(validClerkUserId);
+    if (!existingProfile && isUsingLiveSupabase() && supabaseAdmin) {
+      try {
+        const { data: supaRow } = await supabaseAdmin
+          .from("profiles")
+          .select("*")
+          .or(`clerk_user_id.eq.${validClerkUserId},email.eq.${body.email || ""}`)
+          .maybeSingle();
+        if (supaRow) {
+          existingProfile = normalizeSupabaseProfile(supaRow);
+          mockDb.profiles.set(existingProfile.id, existingProfile);
+          mockDb.clerkToProfileMap.set(validClerkUserId, existingProfile.id);
+        }
+      } catch (err) {
+        console.warn("Error checking existing profile on register:", err);
+      }
+    }
+
     if (existingProfile && existingProfile.profile_completed && existingProfile.display_name !== "VIBE Attendee") {
       const response = NextResponse.json({ success: true, profile: existingProfile, alreadyRegistered: true });
       response.cookies.set("vibe_user_id", validClerkUserId, {
@@ -41,8 +60,9 @@ export async function POST(req: Request) {
     const rotaractClub = body.rotaractClub || "Rotaract District 3192";
     const college = body.college || body.rotaractClub || "Rotaract District 3192";
     const courseYear = body.courseYear || body.designation || "Student";
-    const rawInstagram = body.instagramUsername || null;
-    const instagramUsername = rawInstagram ? rawInstagram.replace(/^@/, "").trim() : null;
+    const cleanIg = cleanInstagramUsername(body.instagramUsername);
+    const resolvedUsername = cleanIg || (displayName.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Math.floor(10 + Math.random() * 90)).slice(0, 20);
+    const instagramUsername = cleanIg;
     const bio = body.bio || null;
     const interests = body.interests && body.interests.length > 0 ? body.interests : ["Music", "Gaming"];
     const avatarUrl =
@@ -69,12 +89,13 @@ export async function POST(req: Request) {
       profile = mockDb.createProfile({
         clerk_user_id: validClerkUserId,
         display_name: displayName,
+        username: resolvedUsername,
         email,
         phone,
         rotaract_club: rotaractClub,
         college,
         course_year: courseYear,
-        instagram_username: instagramUsername,
+        instagram_username: cleanIg,
         bio,
         interests,
         skills: body.skills
@@ -112,8 +133,9 @@ export async function POST(req: Request) {
               club: profile.rotaract_club, // Correct column in Supabase
               college: profile.college,
               course_year: profile.course_year,
-              instagram_id: profile.instagram_username, // Correct column in Supabase
-              username: profile.username,
+              instagram_id: cleanIg,
+              instagram_username: cleanIg,
+              username: resolvedUsername,
               bio: profile.bio,
               interests: profile.interests,
               skills: profile.skills,

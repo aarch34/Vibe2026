@@ -17,6 +17,7 @@ import {
   GameLeaderboardEntry,
   VIBE_LEVELS,
 } from "@/types/database";
+import { cleanInstagramUsername } from "@/lib/profile/utils";
 
 export function calculateLevel(xp: number) {
   if (xp >= 2500) return { level_number: 6, level_name: "VIBE LEGEND", badge: "👑", min_xp: 2500, max_xp: null };
@@ -131,6 +132,7 @@ class VibeMemoryDatabase {
     rotaract_club: string;
     college: string;
     course_year: string;
+    username?: string | null;
     instagram_username?: string | null;
     bio?: string | null;
     interests: string[];
@@ -145,12 +147,13 @@ class VibeMemoryDatabase {
     if (existing) return existing;
 
     const profileId = `prof-${Date.now()}-${Math.floor(Math.random() * 100000)}`;
-    const username = (data.display_name.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Math.floor(10 + Math.random() * 90)).slice(0, 20);
+    const cleanIg = cleanInstagramUsername(data.instagram_username);
+    const username = data.username?.trim() || cleanIg || (data.display_name.toLowerCase().replace(/[^a-z0-9]/g, "_") + "_" + Math.floor(10 + Math.random() * 90)).slice(0, 20);
     const vibeId = `VB2026-${Math.floor(100 + Math.random() * 900)}`;
 
     // Initial XP Rewards: Profile complete (+50 XP), Instagram added (+25 XP)
     let initialXp = 50;
-    if (data.instagram_username && data.instagram_username.trim().length > 0) {
+    if (cleanIg && cleanIg.trim().length > 0) {
       initialXp += 25;
     }
 
@@ -168,7 +171,7 @@ class VibeMemoryDatabase {
       rotaract_club: data.rotaract_club,
       college: data.college,
       course_year: data.course_year,
-      instagram_username: data.instagram_username || null,
+      instagram_username: cleanIg,
       bio: data.bio || null,
       interests: data.interests || [],
       skills: data.skills || [],
@@ -211,7 +214,21 @@ class VibeMemoryDatabase {
     const profile = this.profiles.get(id);
     if (!profile) return undefined;
 
-    const updated = { ...profile, ...updates, updated_at: new Date().toISOString() };
+    const cleanIg = updates.instagram_username !== undefined ? cleanInstagramUsername(updates.instagram_username) : profile.instagram_username;
+    let resolvedUsername = updates.username !== undefined ? updates.username : profile.username;
+
+    // If username was missing or an auto-generated random suffix pattern, upgrade to clean Instagram handle
+    if (cleanIg && (!resolvedUsername || /^[a-z0-9_]+_\d{2,4}$/i.test(resolvedUsername))) {
+      resolvedUsername = cleanIg;
+    }
+
+    const updated = {
+      ...profile,
+      ...updates,
+      username: resolvedUsername,
+      instagram_username: cleanIg,
+      updated_at: new Date().toISOString()
+    };
 
     if (updates.xp !== undefined) {
       const lvl = calculateLevel(updated.xp);

@@ -5,9 +5,9 @@ import {
   STORAGE_BUCKET,
 } from "@/lib/storage/storage-client";
 
-describe("VIBE Media Storage — Supabase Bucket Integration", () => {
-  it("should target Vibe Bucket by default", () => {
-    expect(STORAGE_BUCKET).toBe("Vibe Bucket");
+describe("VIBE Media Storage — Cloudflare R2 Integration", () => {
+  it("should target vibe2026-media R2 bucket by default", () => {
+    expect(STORAGE_BUCKET).toBe("vibe2026-media");
   });
 
   it("should generate proper object key hierarchy", async () => {
@@ -23,15 +23,13 @@ describe("VIBE Media Storage — Supabase Bucket Integration", () => {
     expect(result.publicUrl).toBeDefined();
   });
 
-  it("should generate public URL correctly according to environment", () => {
+  it("should generate public URL correctly using Cloudflare R2 public dev URL", () => {
     const testKey = "events/vibe-2026/sponsors/redbull.png";
     const publicUrl = getMediaPublicUrl(testKey);
 
-    // In local unit test without live env keys, returns mock /uploads/ URL
-    // In live mode with NEXT_PUBLIC_SUPABASE_URL, returns Supabase storage URL
     expect(publicUrl).toContain("redbull.png");
     expect(
-      publicUrl.includes("Vibe%20Bucket") || publicUrl.startsWith("/uploads/")
+      publicUrl.includes("r2.dev") || publicUrl.startsWith("/uploads/")
     ).toBe(true);
   });
 });

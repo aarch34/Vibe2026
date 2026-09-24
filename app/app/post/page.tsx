@@ -14,6 +14,7 @@ export default function CreatePostPage() {
   const [fileError, setFileError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Compress image on the client before upload for speed and reliability
@@ -72,7 +73,7 @@ export default function CreatePostPage() {
     try {
       const optimizedDataUrl = await compressImage(file);
       setImagePreview(optimizedDataUrl);
-      setImageUrl(optimizedDataUrl);
+      setSelectedFile(file);
     } catch {
       setFileError("Could not process image file. Please try another image.");
     }
@@ -81,6 +82,7 @@ export default function CreatePostPage() {
   const removeImage = () => {
     setImagePreview(null);
     setImageUrl("");
+    setSelectedFile(null);
     setFileError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -102,10 +104,31 @@ export default function CreatePostPage() {
 
     setIsSubmitting(true);
     try {
+      let finalImageUrl = imageUrl.trim() || null;
+      if (selectedFile) {
+        try {
+          const form = new FormData();
+          form.append("file", selectedFile);
+          form.append("category", "posts");
+          const upRes = await fetch("/api/media/upload", {
+            method: "POST",
+            body: form,
+          });
+          if (upRes.ok) {
+            const upData = await upRes.json();
+            if (upData.url) {
+              finalImageUrl = upData.url;
+            }
+          }
+        } catch {
+          // Fallback to existing imageUrl if direct upload network fails
+        }
+      }
+
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caption: caption.trim(), imageUrl: imageUrl.trim() || null }),
+        body: JSON.stringify({ caption: caption.trim(), imageUrl: finalImageUrl }),
       });
 
       if (res.ok) {

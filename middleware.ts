@@ -24,8 +24,13 @@ if (isClerkReady) {
       "/staff/login(.*)",
       "/admin/login(.*)",
       "/manifest.json",
+      "/site.webmanifest",
       "/favicon.ico",
+      "/favicon-96x96.png",
       "/apple-touch-icon.png",
+      "/icon-(.*)",
+      "/web-app-(.*)",
+      "/images/(.*)",
     ]);
 
     const isAppRoute = createRouteMatcher(["/app(.*)"]);
