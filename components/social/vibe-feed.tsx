@@ -42,6 +42,7 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [connectionStates, setConnectionStates] = useState<Record<string, "none" | "pending" | "connected">>({});
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
+  const [xpFlyerPostId, setXpFlyerPostId] = useState<string | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captionInputRef = useRef<HTMLTextAreaElement>(null);
@@ -177,7 +178,14 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
     );
 
     try {
-      await fetch(`/api/posts/${postId}/like`, { method: "POST" });
+      const res = await fetch(`/api/posts/${postId}/like`, { method: "POST" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.xpEarned && data.xpEarned > 0) {
+          setXpFlyerPostId(postId);
+          setTimeout(() => setXpFlyerPostId(null), 1500);
+        }
+      }
     } catch {
       // Revert if request failed
     }
@@ -522,7 +530,7 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
                     {/* Like Action */}
                     <button
                       onClick={() => handleLike(post.id)}
-                      className={`flex items-center space-x-1.5 transition-all group cursor-pointer active:scale-125 ${
+                      className={`relative flex items-center space-x-1.5 transition-all group cursor-pointer active:scale-125 ${
                         isLiked ? "text-pink-500" : "hover:text-pink-400 text-muted-foreground"
                       }`}
                     >
@@ -534,6 +542,16 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
                       <span className="font-mono text-sm font-black text-foreground">
                         {post.likes_count}
                       </span>
+                      <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/20 group-hover:scale-105 transition-transform">
+                        +5 XP
+                      </span>
+
+                      {/* Animated Floating +5 XP flyer when liked */}
+                      {xpFlyerPostId === post.id && (
+                        <span className="absolute -top-7 left-0 pointer-events-none text-xs font-black font-mono text-pink-300 bg-pink-950/90 border border-pink-500 px-2 py-0.5 rounded-full shadow-lg shadow-pink-500/50 animate-bounce">
+                          +5 XP! ⭐
+                        </span>
+                      )}
                     </button>
 
                     {/* Comment Action */}

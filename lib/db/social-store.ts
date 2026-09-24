@@ -11,6 +11,7 @@ interface SocialStoreData {
   postComments: PostComment[];
   connectionRequests: ConnectionRequest[];
   connections: Connection[];
+  awardedLikeXp?: string[];
 }
 
 const TMP_DIR = path.join(process.cwd(), ".tmp");
@@ -166,6 +167,7 @@ class PersistentSocialStore {
             postComments: parsed.postComments || [],
             connectionRequests: parsed.connectionRequests || [],
             connections: parsed.connections || [],
+            awardedLikeXp: parsed.awardedLikeXp || [],
           };
         }
       }
@@ -179,6 +181,7 @@ class PersistentSocialStore {
       postComments: [...INITIAL_CURATED_COMMENTS],
       connectionRequests: [],
       connections: [],
+      awardedLikeXp: [],
     };
   }
 
@@ -385,12 +388,21 @@ class PersistentSocialStore {
 
   // --- LIKES ---
 
-  async toggleLike(postId: string, profileId: string, likerName?: string): Promise<{ liked: boolean; likesCount: number }> {
+  async toggleLike(
+    postId: string,
+    profileId: string,
+    likerName?: string
+  ): Promise<{ liked: boolean; likesCount: number; xpEarned?: number }> {
     const post = this.data.posts.find((p) => p.id === postId);
     if (!post) throw new Error("Post not found");
 
+    if (!this.data.awardedLikeXp) {
+      this.data.awardedLikeXp = [];
+    }
+
     const likeIdx = this.data.postLikes.findIndex((l) => l.post_id === postId && l.profile_id === profileId);
     let liked = false;
+    let xpEarned = 0;
 
     if (likeIdx !== -1) {
       this.data.postLikes.splice(likeIdx, 1);
@@ -406,13 +418,31 @@ class PersistentSocialStore {
       post.likes_count += 1;
       liked = true;
 
+      // EVERY LIKE GETS 5 XP FOR THE PERSON:
+      // Prevent repeated exploit/spamming if user unlikes and likes again
+      const xpKey = `${postId}:${profileId}`;
+      const isFirstLike = !this.data.awardedLikeXp.includes(xpKey);
+
+      if (isFirstLike) {
+        this.data.awardedLikeXp.push(xpKey);
+        xpEarned = 5;
+
+        // 1. Award 5 XP to the liker for actively engaging with posts
+        await this.addXp(profileId, 5, "Liked a post! ❤️ +5 XP");
+
+        // 2. Award 5 XP to the post author for receiving a like
+        if (post.author_id !== profileId) {
+          await this.addXp(post.author_id, 5, "Received a like on your post! ❤️ +5 XP");
+        }
+      }
+
       // Send notification to author if not self-like
       if (post.author_id !== profileId) {
         await this.createNotification({
           profile_id: post.author_id,
           type: "post_like",
-          title: "New Like on your post! ❤️",
-          message: `${likerName || "Someone"} liked your post.`,
+          title: "New Like on your post! ❤️ (+5 XP)",
+          message: `${likerName || "Someone"} liked your post. You earned +5 XP!`,
           link: "/app",
         });
       }
@@ -420,7 +450,7 @@ class PersistentSocialStore {
 
     this.saveToDisk();
     this.syncToMockDb();
-    return { liked, likesCount: post.likes_count };
+    return { liked, likesCount: post.likes_count, xpEarned };
   }
 
   hasUserLiked(postId: string, profileId: string): boolean {
@@ -449,6 +479,11 @@ class PersistentSocialStore {
     this.data.connections = this.data.connections.filter(
       (c) => c.user_id_1 !== profileId && c.user_id_2 !== profileId
     );
+    if (this.data.awardedLikeXp) {
+      this.data.awardedLikeXp = this.data.awardedLikeXp.filter(
+        (key) => !key.endsWith(`:${profileId}`) && !key.startsWith(`${profileId}:`)
+      );
+    }
     this.saveToDisk();
     this.syncToMockDb();
   }
@@ -815,6 +850,7 @@ class PersistentSocialStore {
       postComments: [...INITIAL_CURATED_COMMENTS],
       connectionRequests: [],
       connections: [],
+      awardedLikeXp: [],
     };
     this.saveToDisk();
     this.syncToMockDb();

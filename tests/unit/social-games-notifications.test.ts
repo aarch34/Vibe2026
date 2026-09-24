@@ -80,24 +80,41 @@ describe("Social Feed, Instagram-like Interactions, Connections & Games XP", () 
     expect(created?.author.display_name).toBe("Alice Delegator");
   });
 
-  it("should support liking posts, toggling likes, and double-tap like", async () => {
+  it("should support liking posts, toggling likes, awarding 5 XP, and double-tap like", async () => {
     const { post } = await socialStore.createPost(testUserA, "Testing likes!");
 
+    const aliceXpBeforeLike = mockDb.getProfile(testUserA)?.xp || 0;
+    const bobXpBeforeLike = mockDb.getProfile(testUserB)?.xp || 0;
+
     // Bob likes Alice's post
-    const like1 = await socialStore.toggleLike(post.id, testUserB);
+    const like1 = await socialStore.toggleLike(post.id, testUserB, "Bob Rotaractor");
     expect(like1.liked).toBe(true);
     expect(like1.likesCount).toBe(1);
+    expect(like1.xpEarned).toBe(5);
 
-    // Verify Alice received a like notification
+    // Verify both Alice (author whose post got liked) and Bob (person who liked) get +5 XP
+    const newAliceXp = mockDb.getProfile(testUserA)?.xp || 0;
+    const newBobXp = mockDb.getProfile(testUserB)?.xp || 0;
+    expect(newAliceXp).toBe(aliceXpBeforeLike + 5);
+    expect(newBobXp).toBe(bobXpBeforeLike + 5);
+
+    // Verify Alice received a like notification with XP mention
     const notifs = await socialStore.getNotifications(testUserA);
     const likeNotif = notifs.find((n) => n.type === "post_like");
     expect(likeNotif).toBeDefined();
     expect(likeNotif?.title).toContain("Like");
+    expect(likeNotif?.title).toContain("+5 XP");
 
     // Bob unlikes
     const like2 = await socialStore.toggleLike(post.id, testUserB);
     expect(like2.liked).toBe(false);
     expect(like2.likesCount).toBe(0);
+
+    // Bob likes again - like count increments but anti-exploit prevents duplicate XP farming
+    const like3 = await socialStore.toggleLike(post.id, testUserB);
+    expect(like3.liked).toBe(true);
+    expect(like3.likesCount).toBe(1);
+    expect(like3.xpEarned).toBe(0);
   });
 
   it("should support adding comments and notifying post author", async () => {
