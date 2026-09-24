@@ -46,7 +46,7 @@ export function FriendsClient({
       }
     };
 
-    const interval = setInterval(syncRequests, 10000);
+    const interval = setInterval(syncRequests, 45000);
     return () => {
       isMounted = false;
       clearInterval(interval);

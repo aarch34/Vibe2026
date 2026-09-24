@@ -7,15 +7,21 @@ export default function LandingPage() {
       {/* Inline styles for custom subtle animations */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes float-subtle {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-12px); }
+          0%, 100% { transform: translate3d(0, 0, 0); }
+          50% { transform: translate3d(0, -12px, 0); }
         }
         @keyframes twinkle {
-          0%, 100% { opacity: 0.3; transform: scale(0.8); }
-          50% { opacity: 1; transform: scale(1.1); }
+          0%, 100% { opacity: 0.3; transform: scale3d(0.8, 0.8, 1); }
+          50% { opacity: 1; transform: scale3d(1.1, 1.1, 1); }
         }
-        .animate-float-subtle { animation: float-subtle 6s ease-in-out infinite; }
-        .animate-twinkle { animation: twinkle 4s ease-in-out infinite; }
+        .animate-float-subtle { 
+          animation: float-subtle 6s ease-in-out infinite;
+          will-change: transform;
+        }
+        .animate-twinkle { 
+          animation: twinkle 4s ease-in-out infinite;
+          will-change: transform, opacity;
+        }
       `}} />
 
       {/* Background Environment */}

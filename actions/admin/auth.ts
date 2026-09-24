@@ -13,8 +13,6 @@ export interface AdminUser {
 const SUPER_ADMIN_EMAILS = ["thejaswinps@gmail.com"];
 
 const ADMIN_CREDENTIALS: Record<string, string> = {
-  jk: "jk@vibe2026",
-  gunjan: "gunjan@vibe2026",
   thejaswinps: "thejaswinps@vibe2026",
 };
 
@@ -33,7 +31,7 @@ export async function loginAdminAction(formData: FormData) {
 
   const adminSession: AdminUser = {
     username,
-    name: username === "thejaswinps" ? "Thejaswin P" : username.toUpperCase(),
+    name: "Thejaswin P",
     role: "admin",
     loggedInAt: Date.now(),
   };
@@ -64,9 +62,8 @@ export async function getAdminSession(): Promise<AdminUser | null> {
     if (authData.userId) {
       const user = await currentUser();
       const email = user?.emailAddresses?.[0]?.emailAddress?.toLowerCase();
-      const role = (authData.sessionClaims?.metadata as any)?.role;
 
-      if (email === "thejaswinps@gmail.com" || role === "admin") {
+      if (email === "thejaswinps@gmail.com") {
         return {
           username: "thejaswinps",
           name: user?.firstName
@@ -90,9 +87,7 @@ export async function getAdminSession(): Promise<AdminUser | null> {
     const session = JSON.parse(cookie.value);
     if (
       session.role === "admin" &&
-      (session.username === "jk" ||
-        session.username === "gunjan" ||
-        session.username === "thejaswinps")
+      session.username === "thejaswinps"
     ) {
       return session;
     }

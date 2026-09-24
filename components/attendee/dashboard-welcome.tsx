@@ -39,7 +39,7 @@ export function DashboardWelcome({
     };
 
     fetchFreshData();
-    const interval = setInterval(fetchFreshData, 10000);
+    const interval = setInterval(fetchFreshData, 45000);
     return () => {
       isMounted = false;
       clearInterval(interval);

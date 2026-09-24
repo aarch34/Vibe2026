@@ -134,8 +134,8 @@ export function TopHeader({
     };
 
     fetchNotifs();
-    // Strictly 10 seconds interval (10,000ms) to ensure low backend load while keeping state live
-    const interval = setInterval(fetchNotifs, 10000);
+    // 45 seconds interval to ensure low backend load while keeping state live
+    const interval = setInterval(fetchNotifs, 45000);
 
     return () => {
       isMounted = false;
