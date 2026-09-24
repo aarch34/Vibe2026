@@ -73,51 +73,27 @@ export default function LeaderboardPage() {
         </button>
 
         <button
-          onClick={() => setActiveTab("rotaract_game")}
+          onClick={() => setActiveTab("flappy_rocco")}
           className={cn(
             "px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 border flex items-center space-x-1.5",
-            activeTab === "rotaract_game"
-              ? "bg-purple-600 text-white border-purple-400 shadow-md"
+            activeTab === "flappy_rocco"
+              ? "bg-amber-500 text-black border-amber-400 shadow-md"
               : "bg-card text-muted-foreground border-border hover:bg-secondary"
           )}
         >
-          <span>⚙️ Rotaract Game</span>
+          <span>🐦 ROCO Flappie</span>
         </button>
 
         <button
-          onClick={() => setActiveTab("minion_game")}
+          onClick={() => setActiveTab("rotaract_quiz")}
           className={cn(
             "px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 border flex items-center space-x-1.5",
-            activeTab === "minion_game"
-              ? "bg-yellow-500 text-black border-yellow-400 shadow-md"
-              : "bg-card text-muted-foreground border-border hover:bg-secondary"
-          )}
-        >
-          <span>🍌 Minion Run</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("memory_game")}
-          className={cn(
-            "px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 border flex items-center space-x-1.5",
-            activeTab === "memory_game"
-              ? "bg-pink-500 text-white border-pink-400 shadow-md"
-              : "bg-card text-muted-foreground border-border hover:bg-secondary"
-          )}
-        >
-          <span>🧠 Memory Match</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab("vibe_quiz")}
-          className={cn(
-            "px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 border flex items-center space-x-1.5",
-            activeTab === "vibe_quiz"
+            activeTab === "rotaract_quiz"
               ? "bg-cyan-500 text-black border-cyan-400 shadow-md"
               : "bg-card text-muted-foreground border-border hover:bg-secondary"
           )}
         >
-          <span>🔮 VIBE Quiz</span>
+          <span>🔮 Rotaract Quiz</span>
         </button>
       </div>
 

@@ -4,6 +4,7 @@ import { Users, ArrowLeft } from "lucide-react";
 import { getCurrentUserSession } from "@/lib/auth/session";
 import { mockDb } from "@/lib/db/mock-store";
 import { getProfileByIdOrClerkId } from "@/lib/db/profiles";
+import { socialStore } from "@/lib/db/social-store";
 import { ProfileView } from "@/components/profile/profile-view";
 
 export const dynamic = "force-dynamic";
@@ -49,7 +50,7 @@ export default async function ProfilePage({
     targetProfile = fetched;
   }
 
-  const userPosts = mockDb.getPosts().filter((p) => p.author_id === targetProfile.id);
+  const userPosts = await socialStore.getUserPostsAsync(targetProfile.id);
   const highScores = mockDb.getGameHighScores(targetProfile.id);
 
   return (

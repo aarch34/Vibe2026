@@ -9,7 +9,10 @@ export const dynamic = "force-dynamic";
 export default async function GamesPage() {
   const session = await getCurrentUserSession();
   const currentProfile = mockDb.getProfile(session.profile.id) || session.profile;
-  const initialSummary: GameSummary = mockDb.getGameSummary(currentProfile.id);
+  const initialSummary: GameSummary = {
+    flappy_rocco: { bestScore: 0, maxScore: 1500, totalXp: 0, attempts: 0, completed: false },
+    rotaract_quiz: { bestScore: 0, maxScore: 10, totalXp: 0, attempts: 0, completed: false },
+  };
 
   if (isUsingLiveSupabase() && supabaseAdmin) {
     try {

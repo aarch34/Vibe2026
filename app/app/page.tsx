@@ -23,6 +23,7 @@ export default async function AttendeeHomePage() {
   const progressPercent = Math.min(100, Math.floor((currentLevelXp / totalLevelRange) * 100));
 
   const posts = await socialStore.getPostsWithAuthors();
+  const likedPostIds = await socialStore.getUserLikedPostIds(currentProfile.id);
   const challenges = mockDb.getChallenges();
   const completedChallengeIds = mockDb.getUserCompletedChallengeIds(currentProfile.id);
   const suggestedPeople = (await getAllDiscoverableProfiles(currentProfile.id)).slice(0, 4);
@@ -158,7 +159,7 @@ export default async function AttendeeHomePage() {
           <Flame className="w-5 h-5 text-pink-500" />
           <span>VIBE 2026 Feed</span>
         </h3>
-        <VibeFeed initialPosts={posts} currentProfile={currentProfile} />
+        <VibeFeed initialPosts={posts} initialLikedPostIds={likedPostIds} currentProfile={currentProfile} />
       </div>
     </div>
   );

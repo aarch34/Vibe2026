@@ -54,6 +54,7 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
   const [isComplete, setIsComplete] = useState(false);
   const [dpdpConsent, setDpdpConsent] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [dutiesConfirmed, setDutiesConfirmed] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -137,8 +138,8 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
       return;
     }
 
-    if (!dpdpConsent || !ageConfirmed) {
-      setErrorMsg("Under the DPDP Act 2023, you must consent to personal data processing and confirm your age to register.");
+    if (!dpdpConsent || !ageConfirmed || !dutiesConfirmed) {
+      setErrorMsg("Under the DPDP Act 2023, you must consent to personal data processing, confirm your age, and acknowledge your duties as a Data Principal to register.");
       return;
     }
 
@@ -469,7 +470,7 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
                   </span>
                 </label>
 
-                {/* Checkbox 2: Age Declaration */}
+                {/* Checkbox 2: Age Declaration (Section 9) */}
                 <label className="flex items-start space-x-2.5 cursor-pointer text-xs select-none">
                   <input
                     type="checkbox"
@@ -478,7 +479,21 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
                     className="mt-0.5 rounded border-border text-purple-600 focus:ring-purple-500 h-4 w-4 shrink-0 cursor-pointer"
                   />
                   <span className="text-foreground leading-snug">
-                    I confirm that I am 18 years of age or older (or have guardian consent pursuant to Section 9 of the DPDP Act).
+                    I confirm that I am 18 years of age or older (or have verifiable guardian consent pursuant to Section 9 of the DPDP Act, 2023).
+                  </span>
+                </label>
+
+                {/* Checkbox 3: Data Principal Duties (Section 15) */}
+                <label className="flex items-start space-x-2.5 cursor-pointer text-xs select-none">
+                  <input
+                    type="checkbox"
+                    checked={dutiesConfirmed}
+                    onChange={(e) => setDutiesConfirmed(e.target.checked)}
+                    className="mt-0.5 rounded border-border text-purple-600 focus:ring-purple-500 h-4 w-4 shrink-0 cursor-pointer"
+                  />
+                  <span className="text-foreground leading-snug">
+                    I acknowledge my duties under Section 15 of the DPDP Act, 2023 — I will not impersonate any other person,
+                    suppress material information, or file false or frivolous grievances.
                   </span>
                 </label>
               </div>
@@ -494,7 +509,8 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
                 !formData.designation.trim() ||
                 !formData.instagramUsername.trim() ||
                 !dpdpConsent ||
-                !ageConfirmed
+                !ageConfirmed ||
+                !dutiesConfirmed
               }
               className="neo-btn-primary w-full py-4 text-xs font-black uppercase tracking-wider flex items-center justify-center space-x-2 shadow-[4px_4px_0px_var(--border)] hover:shadow-neon-pink disabled:opacity-50 transition-all cursor-pointer"
             >

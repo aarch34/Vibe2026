@@ -124,7 +124,7 @@ export interface ChallengeCompletion {
   xp_earned: number;
 }
 
-export type GameType = "rotaract_game" | "minion_game" | "memory_game" | "vibe_quiz";
+export type GameType = "flappy_rocco" | "rotaract_quiz";
 
 export interface GameSession {
   id: string;

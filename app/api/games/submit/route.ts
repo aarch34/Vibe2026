@@ -22,33 +22,24 @@ export async function POST(req: Request) {
     // Always reward base participation + performance bonus so players always gain XP
     let xpAwarded = 25;
     const gameTitles: Record<string, string> = {
-      rotaract_game: "Rotaract Game",
-      minion_game: "VIBE Minion Game",
-      memory_game: "Memory Match",
-      vibe_quiz: "VIBE Quiz",
+      flappy_rocco: "ROCO Flappie",
+      rotaract_quiz: "Rotaract Quiz",
     };
     const title = gameTitles[gameType] || "VIBE Game";
 
-    if (gameType === "rotaract_game" || gameType === "vibe_quiz") {
+    if (gameType === "rotaract_quiz") {
       const pct = numMax > 0 ? (numScore / numMax) * 100 : 0;
       if (pct >= 90) xpAwarded = 150;
       else if (pct >= 70) xpAwarded = 100;
       else if (pct >= 40) xpAwarded = 75;
       else if (pct >= 20) xpAwarded = 50;
       else xpAwarded = 25;
-    } else if (gameType === "minion_game") {
+    } else if (gameType === "flappy_rocco") {
       if (numScore >= 1000) xpAwarded = 125;
       else if (numScore >= 600) xpAwarded = 100;
       else if (numScore >= 300) xpAwarded = 75;
       else if (numScore >= 100) xpAwarded = 50;
       else xpAwarded = 25;
-    } else if (gameType === "memory_game") {
-      if (timeSeconds && timeSeconds <= 20) xpAwarded = 125;
-      else if (timeSeconds && timeSeconds <= 35) xpAwarded = 100;
-      else if (timeSeconds && timeSeconds <= 50) xpAwarded = 75;
-      else if (numScore >= 800) xpAwarded = 100;
-      else if (numScore >= 500) xpAwarded = 75;
-      else xpAwarded = 50;
     }
 
     // 1. Update in-memory mockDb

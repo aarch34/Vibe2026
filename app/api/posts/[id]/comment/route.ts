@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    const comments = socialStore.getPostComments(params.id);
+    const comments = await socialStore.getPostComments(params.id);
     return NextResponse.json({ success: true, comments });
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });

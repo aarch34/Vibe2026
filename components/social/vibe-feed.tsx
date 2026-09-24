@@ -21,10 +21,11 @@ import { Post, Profile } from "@/types/database";
 
 interface VibeFeedProps {
   initialPosts: (Post & { author: Profile })[];
+  initialLikedPostIds?: string[];
   currentProfile: Profile;
 }
 
-export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
+export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: VibeFeedProps) {
   const [posts, setPosts] = useState<(Post & { author: Profile })[]>(initialPosts);
   const [newCaption, setNewCaption] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
@@ -37,12 +38,23 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
   const [commentText, setCommentText] = useState("");
   const [commentsMap, setCommentsMap] = useState<Record<string, { id?: string; authorName: string; authorAvatar?: string; comment: string }[]>>({});
   const [loadingCommentsPostId, setLoadingCommentsPostId] = useState<string | null>(null);
-  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
+  const [likedPostIds, setLikedPostIds] = useState<Set<string>>(() => new Set(initialLikedPostIds || []));
   const [heartAnimPostId, setHeartAnimPostId] = useState<string | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
   const [connectionStates, setConnectionStates] = useState<Record<string, "none" | "pending" | "connected">>({});
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
   const [xpFlyerPostId, setXpFlyerPostId] = useState<string | null>(null);
+
+  // Sync state whenever server revalidates or passes updated posts
+  useEffect(() => {
+    setPosts(initialPosts);
+  }, [initialPosts]);
+
+  useEffect(() => {
+    if (initialLikedPostIds) {
+      setLikedPostIds(new Set(initialLikedPostIds));
+    }
+  }, [initialLikedPostIds]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captionInputRef = useRef<HTMLTextAreaElement>(null);
@@ -137,12 +149,25 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
         const data = await res.json();
         if (data.post) {
           const author = data.post.author || currentProfile;
-          setPosts([{ ...data.post, author }, ...posts]);
+          setPosts((prev) => [{ ...data.post, author }, ...prev]);
           const bonusMsg = data.xpEarned > 0 ? ` +${data.xpEarned} XP Earned for your 1st post! ⭐` : "";
           setStatusMessage({ type: "success", text: `Post published! 🎉${bonusMsg}` });
         }
         setNewCaption("");
         removeImage();
+
+        // Refresh feed from server to ensure perfect synchronization
+        try {
+          const freshRes = await fetch("/api/posts");
+          if (freshRes.ok) {
+            const freshData = await freshRes.json();
+            if (freshData.posts && freshData.posts.length > 0) {
+              setPosts(freshData.posts);
+            }
+          }
+        } catch {
+          // Keep optimistic post
+        }
       } else {
         const errData = await res.json();
         setStatusMessage({ type: "error", text: errData.error || "Couldn't publish your post. Please try again." });

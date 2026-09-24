@@ -8,7 +8,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getCurrentUserSession();
-    const success = socialStore.deletePost(params.id, session.profile.id);
+    const success = await socialStore.deletePost(params.id, session.profile.id);
 
     if (!success) {
       return NextResponse.json(

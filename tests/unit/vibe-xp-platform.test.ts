@@ -72,7 +72,7 @@ describe("VIBE 2026 XP Social Networking & Games Platform", () => {
       interests: ["Gaming"],
     });
     
-    const res = mockDb.submitGameScore(p1.id, "rotaract_game", 5, 5); // 100%
+    const res = mockDb.submitGameScore(p1.id, "rotaract_quiz", 5, 5); // 100%
     expect(res.xpEarned).toBe(150);
   });
 

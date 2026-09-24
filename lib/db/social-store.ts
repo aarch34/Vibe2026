@@ -3,7 +3,7 @@ import path from "path";
 import { Post, PostLike, PostComment, ConnectionRequest, Connection, Profile, Notification } from "@/types/database";
 import { isUsingLiveSupabase, supabaseAdmin } from "./supabase";
 import { mockDb } from "./mock-store";
-import { getProfileByIdOrClerkId } from "./profiles";
+import { getProfileByIdOrClerkId, normalizeSupabaseProfile } from "./profiles";
 
 interface SocialStoreData {
   posts: Post[];
@@ -75,6 +75,11 @@ const INITIAL_CURATED_COMMENTS: PostComment[] = [
   },
 ];
 
+function isUUID(val?: string | null): boolean {
+  if (!val || typeof val !== "string") return false;
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(val);
+}
+
 function createCuratedProfile(data: Partial<Profile> & { id: string; display_name: string; username: string }): Profile {
   return {
     id: data.id,
@@ -143,6 +148,8 @@ const CURATED_PROFILES: Record<string, Profile> = {
   }),
 };
 
+const isTestEnv = process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
+
 class PersistentSocialStore {
   private data: SocialStoreData;
 
@@ -152,6 +159,17 @@ class PersistentSocialStore {
   }
 
   private loadFromDisk(): SocialStoreData {
+    if (isTestEnv) {
+      return {
+        posts: [...INITIAL_CURATED_POSTS],
+        postLikes: [],
+        postComments: [...INITIAL_CURATED_COMMENTS],
+        connectionRequests: [],
+        connections: [],
+        awardedLikeXp: [],
+      };
+    }
+
     try {
       if (!fs.existsSync(TMP_DIR)) {
         fs.mkdirSync(TMP_DIR, { recursive: true });
@@ -188,6 +206,8 @@ class PersistentSocialStore {
   }
 
   private saveToDisk() {
+    if (isTestEnv) return;
+
     try {
       if (!fs.existsSync(TMP_DIR)) {
         fs.mkdirSync(TMP_DIR, { recursive: true });
@@ -210,116 +230,124 @@ class PersistentSocialStore {
   // --- POSTS ---
 
   async getPostsWithAuthors(): Promise<(Post & { author: Profile })[]> {
-    // Collect all author IDs
-    const authorIds = Array.from(new Set(this.data.posts.map((p) => p.author_id)));
-    const authorMap: Map<string, Profile> = new Map();
-
-    // 1. Fetch from Supabase if live
-    if (isUsingLiveSupabase() && supabaseAdmin && authorIds.length > 0) {
+    // 1. Fetch from live Supabase if connected
+    if (isUsingLiveSupabase() && supabaseAdmin) {
       try {
-        const { data: supaProfiles } = await supabaseAdmin
-          .from("profiles")
+        const { data: supaPosts, error: postErr } = await (supabaseAdmin as any)
+          .from("posts")
           .select("*")
-          .in("id", authorIds);
+          .order("created_at", { ascending: false })
+          .limit(50);
 
-        if (supaProfiles) {
-          supaProfiles.forEach((sp: any) => {
-            authorMap.set(sp.id, {
-              id: sp.id,
-              clerk_user_id: sp.clerk_user_id || "",
-              vibe_id: sp.vibe_id || "VB-ATTENDEE",
-              display_name: sp.display_name || "VIBE Member",
-              username: sp.username || "vibe_user",
-              avatar_url: sp.avatar_url,
-              email: sp.email || "",
-              phone: sp.phone || "",
-              rotaract_club: sp.club || sp.rotaract_club || "Rotaract District 3192",
-              college: sp.college || "College",
-              course_year: sp.course_year || "Student",
-              instagram_username: sp.instagram_id || sp.instagram_username || null,
-              bio: sp.bio || null,
-              interests: sp.interests || [],
-              skills: sp.skills || [],
-              hobbies: sp.hobbies || [],
-              city: sp.city || null,
-              is_discoverable: sp.is_discoverable ?? true,
-              xp: sp.xp || 100,
-              level_number: sp.level_number || 1,
-              level_name: sp.level_name || "VIBE NEWBIE",
-              connections_count: sp.connections_count || 0,
-              posts_count: sp.posts_count || 0,
-              games_played_count: sp.games_played_count || 0,
-              profile_completed: sp.profile_completed ?? true,
-              created_at: sp.created_at || new Date().toISOString(),
-              updated_at: sp.updated_at || new Date().toISOString(),
-            });
+        if (!postErr && supaPosts) {
+          const authorIds = Array.from(new Set<string>(supaPosts.map((p: any) => p.author_id)));
+          const authorMap: Map<string, Profile> = new Map();
+
+          if (authorIds.length > 0) {
+            const { data: supaProfiles } = await supabaseAdmin
+              .from("profiles")
+              .select("*")
+              .in("id", authorIds);
+
+            if (supaProfiles) {
+              supaProfiles.forEach((sp: any) => {
+                authorMap.set(sp.id, normalizeSupabaseProfile(sp));
+              });
+            }
+          }
+
+          const realPosts: (Post & { author: Profile })[] = supaPosts.map((p: any) => {
+            const author =
+              authorMap.get(p.author_id) ||
+              mockDb.getProfile(p.author_id) ||
+              CURATED_PROFILES[p.author_id] ||
+              createCuratedProfile({
+                id: p.author_id,
+                display_name: "VIBE Member",
+                username: "vibe_user",
+              });
+
+            return {
+              id: p.id,
+              author_id: p.author_id,
+              caption: p.caption || "",
+              image_url: p.image_url || null,
+              likes_count: p.likes_count || 0,
+              comments_count: p.comments_count || 0,
+              created_at: p.created_at,
+              updated_at: p.updated_at,
+              author,
+            };
           });
+
+          // Merge any posts from local data (e.g. tests or offline created posts)
+          const existingIds = new Set(realPosts.map((rp) => rp.id));
+          for (const lp of this.data.posts) {
+            if (!existingIds.has(lp.id)) {
+              let author =
+                authorMap.get(lp.author_id) ||
+                mockDb.getProfile(lp.author_id) ||
+                CURATED_PROFILES[lp.author_id] ||
+                createCuratedProfile({
+                  id: lp.author_id,
+                  display_name: "VIBE Member",
+                  username: "vibe_user",
+                });
+              realPosts.push({ ...lp, author });
+              existingIds.add(lp.id);
+            }
+          }
+
+          // If fewer than 2 real posts, append curated posts so the feed feels active
+          if (realPosts.length < 2) {
+            const curatedToAdd = INITIAL_CURATED_POSTS.filter((cp) => !existingIds.has(cp.id)).map((cp) => ({
+              ...cp,
+              author: CURATED_PROFILES[cp.author_id] || createCuratedProfile({
+                id: cp.author_id,
+                display_name: "Rotaract 3192",
+                username: "rotaract3192",
+              }),
+            }));
+            return [...realPosts, ...curatedToAdd];
+          }
+
+          return realPosts;
         }
       } catch (err) {
-        console.warn("Supabase author profile batch fetch error:", err);
+        console.warn("[socialStore] Supabase getPostsWithAuthors error:", err);
       }
     }
+
+    // 2. Fallback to local / in-memory store
+    if (!isTestEnv) {
+      this.data = this.loadFromDisk();
+    }
+    const authorIds = Array.from(new Set(this.data.posts.map((p) => p.author_id)));
+    const authorMap: Map<string, Profile> = new Map();
 
     return this.data.posts.map((p) => {
       let author = authorMap.get(p.author_id) || mockDb.getProfile(p.author_id);
 
-      // Check curated profiles
       if (!author && CURATED_PROFILES[p.author_id]) {
         const cp = CURATED_PROFILES[p.author_id];
-        author = {
+        author = createCuratedProfile({
           id: cp.id || p.author_id,
-          clerk_user_id: "",
-          vibe_id: "VB-VIP",
           display_name: cp.display_name || "VIBE Member",
           username: cp.username || "vibe_member",
           avatar_url: cp.avatar_url || null,
-          email: "",
-          phone: "",
           rotaract_club: cp.rotaract_club || "Rotaract Club",
           college: cp.college || "District 3192",
-          course_year: "Leader",
           instagram_username: cp.instagram_username || null,
-          bio: "Rotaract District 3192 VIP",
-          interests: ["Music", "Festivals"],
-          is_discoverable: true,
           xp: cp.xp || 500,
-          level_number: 3,
-          level_name: "VIBE SEEKER",
-          connections_count: 10,
-          posts_count: 5,
-          games_played_count: 12,
-          profile_completed: true,
-          created_at: p.created_at,
-          updated_at: p.updated_at,
-        };
+        });
       }
 
       if (!author) {
-        author = {
+        author = createCuratedProfile({
           id: p.author_id,
-          clerk_user_id: "",
-          vibe_id: "VB-ATTENDEE",
           display_name: "VIBE Member",
           username: "vibe_attendee",
-          avatar_url: `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(p.author_id)}`,
-          email: "",
-          phone: "",
-          rotaract_club: "Rotaract District 3192",
-          college: "Bengaluru College",
-          course_year: "Student",
-          instagram_username: null,
-          bio: null,
-          interests: [],
-          is_discoverable: true,
-          xp: 100,
-          level_number: 1,
-          level_name: "VIBE NEWBIE",
-          connections_count: 0,
-          posts_count: 1,
-          games_played_count: 0,
-          created_at: p.created_at,
-          updated_at: p.updated_at,
-        };
+        });
       }
 
       return {
@@ -334,52 +362,163 @@ class PersistentSocialStore {
     caption: string,
     imageUrl?: string | null
   ): Promise<{ post: Post; xpEarned: number }> {
-    const post: Post = {
+    let finalImageUrl = imageUrl || null;
+
+    // Handle base64 image upload to Supabase Storage if live
+    if (finalImageUrl && finalImageUrl.startsWith("data:image/") && isUsingLiveSupabase() && supabaseAdmin) {
+      try {
+        const matches = finalImageUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+        if (matches && matches.length === 3) {
+          const contentType = matches[1];
+          const ext = contentType.split("/")[1]?.split(";")[0] || "jpeg";
+          const buffer = Buffer.from(matches[2], "base64");
+          const fileName = `posts/${authorId}-${Date.now()}.${ext}`;
+
+          const { data: uploadData, error: uploadErr } = await supabaseAdmin.storage
+            .from("Vibe Bucket")
+            .upload(fileName, buffer, {
+              contentType,
+              upsert: true,
+            });
+
+          if (!uploadErr && uploadData?.path) {
+            const { data: pubUrl } = supabaseAdmin.storage
+              .from("Vibe Bucket")
+              .getPublicUrl(uploadData.path);
+            if (pubUrl?.publicUrl) {
+              finalImageUrl = pubUrl.publicUrl;
+            }
+          }
+        }
+      } catch (uploadEx) {
+        console.warn("[socialStore] Image storage upload failed, keeping base64 data URL:", uploadEx);
+      }
+    }
+
+    let post: Post = {
       id: `post-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
       author_id: authorId,
       caption: caption || "",
-      image_url: imageUrl || null,
+      image_url: finalImageUrl,
       likes_count: 0,
       comments_count: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     };
 
-    this.data.posts.unshift(post);
-
-    // Count author posts to award First Post XP (+50 XP)
-    const authorPosts = this.data.posts.filter((p) => p.author_id === authorId);
     let xpEarned = 0;
-    if (authorPosts.length === 1) {
-      xpEarned = 50;
-      // Award XP to profile
-      await this.addXp(authorId, 50, "First VIBE Post published! 🎉 +50 XP");
-    }
 
-    this.saveToDisk();
-    this.syncToMockDb();
-
-    // Increment posts_count in Supabase if live
-    if (isUsingLiveSupabase() && supabaseAdmin) {
-      const admin = supabaseAdmin;
+    // 1. Supabase live insert (only if authorId is a valid UUID)
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(authorId)) {
       try {
-        const { data: prof } = await admin.from("profiles").select("posts_count").eq("id", authorId).single();
-        if (prof) {
-          await admin.from("profiles").update({ posts_count: (prof.posts_count || 0) + 1 }).eq("id", authorId);
+        const { data: inserted, error: insErr } = await (supabaseAdmin as any)
+          .from("posts")
+          .insert({
+            author_id: authorId,
+            caption: caption || "",
+            image_url: finalImageUrl,
+            likes_count: 0,
+            comments_count: 0,
+          })
+          .select("*")
+          .single();
+
+        if (!insErr && inserted) {
+          post = {
+            id: inserted.id,
+            author_id: inserted.author_id,
+            caption: inserted.caption || "",
+            image_url: inserted.image_url || null,
+            likes_count: inserted.likes_count || 0,
+            comments_count: inserted.comments_count || 0,
+            created_at: inserted.created_at,
+            updated_at: inserted.updated_at,
+          };
+        } else if (insErr) {
+          console.warn("[socialStore] Supabase insert post error:", insErr);
         }
+
+        // Award XP and increment posts_count
+        const { data: prof } = await supabaseAdmin
+          .from("profiles")
+          .select("posts_count, xp")
+          .eq("id", authorId)
+          .maybeSingle();
+
+        const currentCount = prof?.posts_count || 0;
+        const newCount = currentCount + 1;
+        const updates: any = { posts_count: newCount, updated_at: new Date().toISOString() };
+
+        if (currentCount === 0) {
+          xpEarned = 50;
+          updates.xp = (prof?.xp || 100) + 50;
+          await this.createNotification({
+            profile_id: authorId,
+            type: "xp_earned",
+            title: "+50 XP Earned! ⭐",
+            message: "First VIBE Post published! 🎉 +50 XP",
+            link: "/app",
+          });
+        }
+
+        await supabaseAdmin.from("profiles").update(updates).eq("id", authorId);
       } catch (err) {
-        console.warn("Supabase post count update warning:", err);
+        console.warn("[socialStore] Supabase createPost error:", err);
       }
     }
+
+    // Local fallback XP if not awarded via Supabase
+    if (xpEarned === 0) {
+      if (!isTestEnv) {
+        this.data = this.loadFromDisk();
+      }
+      const authorPosts = this.data.posts.filter((p) => p.author_id === authorId);
+      if (authorPosts.length === 0) {
+        xpEarned = 50;
+        await this.addXp(authorId, 50, "First VIBE Post published! 🎉 +50 XP");
+      }
+    }
+
+    // 2. Also keep local data in sync
+    this.data.posts.unshift(post);
+    this.saveToDisk();
+    this.syncToMockDb();
 
     return { post, xpEarned };
   }
 
-  deletePost(postId: string, authorId: string): boolean {
-    const idx = this.data.posts.findIndex((p) => p.id === postId && p.author_id === authorId);
-    if (idx === -1) return false;
+  async deletePost(postId: string, authorId: string): Promise<boolean> {
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(authorId)) {
+      try {
+        await (supabaseAdmin as any)
+          .from("posts")
+          .delete()
+          .eq("id", postId)
+          .eq("author_id", authorId);
 
-    this.data.posts.splice(idx, 1);
+        const { data: prof } = await supabaseAdmin
+          .from("profiles")
+          .select("posts_count")
+          .eq("id", authorId)
+          .maybeSingle();
+        if (prof) {
+          await supabaseAdmin
+            .from("profiles")
+            .update({ posts_count: Math.max(0, (prof.posts_count || 1) - 1) })
+            .eq("id", authorId);
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase deletePost error:", err);
+      }
+    }
+
+    if (!isTestEnv) {
+      this.data = this.loadFromDisk();
+    }
+    const idx = this.data.posts.findIndex((p) => p.id === postId && p.author_id === authorId);
+    if (idx !== -1) {
+      this.data.posts.splice(idx, 1);
+    }
     this.data.postLikes = this.data.postLikes.filter((l) => l.post_id !== postId);
     this.data.postComments = this.data.postComments.filter((c) => c.post_id !== postId);
 
@@ -395,7 +534,97 @@ class PersistentSocialStore {
     profileId: string,
     likerName?: string
   ): Promise<{ liked: boolean; likesCount: number; xpEarned?: number }> {
-    const post = this.data.posts.find((p) => p.id === postId);
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(profileId)) {
+      try {
+        // Check if the post exists in Supabase
+        const { data: p } = await (supabaseAdmin as any)
+          .from("posts")
+          .select("id, likes_count, author_id")
+          .eq("id", postId)
+          .maybeSingle();
+
+        if (p) {
+          const { data: existingLike } = await (supabaseAdmin as any)
+            .from("post_likes")
+            .select("id")
+            .eq("post_id", postId)
+            .eq("profile_id", profileId)
+            .maybeSingle();
+
+          let liked = false;
+          let likesCount = 0;
+          let xpEarned = 0;
+
+          if (existingLike) {
+            // Unlike
+            await (supabaseAdmin as any).from("post_likes").delete().eq("id", existingLike.id);
+            likesCount = Math.max(0, (p?.likes_count || 1) - 1);
+            await (supabaseAdmin as any).from("posts").update({ likes_count: likesCount }).eq("id", postId);
+            liked = false;
+          } else {
+            // Like
+            await (supabaseAdmin as any).from("post_likes").insert({ post_id: postId, profile_id: profileId });
+            likesCount = (p?.likes_count || 0) + 1;
+            await (supabaseAdmin as any).from("posts").update({ likes_count: likesCount }).eq("id", postId);
+            liked = true;
+            xpEarned = 5;
+
+            // Award 5 XP to liker
+            await this.addXp(profileId, 5, "Liked a post! ❤️ +5 XP");
+
+            // Award 5 XP to author if not self
+            if (p?.author_id && p.author_id !== profileId && isUUID(p.author_id)) {
+              await this.addXp(p.author_id, 5, "Received a like on your post! ❤️ +5 XP");
+              await this.createNotification({
+                profile_id: p.author_id,
+                type: "post_like",
+                title: "New Like on your post! ❤️ (+5 XP)",
+                message: `${likerName || "Someone"} liked your post. You earned +5 XP!`,
+                link: "/app",
+              });
+            }
+          }
+
+          // Mirror to local memory and disk
+          if (!isTestEnv) {
+            this.data = this.loadFromDisk();
+          }
+          const localPost = this.data.posts.find((lp) => lp.id === postId);
+          if (localPost) {
+            localPost.likes_count = likesCount;
+          }
+          if (liked) {
+            if (!this.data.postLikes.some((l) => l.post_id === postId && l.profile_id === profileId)) {
+              this.data.postLikes.push({
+                id: `like-${Date.now()}`,
+                post_id: postId,
+                profile_id: profileId,
+                created_at: new Date().toISOString(),
+              });
+            }
+          } else {
+            this.data.postLikes = this.data.postLikes.filter(
+              (l) => !(l.post_id === postId && l.profile_id === profileId)
+            );
+          }
+          this.saveToDisk();
+          this.syncToMockDb();
+
+          return { liked, likesCount, xpEarned };
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase toggleLike error:", err);
+      }
+    }
+
+    // Local fallback
+    if (!isTestEnv) {
+      this.data = this.loadFromDisk();
+    }
+    let post = this.data.posts.find((p) => p.id === postId);
+    if (!post) {
+      post = mockDb.posts.find((p) => p.id === postId);
+    }
     if (!post) throw new Error("Post not found");
 
     if (!this.data.awardedLikeXp) {
@@ -420,25 +649,18 @@ class PersistentSocialStore {
       post.likes_count += 1;
       liked = true;
 
-      // EVERY LIKE GETS 5 XP FOR THE PERSON:
-      // Prevent repeated exploit/spamming if user unlikes and likes again
       const xpKey = `${postId}:${profileId}`;
       const isFirstLike = !this.data.awardedLikeXp.includes(xpKey);
 
       if (isFirstLike) {
         this.data.awardedLikeXp.push(xpKey);
         xpEarned = 5;
-
-        // 1. Award 5 XP to the liker for actively engaging with posts
         await this.addXp(profileId, 5, "Liked a post! ❤️ +5 XP");
-
-        // 2. Award 5 XP to the post author for receiving a like
         if (post.author_id !== profileId) {
           await this.addXp(post.author_id, 5, "Received a like on your post! ❤️ +5 XP");
         }
       }
 
-      // Send notification to author if not self-like
       if (post.author_id !== profileId) {
         await this.createNotification({
           profile_id: post.author_id,
@@ -459,8 +681,67 @@ class PersistentSocialStore {
     return this.data.postLikes.some((l) => l.post_id === postId && l.profile_id === profileId);
   }
 
+  async getUserLikedPostIds(profileId: string): Promise<string[]> {
+    const likedSet = new Set<string>();
+
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(profileId)) {
+      try {
+        const { data: likes } = await (supabaseAdmin as any)
+          .from("post_likes")
+          .select("post_id")
+          .eq("profile_id", profileId);
+
+        if (likes) {
+          likes.forEach((l: any) => likedSet.add(l.post_id));
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase getUserLikedPostIds error:", err);
+      }
+    }
+
+    // Merge with local likes
+    this.data.postLikes
+      .filter((l) => l.profile_id === profileId)
+      .forEach((l) => likedSet.add(l.post_id));
+
+    return Array.from(likedSet);
+  }
+
   getUserPosts(profileId: string): Post[] {
     return this.data.posts.filter((p) => p.author_id === profileId);
+  }
+
+  async getUserPostsAsync(profileId: string): Promise<Post[]> {
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(profileId)) {
+      try {
+        const { data: posts } = await (supabaseAdmin as any)
+          .from("posts")
+          .select("*")
+          .eq("author_id", profileId)
+          .order("created_at", { ascending: false });
+
+        if (posts) {
+          const supaPosts: Post[] = posts.map((p: any) => ({
+            id: p.id,
+            author_id: p.author_id,
+            caption: p.caption || "",
+            image_url: p.image_url || null,
+            likes_count: p.likes_count || 0,
+            comments_count: p.comments_count || 0,
+            created_at: p.created_at,
+            updated_at: p.updated_at,
+          }));
+
+          const existingIds = new Set(supaPosts.map((p) => p.id));
+          const localPosts = this.getUserPosts(profileId).filter((p) => !existingIds.has(p.id));
+          return [...supaPosts, ...localPosts];
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase getUserPostsAsync error:", err);
+      }
+    }
+
+    return this.getUserPosts(profileId);
   }
 
   getUserComments(profileId: string): PostComment[] {
@@ -492,18 +773,64 @@ class PersistentSocialStore {
 
   // --- COMMENTS ---
 
-  getPostComments(postId: string): { id: string; authorName: string; authorAvatar?: string; comment: string; createdAt: string }[] {
-    const comments = this.data.postComments.filter((c) => c.post_id === postId);
-    return comments.map((c) => {
-      const author = mockDb.getProfile(c.profile_id) || CURATED_PROFILES[c.profile_id];
-      return {
-        id: c.id,
-        authorName: author?.display_name || "VIBE Member",
-        authorAvatar: author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.profile_id)}`,
-        comment: c.comment,
-        createdAt: c.created_at,
-      };
-    });
+  async getPostComments(postId: string): Promise<{ id: string; authorName: string; authorAvatar?: string; comment: string; createdAt: string }[]> {
+    const commentsList: { id: string; authorName: string; authorAvatar?: string; comment: string; createdAt: string }[] = [];
+    const seenIds = new Set<string>();
+
+    if (isUsingLiveSupabase() && supabaseAdmin) {
+      try {
+        const { data: comments } = await (supabaseAdmin as any)
+          .from("post_comments")
+          .select("id, post_id, profile_id, comment, created_at")
+          .eq("post_id", postId)
+          .order("created_at", { ascending: true });
+
+        if (comments && comments.length > 0) {
+          const profileIds = Array.from(new Set<string>(comments.map((c: any) => c.profile_id))).filter(isUUID);
+          const { data: profiles } = profileIds.length > 0
+            ? await supabaseAdmin.from("profiles").select("*").in("id", profileIds)
+            : { data: [] };
+          const profMap = new Map<string, Profile>();
+          if (profiles) {
+            profiles.forEach((p: any) => profMap.set(p.id, normalizeSupabaseProfile(p)));
+          }
+
+          comments.forEach((c: any) => {
+            const author = profMap.get(c.profile_id) || mockDb.getProfile(c.profile_id);
+            commentsList.push({
+              id: c.id,
+              authorName: author?.display_name || "VIBE Member",
+              authorAvatar: author?.avatar_url || undefined,
+              comment: c.comment,
+              createdAt: c.created_at,
+            });
+            seenIds.add(c.id);
+          });
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase getPostComments error:", err);
+      }
+    }
+
+    if (!isTestEnv) {
+      this.data = this.loadFromDisk();
+    }
+    const localComments = this.data.postComments.filter((c) => c.post_id === postId);
+    for (const c of localComments) {
+      if (!seenIds.has(c.id)) {
+        const author = mockDb.getProfile(c.profile_id) || CURATED_PROFILES[c.profile_id];
+        commentsList.push({
+          id: c.id,
+          authorName: author?.display_name || "VIBE Member",
+          authorAvatar: author?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(c.profile_id)}`,
+          comment: c.comment,
+          createdAt: c.created_at,
+        });
+        seenIds.add(c.id);
+      }
+    }
+
+    return commentsList;
   }
 
   async addComment(
@@ -512,22 +839,74 @@ class PersistentSocialStore {
     commentText: string,
     commenterName?: string
   ): Promise<{ success: boolean; comment: PostComment; commentsCount: number }> {
-    const post = this.data.posts.find((p) => p.id === postId);
-    if (!post) throw new Error("Post not found");
+    let commentsCount = 1;
+    let commentId = `cmt-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    let createdAt = new Date().toISOString();
+
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(profileId)) {
+      try {
+        const { data: p } = await (supabaseAdmin as any)
+          .from("posts")
+          .select("comments_count, author_id")
+          .eq("id", postId)
+          .maybeSingle();
+
+        if (p) {
+          const { data: inserted } = await (supabaseAdmin as any)
+            .from("post_comments")
+            .insert({
+              post_id: postId,
+              profile_id: profileId,
+              comment: commentText,
+            })
+            .select("*")
+            .single();
+
+          if (inserted?.id) {
+            commentId = inserted.id;
+            createdAt = inserted.created_at || createdAt;
+          }
+
+          commentsCount = (p.comments_count || 0) + 1;
+          await (supabaseAdmin as any).from("posts").update({ comments_count: commentsCount }).eq("id", postId);
+
+          if (p.author_id && p.author_id !== profileId && isUUID(p.author_id)) {
+            await this.createNotification({
+              profile_id: p.author_id,
+              type: "post_comment",
+              title: "New Comment on your post 💬",
+              message: `${commenterName || "Someone"} commented: "${commentText.slice(0, 60)}${commentText.length > 60 ? "..." : ""}"`,
+              link: "/app",
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase addComment error:", err);
+      }
+    }
 
     const comment: PostComment = {
-      id: `cmt-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: commentId,
       post_id: postId,
       profile_id: profileId,
       comment: commentText,
-      created_at: new Date().toISOString(),
+      created_at: createdAt,
     };
 
-    this.data.postComments.push(comment);
-    post.comments_count += 1;
+    if (!isTestEnv) {
+      this.data = this.loadFromDisk();
+    }
+    const post = this.data.posts.find((p) => p.id === postId);
+    if (post) {
+      post.comments_count += 1;
+      commentsCount = post.comments_count;
+    }
 
-    // Send notification to post author if not self-comment
-    if (post.author_id !== profileId) {
+    this.data.postComments.push(comment);
+    this.saveToDisk();
+    this.syncToMockDb();
+
+    if (post && post.author_id !== profileId && !isUsingLiveSupabase()) {
       await this.createNotification({
         profile_id: post.author_id,
         type: "post_comment",
@@ -537,9 +916,7 @@ class PersistentSocialStore {
       });
     }
 
-    this.saveToDisk();
-    this.syncToMockDb();
-    return { success: true, comment, commentsCount: post.comments_count };
+    return { success: true, comment, commentsCount };
   }
 
   // --- CONNECTIONS & REQUESTS ---
@@ -570,13 +947,40 @@ class PersistentSocialStore {
       return { success: false, message: "You are already connected with this attendee." };
     }
 
+    let reqId = `req-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    const nowIso = new Date().toISOString();
+
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(senderId) && isUUID(receiverId)) {
+      try {
+        const { data: insReq } = await (supabaseAdmin as any)
+          .from("connection_requests")
+          .upsert(
+            {
+              sender_id: senderId,
+              receiver_id: receiverId,
+              status: "pending",
+              updated_at: nowIso,
+            },
+            { onConflict: "sender_id,receiver_id" }
+          )
+          .select("*")
+          .single();
+
+        if (insReq?.id) {
+          reqId = insReq.id;
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase sendConnectionRequest error:", err);
+      }
+    }
+
     const req: ConnectionRequest = {
-      id: `req-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      id: reqId,
       sender_id: senderId,
       receiver_id: receiverId,
       status: "pending",
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
+      created_at: nowIso,
+      updated_at: nowIso,
     };
 
     this.data.connectionRequests.unshift(req);
@@ -602,6 +1006,86 @@ class PersistentSocialStore {
     action: "accept" | "decline",
     responderName?: string
   ) {
+    // ── Supabase path ─────────────────────────────────────────
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(currentUserId)) {
+      try {
+        // 1. Look up the request in Supabase
+        const { data: req } = await (supabaseAdmin as any)
+          .from("connection_requests")
+          .select("*")
+          .eq("id", requestId)
+          .eq("receiver_id", currentUserId)
+          .eq("status", "pending")
+          .maybeSingle();
+
+        if (req) {
+          // 2. Update status in Supabase
+          await (supabaseAdmin as any)
+            .from("connection_requests")
+            .update({ status: action === "accept" ? "accepted" : "declined", updated_at: new Date().toISOString() })
+            .eq("id", requestId);
+
+          if (action === "accept") {
+            // 3. Create connection row in Supabase
+            await (supabaseAdmin as any).from("connections").upsert(
+              {
+                user_id_1: req.sender_id,
+                user_id_2: req.receiver_id,
+                connected_at: new Date().toISOString(),
+              },
+              { onConflict: "user_id_1,user_id_2" }
+            );
+
+            // 4. Also mirror into local store for the same session
+            const conn: Connection = {
+              id: `conn-${Date.now()}`,
+              user_id_1: req.sender_id,
+              user_id_2: req.receiver_id,
+              connected_at: new Date().toISOString(),
+            };
+            this.data.connections.push(conn);
+
+            // 5. Award XP to both
+            await this.addXp(req.sender_id, 25, "Connected with a new attendee! +25 XP");
+            await this.addXp(req.receiver_id, 25, "Connected with a new attendee! +25 XP");
+
+            // 6. Update connections_count
+            for (const uid of [req.sender_id, req.receiver_id]) {
+              try {
+                const { data: prof } = await supabaseAdmin.from("profiles").select("connections_count").eq("id", uid).single();
+                if (prof) {
+                  await supabaseAdmin.from("profiles").update({ connections_count: (prof.connections_count || 0) + 1 }).eq("id", uid);
+                }
+              } catch { /* ignore */ }
+            }
+
+            // 7. Notify sender
+            await this.createNotification({
+              profile_id: req.sender_id,
+              type: "connection_accepted",
+              title: "Connection Accepted! 🎉",
+              message: `${responderName || "User"} accepted your connection request!`,
+              link: `/app/profile?id=${req.receiver_id}`,
+            });
+          }
+
+          // Sync local request status too
+          const localReq = this.data.connectionRequests.find((r) => r.id === requestId);
+          if (localReq) {
+            localReq.status = action === "accept" ? "accepted" : "declined";
+            localReq.updated_at = new Date().toISOString();
+          }
+
+          this.saveToDisk();
+          this.syncToMockDb();
+          return { success: true, status: action === "accept" ? "accepted" : "declined" };
+        }
+      } catch (err) {
+        console.warn("[respondConnection] Supabase error, falling back to in-memory:", err);
+      }
+    }
+
+    // ── Fallback: in-memory / file store ──────────────────────
     const req = this.data.connectionRequests.find((r) => r.id === requestId);
     if (!req || req.receiver_id !== currentUserId || req.status !== "pending") {
       return { success: false, message: "Invalid or expired connection request." };
@@ -619,11 +1103,9 @@ class PersistentSocialStore {
       };
       this.data.connections.push(conn);
 
-      // Award +25 XP to both attendees for forging a connection!
       await this.addXp(req.sender_id, 25, "Connected with a new attendee! +25 XP");
       await this.addXp(req.receiver_id, 25, "Connected with a new attendee! +25 XP");
 
-      // Notify the original sender that their request was accepted!
       await this.createNotification({
         profile_id: req.sender_id,
         type: "connection_accepted",
@@ -633,7 +1115,7 @@ class PersistentSocialStore {
       });
 
       // Update connections_count in Supabase if live
-      if (isUsingLiveSupabase() && supabaseAdmin) {
+      if (isUsingLiveSupabase() && supabaseAdmin && isUUID(req.sender_id) && isUUID(req.receiver_id)) {
         try {
           for (const uid of [req.sender_id, req.receiver_id]) {
             const { data: prof } = await supabaseAdmin.from("profiles").select("connections_count").eq("id", uid).single();
@@ -678,24 +1160,101 @@ class PersistentSocialStore {
     incoming: { request: ConnectionRequest; sender?: Profile }[];
     outgoing: { request: ConnectionRequest; receiver?: Profile }[];
   }> {
-    const raw = this.getConnectionRequests(profileId);
-
     const incoming: { request: ConnectionRequest; sender?: Profile }[] = [];
-    for (const item of raw.incoming) {
-      let sender = item.sender;
-      if (!sender) {
-        sender = (await getProfileByIdOrClerkId(item.request.sender_id)) || undefined;
+    const outgoing: { request: ConnectionRequest; receiver?: Profile }[] = [];
+    const seenReqIds = new Set<string>();
+
+    // ── Supabase path ──────────────────────────────────────────
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(profileId)) {
+      try {
+        const { data: rows } = await (supabaseAdmin as any)
+          .from("connection_requests")
+          .select("*")
+          .or(`sender_id.eq.${profileId},receiver_id.eq.${profileId}`)
+          .eq("status", "pending")
+          .order("created_at", { ascending: false });
+
+        if (rows) {
+          const incomingRows = rows.filter((r: any) => r.receiver_id === profileId);
+          const outgoingRows = rows.filter((r: any) => r.sender_id === profileId);
+
+          // Batch-fetch sender profiles
+          const senderIds = Array.from(new Set<string>(incomingRows.map((r: any) => r.sender_id as string))).filter(isUUID);
+          const receiverIds = Array.from(new Set<string>(outgoingRows.map((r: any) => r.receiver_id as string))).filter(isUUID);
+          const allIds = Array.from(new Set<string>([...senderIds, ...receiverIds]));
+
+          let profileMap: Map<string, Profile> = new Map();
+          if (allIds.length > 0) {
+            const { data: profiles } = await supabaseAdmin
+              .from("profiles")
+              .select("*")
+              .in("id", allIds);
+            if (profiles) {
+              profiles.forEach((sp: any) =>
+                profileMap.set(sp.id, normalizeSupabaseProfile(sp))
+              );
+            }
+          }
+
+          incomingRows.forEach((r: any) => {
+            const reqObj: ConnectionRequest = {
+              id: r.id,
+              sender_id: r.sender_id,
+              receiver_id: r.receiver_id,
+              status: r.status,
+              created_at: r.created_at,
+              updated_at: r.updated_at,
+            };
+            incoming.push({
+              request: reqObj,
+              sender: profileMap.get(r.sender_id) || mockDb.getProfile(r.sender_id),
+            });
+            seenReqIds.add(r.id);
+          });
+
+          outgoingRows.forEach((r: any) => {
+            const reqObj: ConnectionRequest = {
+              id: r.id,
+              sender_id: r.sender_id,
+              receiver_id: r.receiver_id,
+              status: r.status,
+              created_at: r.created_at,
+              updated_at: r.updated_at,
+            };
+            outgoing.push({
+              request: reqObj,
+              receiver: profileMap.get(r.receiver_id) || mockDb.getProfile(r.receiver_id),
+            });
+            seenReqIds.add(r.id);
+          });
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase getConnectionRequestsAsync error:", err);
       }
-      incoming.push({ request: item.request, sender });
     }
 
-    const outgoing: { request: ConnectionRequest; receiver?: Profile }[] = [];
-    for (const item of raw.outgoing) {
-      let receiver = item.receiver;
-      if (!receiver) {
-        receiver = (await getProfileByIdOrClerkId(item.request.receiver_id)) || undefined;
+    // ── Fallback & Merge: in-memory / file store ──────────────────────
+    const raw = this.getConnectionRequests(profileId);
+    for (const item of raw.incoming) {
+      if (!seenReqIds.has(item.request.id)) {
+        let sender = item.sender;
+        if (!sender) {
+          sender = (await getProfileByIdOrClerkId(item.request.sender_id)) || undefined;
+        }
+        incoming.push({ request: item.request, sender });
+        seenReqIds.add(item.request.id);
       }
-      outgoing.push({ request: item.request, receiver });
+    }
+
+    for (const item of raw.outgoing) {
+      if (!seenReqIds.has(item.request.id)) {
+        let receiver = item.receiver;
+        if (!receiver) {
+          receiver = (await getProfileByIdOrClerkId(item.request.receiver_id)) || undefined;
+        }
+        outgoing.push({ request: item.request, receiver });
+        seenReqIds.add(item.request.id);
+      }
     }
 
     return { incoming, outgoing };
@@ -712,16 +1271,63 @@ class PersistentSocialStore {
   }
 
   async getConnectionsAsync(profileId: string): Promise<Profile[]> {
-    const connectedIds = this.data.connections
+    const connectedMap: Map<string, Profile> = new Map();
+
+    // ── Supabase path (source of truth when live) ───────────────
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(profileId)) {
+      try {
+        // Fetch all connection rows where user is either side
+        const { data: connRows } = await (supabaseAdmin as any)
+          .from("connections")
+          .select("user_id_1, user_id_2")
+          .or(`user_id_1.eq.${profileId},user_id_2.eq.${profileId}`);
+
+        if (connRows && connRows.length > 0) {
+          const connectedIds: string[] = connRows
+            .map((r: any) => (r.user_id_1 === profileId ? r.user_id_2 : r.user_id_1))
+            .filter(isUUID);
+
+          if (connectedIds.length > 0) {
+            const { data: profiles } = await supabaseAdmin
+              .from("profiles")
+              .select("*")
+              .in("id", connectedIds);
+
+            if (profiles) {
+              profiles.forEach((sp: any) => {
+                const norm = normalizeSupabaseProfile(sp);
+                connectedMap.set(norm.id, norm);
+              });
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("[socialStore] Supabase getConnectionsAsync error:", err);
+      }
+    }
+
+    // ── Fallback & Merge: in-memory / file store ───────────────────────
+    const localConnected = this.getConnections(profileId);
+    for (const p of localConnected) {
+      if (!connectedMap.has(p.id)) {
+        connectedMap.set(p.id, p);
+      }
+    }
+
+    const connectedIdsFromData = this.data.connections
       .filter((c) => c.user_id_1 === profileId || c.user_id_2 === profileId)
       .map((c) => (c.user_id_1 === profileId ? c.user_id_2 : c.user_id_1));
 
-    const result: Profile[] = [];
-    for (const id of connectedIds) {
-      const prof = mockDb.getProfile(id) || (CURATED_PROFILES[id] as Profile) || (await getProfileByIdOrClerkId(id));
-      if (prof) result.push(prof);
+    for (const cid of connectedIdsFromData) {
+      if (!connectedMap.has(cid)) {
+        const prof = (await getProfileByIdOrClerkId(cid)) || mockDb.getProfile(cid);
+        if (prof) {
+          connectedMap.set(prof.id, prof);
+        }
+      }
     }
-    return result;
+
+    return Array.from(connectedMap.values());
   }
 
   // --- NOTIFICATIONS (SUPABASE + LOCAL) ---
@@ -747,7 +1353,7 @@ class PersistentSocialStore {
     mockDb.notifications.unshift(newNotif);
 
     // Sync to Supabase notifications table if live!
-    if (isUsingLiveSupabase() && supabaseAdmin) {
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(notif.profile_id)) {
       try {
         const eventId = "a0000000-0000-0000-0000-000000000001";
         await supabaseAdmin.from("notifications").insert({
@@ -768,9 +1374,9 @@ class PersistentSocialStore {
 
   async getNotifications(profileId: string): Promise<Notification[]> {
     // 1. Check live Supabase first
-    if (isUsingLiveSupabase() && supabaseAdmin) {
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(profileId)) {
       try {
-        const { data: supaNotifs, error } = await supabaseAdmin
+        const { data: supaNotifs } = await supabaseAdmin
           .from("notifications")
           .select("*")
           .eq("profile_id", profileId)
@@ -782,10 +1388,10 @@ class PersistentSocialStore {
             id: n.id,
             profile_id: n.profile_id,
             title: n.title,
-            message: n.body || "",
+            message: n.body || n.message || "",
             type: n.type,
             read: Boolean(n.read_at),
-            link: n.type === "connection_request" ? "/app/friends" : "/app",
+            link: n.link || (n.type === "connection_request" ? "/app/friends" : "/app"),
             created_at: n.created_at,
           }));
         }
@@ -801,7 +1407,7 @@ class PersistentSocialStore {
   async markAllNotificationsRead(profileId: string) {
     mockDb.markNotificationsRead(profileId);
 
-    if (isUsingLiveSupabase() && supabaseAdmin) {
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(profileId)) {
       try {
         await supabaseAdmin
           .from("notifications")
@@ -822,7 +1428,7 @@ class PersistentSocialStore {
 
     // 2. Update Supabase profiles table
     let newXp = 0;
-    if (isUsingLiveSupabase() && supabaseAdmin) {
+    if (isUsingLiveSupabase() && supabaseAdmin && isUUID(profileId)) {
       try {
         const { data: p } = await supabaseAdmin
           .from("profiles")

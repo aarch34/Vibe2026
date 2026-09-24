@@ -699,23 +699,17 @@ class VibeMemoryDatabase {
   submitGameScore(profileId: string, gameType: GameType, score: number, maxScore: number, timeSeconds?: number) {
     let potentialXp = 25;
 
-    if (gameType === "rotaract_game" || gameType === "vibe_quiz") {
+    if (gameType === "rotaract_quiz") {
       const pct = (score / maxScore) * 100;
       if (pct >= 81) potentialXp = 150;
       else if (pct >= 61) potentialXp = 100;
       else if (pct >= 31) potentialXp = 50;
       else potentialXp = 25;
-    } else if (gameType === "minion_game") {
+    } else if (gameType === "flappy_rocco") {
       if (score >= 1000) potentialXp = 100;
       else if (score >= 600) potentialXp = 75;
       else if (score >= 300) potentialXp = 50;
       else potentialXp = 25;
-    } else if (gameType === "memory_game") {
-      potentialXp = 50; // Base completion
-      if (timeSeconds && timeSeconds <= 25) potentialXp = 100;
-      else if (timeSeconds && timeSeconds <= 40) potentialXp = 75;
-      else if (score >= 900) potentialXp = 100;
-      else if (score >= 600) potentialXp = 75;
     }
 
     // Anti-Abuse XP Rule: Only award incremental XP if beating previous highest XP tier
@@ -765,10 +759,8 @@ class VibeMemoryDatabase {
 
   getGameSummary(profileId: string) {
     const summary = {
-      rotaract_game: { bestScore: 0, maxScore: 10, totalXp: 0, attempts: 0, completed: false },
-      minion_game: { bestScore: 0, maxScore: 1500, totalXp: 0, attempts: 0, completed: false },
-      memory_game: { bestScore: 0, maxScore: 1000, bestTimeSeconds: 0, totalXp: 0, attempts: 0, completed: false },
-      vibe_quiz: { bestScore: 0, maxScore: 10, totalXp: 0, attempts: 0, completed: false },
+      flappy_rocco: { bestScore: 0, maxScore: 1500, totalXp: 0, attempts: 0, completed: false },
+      rotaract_quiz: { bestScore: 0, maxScore: 10, totalXp: 0, attempts: 0, completed: false },
     };
 
     this.gameSessions
@@ -788,10 +780,8 @@ class VibeMemoryDatabase {
 
   getGameHighScores(profileId: string) {
     const scores: Record<GameType, number> = {
-      rotaract_game: 0,
-      minion_game: 0,
-      memory_game: 0,
-      vibe_quiz: 0,
+      flappy_rocco: 0,
+      rotaract_quiz: 0,
     };
 
     this.gameSessions
