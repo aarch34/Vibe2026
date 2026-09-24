@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { calculateLevel } from "@/lib/db/mock-store";
+import { useLiveStats } from "@/components/providers/live-stats-provider";
 
 interface DashboardWelcomeProps {
   initialDisplayName: string;
@@ -12,39 +13,9 @@ interface DashboardWelcomeProps {
 export function DashboardWelcome({
   initialDisplayName,
   initialConnectionsCount,
-  initialXp,
 }: DashboardWelcomeProps) {
-  const [xp, setXp] = useState(initialXp);
-  const [connectionsCount, setConnectionsCount] = useState(initialConnectionsCount);
-
-  useEffect(() => {
-    let isMounted = true;
-    
-    // Initial sync
-    setXp(initialXp);
-    setConnectionsCount(initialConnectionsCount);
-
-    const fetchFreshData = async () => {
-      try {
-        const res = await fetch("/api/notifications");
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && data.success && data.currentXp !== undefined) {
-            setXp(data.currentXp);
-          }
-        }
-      } catch {
-        // ignore
-      }
-    };
-
-    fetchFreshData();
-    const interval = setInterval(fetchFreshData, 45000);
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, [initialXp, initialConnectionsCount]);
+  const { xp } = useLiveStats();
+  const connectionsCount = initialConnectionsCount; // Or could be derived from global state if needed, but keeping it simple
 
   const levelInfo = calculateLevel(xp);
   const minXp = levelInfo.min_xp;

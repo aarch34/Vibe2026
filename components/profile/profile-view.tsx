@@ -35,6 +35,7 @@ import { cn } from "@/lib/utils";
 import { Profile, Post, Level } from "@/types/database";
 import { calculateLevel } from "@/lib/db/mock-store";
 import { EditProfileModal } from "@/components/attendee/edit-profile-modal";
+import { useLiveStats } from "@/components/providers/live-stats-provider";
 
 interface ProfileViewProps {
   profile: Profile;
@@ -108,6 +109,8 @@ export function ProfileView({
   const [grievanceResult, setGrievanceResult] = useState<{ id: string; message: string } | null>(null);
   const [grievanceLoading, setGrievanceLoading] = useState(false);
 
+  const liveStats = useLiveStats();
+  
   // Sync internal state when server-passed profile prop updates
   useEffect(() => {
     setCurrentProfile(profile);
@@ -115,36 +118,14 @@ export function ProfileView({
     if (initialConnectionStatus) {
       setConnectionStatus(initialConnectionStatus);
     }
-    
-    // Poll for fresh XP if looking at own profile
-    let isMounted = true;
-    if (isSelf) {
-      const fetchFreshData = async () => {
-        try {
-          const res = await fetch("/api/notifications");
-          if (res.ok) {
-            const data = await res.json();
-            if (isMounted && data.success && data.currentXp !== undefined) {
-              setCurrentProfile(prev => ({ ...prev, xp: data.currentXp }));
-            }
-          }
-        } catch {
-          // ignore
-        }
-      };
-      
-      const interval = setInterval(fetchFreshData, 45000);
-      return () => {
-        isMounted = false;
-        clearInterval(interval);
-      };
-    }
-  }, [profile, initialConnectionStatus, isSelf]);
+  }, [profile, initialConnectionStatus]);
 
-  const levelInfo = calculateLevel(currentProfile.xp);
+  // Use global live XP if this is the user's own profile, otherwise use the static profile XP
+  const displayXp = isSelf ? liveStats.xp : currentProfile.xp;
+  const levelInfo = calculateLevel(displayXp);
   const minXp = levelInfo.min_xp;
   const maxXp = levelInfo.max_xp || 3000;
-  const currentLevelXp = Math.max(0, currentProfile.xp - minXp);
+  const currentLevelXp = Math.max(0, displayXp - minXp);
   const totalLevelRange = Math.max(1, maxXp - minXp);
   const progressPercent = Math.min(100, Math.floor((currentLevelXp / totalLevelRange) * 100));
 
@@ -446,7 +427,7 @@ export function ProfileView({
                 Level {levelInfo.level_number}: {levelInfo.level_name}
               </span>
             </span>
-            <span className="text-amber-400 font-mono text-sm">⭐ {currentProfile.xp} XP</span>
+            <span className="text-amber-400 font-mono text-sm">⭐ {displayXp} XP</span>
           </div>
 
           <div className="w-full h-3 rounded-full bg-background overflow-hidden p-0.5 border border-border/60">
@@ -520,7 +501,7 @@ export function ProfileView({
           <Trophy className="w-5 h-5 mx-auto text-amber-400" />
           <span className="text-xs font-bold text-muted-foreground block">Total XP</span>
           <span className="text-xl font-black text-amber-400 font-mono">
-            ⭐ {currentProfile.xp}
+            ⭐ {displayXp}
           </span>
         </div>
       </div>

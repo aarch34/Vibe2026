@@ -25,7 +25,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { UserNav } from "@/components/auth/user-nav";
-import { Notification, ConnectionRequest, Profile } from "@/types/database";
+import { ConnectionRequest, Profile } from "@/types/database";
+import { useLiveStats } from "@/components/providers/live-stats-provider";
 
 interface TopHeaderProps {
   vibeId?: string;
@@ -47,15 +48,18 @@ export function TopHeader({
   notifications: initialNotifs = [],
 }: TopHeaderProps) {
   const pathname = usePathname();
+  const {
+    xp: localXp,
+    setXp: setLocalXp,
+    notifications: notifsList,
+    setNotifications: setNotifsList,
+    incomingRequests,
+    setIncomingRequests,
+  } = useLiveStats();
+
   const [isDark, setIsDark] = useState(true);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
-  const [localXp, setLocalXp] = useState(xp);
-  const [notifsList, setNotifsList] = useState<Notification[]>(initialNotifs);
-
-  useEffect(() => {
-    setLocalXp(xp);
-  }, [xp]);
-  const [incomingRequests, setIncomingRequests] = useState<{ request: ConnectionRequest; sender?: Profile }[]>([]);
+  
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
 
@@ -65,7 +69,6 @@ export function TopHeader({
   const seenRequestIdsRef = useRef<Set<string>>(new Set());
   const dismissedPopupIdsRef = useRef<Set<string>>(new Set());
   const isFirstRunRef = useRef<boolean>(true);
-  // Keep acceptedRequests in a ref as well so the polling closure stays stable
   const acceptedRequestsRef = useRef<Set<string>>(new Set());
 
   // Synthesize gentle notification chime via Web Audio API (zero external assets needed)
@@ -77,8 +80,8 @@ export function TopHeader({
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5 note
-      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5 note
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
       gain.gain.setValueAtTime(0.12, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
       osc.connect(gain);
@@ -86,62 +89,30 @@ export function TopHeader({
       osc.start();
       osc.stop(ctx.currentTime + 0.45);
     } catch {
-      // Handled silently if autoplay restricted
+      // Handled silently
     }
   };
 
-  // Background polling every 10 seconds to update without refresh & prevent backend overload
   useEffect(() => {
-    let isMounted = true;
+    if (isFirstRunRef.current) {
+      incomingRequests.forEach((r) => seenRequestIdsRef.current.add(r.request.id));
+      isFirstRunRef.current = false;
+    } else {
+      const newReq = incomingRequests.find(
+        (r) =>
+          !seenRequestIdsRef.current.has(r.request.id) &&
+          !dismissedPopupIdsRef.current.has(r.request.id) &&
+          !acceptedRequestsRef.current.has(r.request.id)
+      );
 
-    const fetchNotifs = async () => {
-      try {
-        const res = await fetch("/api/notifications");
-        if (res.ok) {
-          const data = await res.json();
-          if (isMounted && data.success) {
-            setNotifsList(data.notifications || []);
-            if (data.currentXp !== undefined) {
-              setLocalXp(data.currentXp);
-            }
-            const currentIncoming: { request: ConnectionRequest; sender?: Profile }[] = data.incomingRequests || [];
-            setIncomingRequests(currentIncoming);
-
-            if (isFirstRunRef.current) {
-              currentIncoming.forEach((r) => seenRequestIdsRef.current.add(r.request.id));
-              isFirstRunRef.current = false;
-            } else {
-              // Detect newly arrived incoming connection requests
-              const newReq = currentIncoming.find(
-                (r) =>
-                  !seenRequestIdsRef.current.has(r.request.id) &&
-                  !dismissedPopupIdsRef.current.has(r.request.id) &&
-                  !acceptedRequestsRef.current.has(r.request.id)
-              );
-
-              if (newReq) {
-                seenRequestIdsRef.current.add(newReq.request.id);
-                setActivePopupRequest(newReq);
-                setPopupAcceptedSuccess(false);
-                playChimeSound();
-              }
-            }
-          }
-        }
-      } catch {
-        // Silently ignore network interruptions
+      if (newReq) {
+        seenRequestIdsRef.current.add(newReq.request.id);
+        setActivePopupRequest(newReq);
+        setPopupAcceptedSuccess(false);
+        playChimeSound();
       }
-    };
-
-    fetchNotifs();
-    // 45 seconds interval to ensure low backend load while keeping state live
-    const interval = setInterval(fetchNotifs, 45000);
-
-    return () => {
-      isMounted = false;
-      clearInterval(interval);
-    };
-  }, []); // Empty deps: interval is stable for the component lifetime
+    }
+  }, [incomingRequests]);
 
   // Auto-dismiss the floating pop-up after 12 seconds if not interacted with
   useEffect(() => {
@@ -204,7 +175,7 @@ export function TopHeader({
     }
   };
 
-  const getNotifIcon = (type: Notification["type"]) => {
+  const getNotifIcon = (type: string) => {
     switch (type) {
       case "connection_request":
       case "connection_accepted":

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Trophy, Award, Gamepad2, Sparkles, Users, Crown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LeaderboardEntry, GameLeaderboardEntry, GameType } from "@/types/database";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function LeaderboardPage() {
   const [activeTab, setActiveTab] = useState<"overall" | GameType>("overall");
@@ -99,7 +100,36 @@ export default function LeaderboardPage() {
 
       {/* Leaderboard Table / List */}
       <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-xl">
-        {activeTab === "overall" ? (
+        {loading ? (
+          <div className="divide-y divide-border/60">
+            <div className="px-6 py-3 bg-secondary/50 flex items-center justify-between text-[11px] font-extrabold uppercase text-muted-foreground tracking-wider">
+              <span className="w-12 text-center">Rank</span>
+              <span className="flex-1">Member</span>
+              <span className="w-24 text-center hidden sm:inline-block">Level</span>
+              <span className="w-28 text-right">Score</span>
+            </div>
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="px-6 py-4 flex items-center justify-between">
+                <div className="w-12 text-center flex justify-center shrink-0">
+                  <Skeleton className="h-6 w-6 rounded-md" />
+                </div>
+                <div className="flex-1 flex items-center space-x-3 pr-2 min-w-0">
+                  <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+                  <div className="space-y-2 flex-1 min-w-0">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24" />
+                  </div>
+                </div>
+                <div className="w-24 hidden sm:flex justify-center shrink-0">
+                  <Skeleton className="h-4 w-16" />
+                </div>
+                <div className="w-28 flex justify-end shrink-0">
+                  <Skeleton className="h-5 w-20" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : activeTab === "overall" ? (
           <div className="divide-y divide-border/60">
             <div className="px-6 py-3 bg-secondary/50 flex items-center justify-between text-[11px] font-extrabold uppercase text-muted-foreground tracking-wider">
               <span className="w-12 text-center">Rank</span>
