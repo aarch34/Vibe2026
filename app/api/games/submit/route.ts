@@ -30,7 +30,7 @@ export async function POST(req: Request) {
 
     // Use frontend-calculated XP to match the UI perfectly,
     // otherwise fallback to backend conservative calculation
-    let xpAwarded = typeof xp === "number" ? xp : 25;
+    xpAwarded = typeof xp === "number" ? xp : 25;
     
     if (typeof xp !== "number") {
       if (gameType === "rotaract_quiz") {
