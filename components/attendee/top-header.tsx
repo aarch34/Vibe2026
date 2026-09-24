@@ -49,7 +49,12 @@ export function TopHeader({
   const pathname = usePathname();
   const [isDark, setIsDark] = useState(true);
   const [isNotifOpen, setIsNotifOpen] = useState(false);
+  const [localXp, setLocalXp] = useState(xp);
   const [notifsList, setNotifsList] = useState<Notification[]>(initialNotifs);
+
+  useEffect(() => {
+    setLocalXp(xp);
+  }, [xp]);
   const [incomingRequests, setIncomingRequests] = useState<{ request: ConnectionRequest; sender?: Profile }[]>([]);
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
@@ -96,6 +101,9 @@ export function TopHeader({
           const data = await res.json();
           if (isMounted && data.success) {
             setNotifsList(data.notifications || []);
+            if (data.currentXp !== undefined) {
+              setLocalXp(data.currentXp);
+            }
             const currentIncoming: { request: ConnectionRequest; sender?: Profile }[] = data.incomingRequests || [];
             setIncomingRequests(currentIncoming);
 
@@ -146,7 +154,7 @@ export function TopHeader({
 
   const unreadNotifs = notifsList.filter((n) => !n.read).length;
   const unreadCount = unreadNotifs + incomingRequests.filter((r) => !acceptedRequests.has(r.request.id)).length;
-  const displayXp = typeof xp === "number" ? xp : 0;
+  const displayXp = typeof localXp === "number" ? localXp : 0;
 
   const toggleTheme = () => {
     const nextDark = !document.documentElement.classList.contains("dark");
@@ -181,6 +189,10 @@ export function TopHeader({
         if (action === "accept") {
           acceptedRequestsRef.current.add(requestId);
           setAcceptedRequests((prev) => new Set(prev).add(requestId));
+          setLocalXp(prev => prev + 25);
+          if (activePopupRequest?.request.id === requestId) {
+            setPopupAcceptedSuccess(true);
+          }
         } else {
           setIncomingRequests((prev) => prev.filter((r) => r.request.id !== requestId));
         }

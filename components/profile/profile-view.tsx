@@ -115,7 +115,31 @@ export function ProfileView({
     if (initialConnectionStatus) {
       setConnectionStatus(initialConnectionStatus);
     }
-  }, [profile, initialConnectionStatus]);
+    
+    // Poll for fresh XP if looking at own profile
+    let isMounted = true;
+    if (isSelf) {
+      const fetchFreshData = async () => {
+        try {
+          const res = await fetch("/api/notifications");
+          if (res.ok) {
+            const data = await res.json();
+            if (isMounted && data.success && data.currentXp !== undefined) {
+              setCurrentProfile(prev => ({ ...prev, xp: data.currentXp }));
+            }
+          }
+        } catch {
+          // ignore
+        }
+      };
+      
+      const interval = setInterval(fetchFreshData, 10000);
+      return () => {
+        isMounted = false;
+        clearInterval(interval);
+      };
+    }
+  }, [profile, initialConnectionStatus, isSelf]);
 
   const levelInfo = calculateLevel(currentProfile.xp);
   const minXp = levelInfo.min_xp;

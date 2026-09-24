@@ -6,6 +6,7 @@ import { mockDb, calculateLevel } from "@/lib/db/mock-store";
 import { getAllDiscoverableProfiles } from "@/lib/db/profiles";
 import { VibeFeed } from "@/components/social/vibe-feed";
 import { socialStore } from "@/lib/db/social-store";
+import { DashboardWelcome } from "@/components/attendee/dashboard-welcome";
 
 export const dynamic = "force-dynamic";
 
@@ -28,48 +29,11 @@ export default async function AttendeeHomePage() {
   return (
     <div className="space-y-6">
       {/* Welcome & Level Progress Header */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-pink-500/10 via-purple-500/10 to-cyan-500/10 border border-pink-500/20 shadow-xl relative overflow-hidden space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
-              Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-cyan-400">{currentProfile.display_name}</span> 👋
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Rotaract District 3192 Pre-Event Social Hub • Connect, post & level up!
-            </p>
-          </div>
-
-          <div className="flex items-center space-x-3 shrink-0">
-            <div className="p-3 rounded-2xl bg-card border border-border text-center">
-              <span className="text-xs font-extrabold uppercase text-muted-foreground block">Connections</span>
-              <span className="text-lg font-black text-cyan-400 font-mono">{currentProfile.connections_count}</span>
-            </div>
-            <div className="p-3 rounded-2xl bg-card border border-border text-center">
-              <span className="text-xs font-extrabold uppercase text-muted-foreground block">XP Balance</span>
-              <span className="text-lg font-black text-amber-400 font-mono">⭐ {currentProfile.xp}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Level Progress Bar */}
-        <div className="space-y-1.5 pt-2">
-          <div className="flex items-center justify-between text-xs font-extrabold">
-            <span className="flex items-center space-x-1.5 text-foreground">
-              <span>{levelInfo.badge}</span>
-              <span>{levelInfo.level_name}</span>
-            </span>
-            <span className="text-muted-foreground font-mono text-[11px]">
-              {currentProfile.xp} / {levelInfo.max_xp ? `${levelInfo.max_xp} XP` : "MAX"}
-            </span>
-          </div>
-          <div className="w-full h-3 rounded-full bg-secondary/80 overflow-hidden p-0.5 border border-border/50">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 transition-all duration-500 shadow-sm"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
-        </div>
-      </div>
+      <DashboardWelcome 
+        initialDisplayName={currentProfile.display_name} 
+        initialConnectionsCount={currentProfile.connections_count}
+        initialXp={currentProfile.xp}
+      />
 
       {/* Suggested Connections Carousel / Preview */}
       {suggestedPeople.length > 0 && (
