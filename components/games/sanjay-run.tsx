@@ -282,10 +282,10 @@ export function SanjayRun({
         if (st.spawnTimer <= 0) {
           const type = Math.random() > 0.75 && st.speed > 8 ? "bird" : Math.random() > 0.5 ? "double" : "cactus";
           if (type === "bird") {
-            st.obstacles.push({ type, x: canvas.width + 20, y: 270, width: 50, height: 30 });
+            st.obstacles.push({ type, x: canvas!.width + 20, y: 270, width: 50, height: 30 });
           } else {
             const h = 42 + Math.random() * 24;
-            st.obstacles.push({ type, x: canvas.width + 20, y: 350 - h, width: type === "double" ? 54 : 31, height: h });
+            st.obstacles.push({ type, x: canvas!.width + 20, y: 350 - h, width: type === "double" ? 54 : 31, height: h });
           }
           st.spawnTimer = Math.max(430, ((700 + Math.random() * 450) / st.speed) * 16.67);
         }
@@ -322,45 +322,45 @@ export function SanjayRun({
       }
 
       // Draw
-      const w = canvas.width;
-      const h = canvas.height;
-      ctx.clearRect(0, 0, w, h);
+      const w = canvas!.width;
+      const h = canvas!.height;
+      ctx!.clearRect(0, 0, w, h);
       
       const isNight = st.score % 1800 > 1250;
       
       // Sky
-      drawPixel(ctx, 0, 0, w, h, isNight ? "#0f172a" : "#38bdf8");
+      drawPixel(ctx!, 0, 0, w, h, isNight ? "#0f172a" : "#38bdf8");
       
       // Sun/Moon
-      drawPixel(ctx, w - 115, 52, 55, 55, isNight ? "#fef08a" : "#facc15");
+      drawPixel(ctx!, w - 115, 52, 55, 55, isNight ? "#fef08a" : "#facc15");
 
       // Clouds
       for (let i = 0; i < 5; i++) {
         const cx = ((i * 230 - st.score * 0.12) % (w + 180) + w + 180) % (w + 180) - 90;
         const cy = 82 + (i % 3) * 42;
         const cColor = isNight ? "#334155" : "#f0f9ff";
-        drawPixel(ctx, cx, cy, 75, 13, cColor);
-        drawPixel(ctx, cx + 15, cy - 9, 28, 22, cColor);
+        drawPixel(ctx!, cx, cy, 75, 13, cColor);
+        drawPixel(ctx!, cx + 15, cy - 9, 28, 22, cColor);
       }
 
       // City Silhouette
       for (let x = 0; x < w; x += 100) {
         const bh = 25 + (x * 13 % 50);
-        drawPixel(ctx, x, 350 - bh, 62, bh, isNight ? "#1e293b" : "#7dd3fc");
+        drawPixel(ctx!, x, 350 - bh, 62, bh, isNight ? "#1e293b" : "#7dd3fc");
       }
 
       // Ground
-      drawPixel(ctx, 0, 350, w, h - 350, "#1c1917"); // dirt brown
-      drawPixel(ctx, 0, 350, w, 5, "#15803d"); // grass top
+      drawPixel(ctx!, 0, 350, w, h - 350, "#1c1917"); // dirt brown
+      drawPixel(ctx!, 0, 350, w, 5, "#15803d"); // grass top
 
       for (let x = -st.groundOffset; x < w; x += 48) {
-        drawPixel(ctx, x, 370, 28, 5, "#292524");
+        drawPixel(ctx!, x, 370, 28, 5, "#292524");
       }
       for (let x = 20 - st.groundOffset * 0.6; x < w; x += 92) {
-        drawPixel(ctx, x, 391, 38, 3, "#292524");
+        drawPixel(ctx!, x, 391, 38, 3, "#292524");
       }
 
-      st.obstacles.forEach(o => drawObstacle(ctx, o));
+      st.obstacles.forEach(o => drawObstacle(ctx!, o));
       
       // Draw Player
       let drawnFromSprite = false;
@@ -376,7 +376,7 @@ export function SanjayRun({
       }
       
       if (!drawnFromSprite) {
-         drawSanjayVector(ctx, st.player.x, st.player.y, st.player, st.ducking);
+         drawSanjayVector(ctx!, st.player.x, st.player.y, st.player, st.ducking);
       }
 
       animFrameId = requestAnimationFrame(gameLoop);
