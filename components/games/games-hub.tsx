@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Gamepad2, Trophy, Sparkles, Play, AlertCircle } from "lucide-react";
 import { FlappyRocco } from "./flappy-rocco";
 import { VibeQuiz } from "./vibe-quiz";
+import { SanjayRun } from "./sanjay-run";
 import { GameType, Profile } from "@/types/database";
 
 export interface GameItemSummary {
@@ -19,6 +20,7 @@ export interface GameItemSummary {
 export interface GameSummary {
   flappy_rocco: GameItemSummary;
   rotaract_quiz: GameItemSummary;
+  sanjay_run: GameItemSummary;
 }
 
 interface GamesHubProps {
@@ -97,7 +99,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
               <span>YOUR GAME RESULTS</span>
             </h3>
             <span className="text-[11px] font-mono font-bold text-muted-foreground">
-              Total Played: {summary.flappy_rocco.attempts + summary.rotaract_quiz.attempts}
+              Total Played: {summary.flappy_rocco.attempts + summary.rotaract_quiz.attempts + summary.sanjay_run.attempts}
             </span>
           </div>
 
@@ -119,6 +121,15 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
               </p>
               <p className="text-[10px] font-bold text-cyan-400">XP: +{summary.rotaract_quiz.totalXp} XP</p>
             </div>
+
+            {/* Sanjay Run */}
+            <div className="p-3 rounded-2xl bg-secondary/50 border border-border/80 space-y-1 font-mono">
+              <span className="text-[10px] text-muted-foreground uppercase font-bold block">🏃 Sanjay Run</span>
+              <p className="text-xs font-black text-foreground">
+                Best: {summary.sanjay_run.completed ? `${summary.sanjay_run.bestScore} M` : "Not Played"}
+              </p>
+              <p className="text-[10px] font-bold text-yellow-400">XP: +{summary.sanjay_run.totalXp} XP</p>
+            </div>
           </div>
         </div>
       )}
@@ -137,6 +148,15 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
         <VibeQuiz
           onScoreSubmitted={(s, m, xp) => handleScoreSubmit("rotaract_quiz", s, m, xp)}
           onClose={() => setActiveGame(null)}
+        />
+      )}
+
+      {activeGame === "sanjay_run" && (
+        <SanjayRun
+          userBalance={currentProfile.xp}
+          onScoreSubmitted={(s, m, xp) => handleScoreSubmit("sanjay_run", s, m, xp)}
+          onClose={() => setActiveGame(null)}
+          onFinished={() => setActiveGame(null)}
         />
       )}
 
@@ -225,6 +245,52 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
             >
               <Play className="w-4 h-4 fill-black" />
               <span>{summary.rotaract_quiz.completed ? "PLAY AGAIN" : "PLAY NOW"}</span>
+            </button>
+          </div>
+
+          {/* 3. SANJAY RUN */}
+          <div className="p-6 rounded-3xl bg-gradient-to-br from-yellow-900/30 to-card border border-yellow-500/30 shadow-lg space-y-4 hover:border-yellow-400 transition-all flex flex-col justify-between">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-md bg-black/40 relative">
+                  <Image
+                    src="/images/games/sanjay-sprite.png"
+                    alt="Sanjay Mascot"
+                    fill
+                    className="object-cover object-left"
+                    priority
+                  />
+                </div>
+                <span className="text-xs font-black text-yellow-400 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/30">
+                  10–50 XP
+                </span>
+              </div>
+              <h3 className="text-xl font-black text-foreground">3. SANJAY RUN</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Run, jump, and duck over cacti and birds in this fast-paced infinite runner! Earn up to 50 XP based on distance.
+              </p>
+
+              <div className="p-3 rounded-2xl bg-secondary/40 border border-border/60 text-[11px] font-mono space-y-1">
+                <div className="flex justify-between text-muted-foreground">
+                  <span>Best Score:</span>
+                  <span className="font-bold text-foreground">
+                    {summary.sanjay_run.completed ? `${summary.sanjay_run.bestScore} M` : "None"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-yellow-400 font-bold">
+                  <span>XP Earned:</span>
+                  <span>{summary.sanjay_run.totalXp} XP</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              id="play-sanjay-run"
+              onClick={() => setActiveGame("sanjay_run")}
+              className="w-full py-3 bg-gradient-to-r from-yellow-500 to-amber-600 hover:brightness-110 text-black font-black text-xs rounded-2xl transition-all shadow-md flex items-center justify-center space-x-2"
+            >
+              <Play className="w-4 h-4 fill-black" />
+              <span>{summary.sanjay_run.completed ? "PLAY AGAIN" : "PLAY NOW"}</span>
             </button>
           </div>
 

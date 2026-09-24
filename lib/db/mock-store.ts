@@ -727,6 +727,11 @@ class VibeMemoryDatabase {
       else if (score >= 600) potentialXp = 75;
       else if (score >= 300) potentialXp = 50;
       else potentialXp = 25;
+    } else if (gameType === "sanjay_run") {
+      if (score >= 1000) potentialXp = 50;
+      else if (score >= 500) potentialXp = 25;
+      else if (score >= 100) potentialXp = 10;
+      else potentialXp = 0;
     }
 
     // Anti-Abuse XP Rule: Only award incremental XP if beating previous highest XP tier
@@ -778,6 +783,7 @@ class VibeMemoryDatabase {
     const summary = {
       flappy_rocco: { bestScore: 0, maxScore: 1500, totalXp: 0, attempts: 0, completed: false },
       rotaract_quiz: { bestScore: 0, maxScore: 10, totalXp: 0, attempts: 0, completed: false },
+      sanjay_run: { bestScore: 0, maxScore: 2000, totalXp: 0, attempts: 0, completed: false },
     };
 
     this.gameSessions
@@ -799,6 +805,7 @@ class VibeMemoryDatabase {
     const scores: Record<GameType, number> = {
       flappy_rocco: 0,
       rotaract_quiz: 0,
+      sanjay_run: 0,
     };
 
     this.gameSessions

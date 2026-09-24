@@ -125,7 +125,7 @@ export interface ChallengeCompletion {
   xp_earned: number;
 }
 
-export type GameType = "flappy_rocco" | "rotaract_quiz";
+export type GameType = "flappy_rocco" | "rotaract_quiz" | "sanjay_run";
 
 export interface GameSession {
   id: string;

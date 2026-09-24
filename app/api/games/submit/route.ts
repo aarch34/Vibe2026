@@ -24,6 +24,7 @@ export async function POST(req: Request) {
     const gameTitles: Record<string, string> = {
       flappy_rocco: "ROCO Flappie",
       rotaract_quiz: "Rotaract Quiz",
+      sanjay_run: "Sanjay Run",
     };
     const title = gameTitles[gameType] || "VIBE Game";
 
@@ -45,6 +46,11 @@ export async function POST(req: Request) {
         else if (numScore >= 300) xpAwarded = 75;
         else if (numScore >= 100) xpAwarded = 50;
         else if (numScore >= 5) xpAwarded = 25;
+        else xpAwarded = 0;
+      } else if (gameType === "sanjay_run") {
+        if (numScore >= 1000) xpAwarded = 50;
+        else if (numScore >= 500) xpAwarded = 25;
+        else if (numScore >= 100) xpAwarded = 10;
         else xpAwarded = 0;
       }
     }

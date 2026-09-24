@@ -12,6 +12,7 @@ export default async function GamesPage() {
   const initialSummary: GameSummary = {
     flappy_rocco: { bestScore: 0, maxScore: 1500, totalXp: 0, attempts: 0, completed: false },
     rotaract_quiz: { bestScore: 0, maxScore: 10, totalXp: 0, attempts: 0, completed: false },
+    sanjay_run: { bestScore: 0, maxScore: 2000, totalXp: 0, attempts: 0, completed: false },
   };
 
   if (isUsingLiveSupabase() && supabaseAdmin) {
