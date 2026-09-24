@@ -2,8 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { Download, X } from "lucide-react";
-import { Button } from "./button";
-
 export function InstallPWA() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
@@ -60,13 +58,12 @@ export function InstallPWA() {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Button 
+          <button 
             onClick={handleInstallClick} 
-            size="sm" 
-            className="bg-white text-indigo-950 hover:bg-violet-100 font-bold h-8 px-3"
+            className="bg-white text-indigo-950 hover:bg-violet-100 font-bold h-8 px-3 rounded-md text-xs transition-colors"
           >
             Install
-          </Button>
+          </button>
           <button 
             onClick={() => setShowInstallBanner(false)}
             className="p-1.5 text-violet-400 hover:text-white rounded-md hover:bg-white/10 transition-colors"
