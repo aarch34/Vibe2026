@@ -10,54 +10,54 @@ interface RotaractGameProps {
 
 const ROTARACT_QUESTIONS = [
   {
-    q: "What is the official motto of Rotary International and Rotaract?",
-    options: ["Service Above Self", "Leadership First", "Youth Empowerment", "Fellowship & Beyond"],
+    q: "When and where was the very first Rotaract club chartered?",
+    options: ["March 13, 1968 at University of North Carolina", "February 23, 1905 in Chicago", "May 1, 1965 in Evanston", "January 10, 1970 at Oxford University"],
     correct: 0,
   },
   {
-    q: "In which year was Rotaract officially founded by Rotary International?",
-    options: ["1968", "1975", "1980", "1992"],
-    correct: 0,
+    q: "Who was the Rotary International President who spearheaded the creation of Rotaract?",
+    options: ["Paul P. Harris", "Arch C. Klumph", "Luther H. Hodges", "Chesley R. Perry"],
+    correct: 2,
   },
   {
-    q: "Which District number does our VIBE 2026 event belong to?",
-    options: ["District 3190", "District 3192", "District 3200", "District 3181"],
+    q: "What does the name 'Rotaract' specifically stand for?",
+    options: ["Rotary Actors", "Rotary in Action", "Rotation and Action", "Rotary Activities"],
     correct: 1,
   },
   {
-    q: "What is the primary theme of Rotaract fellowship?",
-    options: ["Fellowship Through Service", "Commercial Trading", "Strict Examinations", "Solo Achievements"],
+    q: "In what year did Rotary International's Council on Legislation elevate Rotaract from a 'program' to a recognized 'membership type'?",
+    options: ["1989", "1999", "2010", "2019"],
+    correct: 3,
+  },
+  {
+    q: "What was the original age limit set for Rotaract members when it was founded in 1968?",
+    options: ["18 to 30", "16 to 25", "17 to 25", "21 to 35"],
+    correct: 2,
+  },
+  {
+    q: "Which country was home to the very first Rotaract club chartered outside the United States?",
+    options: ["India", "Mexico", "United Kingdom", "Canada"],
+    correct: 1,
+  },
+  {
+    q: "World Rotaract Day is celebrated annually on which date?",
+    options: ["March 13", "February 23", "July 1", "October 24"],
     correct: 0,
   },
   {
-    q: "What is the traditional age group served by Rotaract clubs worldwide?",
-    options: ["18 to 30+", "10 to 15", "40 to 60", "Under 12"],
-    correct: 0,
+    q: "In 2020, what historic change did Rotary International enact regarding Rotaract membership?",
+    options: ["Required all Rotaractors to pay full Rotary dues", "Eliminated the upper age limit of 30", "Allowed high school students to join", "Merged Rotaract with Interact"],
+    correct: 1,
   },
   {
-    q: "What is the Four-Way Test's first question?",
-    options: ["Is it the TRUTH?", "Is it FAIR to all concerned?", "Will it build GOODWILL?", "Will it be BENEFICIAL?"],
-    correct: 0,
+    q: "How many charter members were required to officially start the first Rotaract Club in 1968?",
+    options: ["15", "25", "21", "10"],
+    correct: 2,
   },
   {
-    q: "What is the emblem/symbol of Rotary International?",
-    options: ["Wheel with 24 cogs", "Anchor", "Star", "Torch of Light"],
-    correct: 0,
-  },
-  {
-    q: "What is the primary annual gathering event for Rotaract District 3192?",
-    options: ["VIBE 2026 & District Conference", "Global Summit", "Winter Festival", "Youth Expo"],
-    correct: 0,
-  },
-  {
-    q: "Which of the following is one of Rotary's 7 Areas of Focus?",
-    options: ["Peacebuilding and Conflict Prevention", "Space Exploration", "Stock Trading", "Automobile Racing"],
-    correct: 0,
-  },
-  {
-    q: "What key avenue of service focuses on international understanding and peace?",
-    options: ["International Service", "Club Service", "Community Service", "Vocational Service"],
-    correct: 0,
+    q: "In 2022, Rotary International expanded the Rotary Foundation rules to allow Rotaract clubs to do what?",
+    options: ["Become Rotary Foundation Trustees", "Sponsor Rotary Foundation global grants", "Automatically become Paul Harris Fellows", "Issue their own Rotary currency"],
+    correct: 1, 
   },
 ];
 
