@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Sparkles, Gamepad2, Users, ArrowRight, UserPlus, Instagram, Flame } from "lucide-react";
 import { getCurrentUserSession } from "@/lib/auth/session";
 import { mockDb, calculateLevel } from "@/lib/db/mock-store";
+import { getAllDiscoverableProfiles } from "@/lib/db/profiles";
 import { VibeFeed } from "@/components/social/vibe-feed";
 import { SocialChallengesCard } from "@/components/social/challenges-card";
 
@@ -23,7 +24,7 @@ export default async function AttendeeHomePage() {
   const posts = mockDb.getPosts();
   const challenges = mockDb.getChallenges();
   const completedChallengeIds = mockDb.getUserCompletedChallengeIds(currentProfile.id);
-  const suggestedPeople = mockDb.searchProfiles("", "all", "all", "all", currentProfile.id).slice(0, 4);
+  const suggestedPeople = (await getAllDiscoverableProfiles(currentProfile.id)).slice(0, 4);
 
   return (
     <div className="space-y-6">

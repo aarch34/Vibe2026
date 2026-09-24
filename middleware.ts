@@ -20,7 +20,6 @@ if (isClerkReady) {
       "/",
       "/sign-in(.*)",
       "/sign-up(.*)",
-      "/register(.*)",
       "/api/webhooks(.*)",
       "/staff/login(.*)",
       "/admin/login(.*)",
@@ -58,7 +57,7 @@ if (isClerkReady) {
       if (isRegisterRoute(req)) {
         const authData = auth();
         if (!authData.userId) {
-          const url = new URL("/sign-in", req.url);
+          const url = new URL("/sign-up", req.url);
           url.searchParams.set("redirect_url", "/register");
           return NextResponse.redirect(url);
         }

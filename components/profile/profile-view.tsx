@@ -40,6 +40,7 @@ export function ProfileView({
   const [currentProfile, setCurrentProfile] = useState<Profile>(profile);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDiscoverable, setIsDiscoverable] = useState(currentProfile.is_discoverable);
+  const [connectionStatus, setConnectionStatus] = useState<"none" | "pending" | "connected">("none");
 
   // Sync internal state when server-passed profile prop updates
   useEffect(() => {
@@ -56,11 +57,36 @@ export function ProfileView({
 
   const toggleDiscoverable = () => {
     setIsDiscoverable(!isDiscoverable);
-    // API update call could be made here
+  };
+
+  const handleSendRequest = async () => {
+    setConnectionStatus("pending");
+    try {
+      await fetch("/api/connections/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ receiverId: currentProfile.id }),
+      });
+    } catch {
+      // fallback
+    }
   };
 
   return (
     <div className="space-y-6">
+      {!isSelf && (
+        <div className="flex items-center justify-between pb-1">
+          <Link
+            href="/app/discover"
+            className="inline-flex items-center space-x-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span>← Back to Discover People</span>
+          </Link>
+          <span className="text-[11px] font-mono font-bold text-pink-400 bg-pink-500/10 px-2.5 py-0.5 rounded-full border border-pink-500/20">
+            Attendee Profile
+          </span>
+        </div>
+      )}
       {/* Profile Header Card */}
       <div className="p-6 sm:p-8 rounded-3xl bg-card border border-pink-500/30 shadow-2xl relative overflow-hidden space-y-6">
         {/* Glow BG */}
@@ -107,6 +133,30 @@ export function ProfileView({
                   >
                     <Pencil className="w-3.5 h-3.5" />
                     <span>EDIT PROFILE</span>
+                  </button>
+                )}
+
+                {!isSelf && (
+                  <button
+                    onClick={handleSendRequest}
+                    disabled={connectionStatus !== "none"}
+                    className={cn(
+                      "px-4 py-2 rounded-xl font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all cursor-pointer",
+                      connectionStatus === "connected"
+                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 cursor-default"
+                        : connectionStatus === "pending"
+                        ? "bg-amber-500/20 text-amber-400 border border-amber-500/40 cursor-default"
+                        : "bg-gradient-to-r from-cyan-500 to-blue-600 hover:brightness-110 text-white"
+                    )}
+                  >
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>
+                      {connectionStatus === "connected"
+                        ? "CONNECTED"
+                        : connectionStatus === "pending"
+                        ? "REQUEST SENT"
+                        : "CONNECT"}
+                    </span>
                   </button>
                 )}
 

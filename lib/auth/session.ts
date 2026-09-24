@@ -211,6 +211,12 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
       throw new Error(`Failed to resolve user profile for ${clerkUserId}`);
     }
 
+    // Enforce registration completion: if attendee has not filled in their registration details, redirect to /register
+    const isTestOrSpecial = clerkUserId.startsWith("test-") || clerkUserId.startsWith("usr-reg-");
+    if (!isTestOrSpecial && clerkRole !== "admin" && !profile.profile_completed && !profile.club) {
+      redirect("/register");
+    }
+
     // 2. Resolve Event Member
     let { data: member } = await supabaseAdmin
       .from("event_members")
@@ -316,7 +322,7 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
         posts_count: (profile as any).posts_count ?? 0,
         games_played_count: (profile as any).games_played_count ?? 0,
         registration_id: profile.registration_id || null,
-        profile_completed: Boolean((profile as any).bio && (profile as any).interests?.length > 0),
+        profile_completed: Boolean((profile as any).profile_completed || (profile as any).club),
         created_at: profile.created_at || new Date().toISOString(),
         updated_at: profile.updated_at || new Date().toISOString(),
       };
@@ -327,6 +333,14 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
       if (profile.college) memProfile.college = profile.college;
       if ((profile as any).club) memProfile.rotaract_club = (profile as any).club;
       if ((profile as any).instagram_id) memProfile.instagram_username = (profile as any).instagram_id;
+      if ((profile as any).phone) memProfile.phone = (profile as any).phone;
+      if ((profile as any).course_year) memProfile.course_year = (profile as any).course_year;
+      if ((profile as any).city) memProfile.city = (profile as any).city;
+      if ((profile as any).bio) memProfile.bio = (profile as any).bio;
+      if (Array.isArray((profile as any).interests)) memProfile.interests = (profile as any).interests;
+      if ((profile as any).avatar_url) memProfile.avatar_url = (profile as any).avatar_url;
+      if (typeof (profile as any).xp === "number") memProfile.xp = (profile as any).xp;
+      if ((profile as any).profile_completed !== undefined) memProfile.profile_completed = (profile as any).profile_completed;
     }
 
     const resolvedSession: CurrentUserSession = {

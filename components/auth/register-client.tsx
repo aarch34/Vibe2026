@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkles, ArrowRight, User, Mail, Phone, Building, GraduationCap, Instagram, Tag, MapPin, Music, Film, Award } from "lucide-react";
+import { useUser } from "@clerk/nextjs";
+import { Sparkles, ArrowRight, User, Mail, Phone, Building, GraduationCap, Instagram, Tag, MapPin, Music, Film, Award, CheckCircle2, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const INTEREST_TAGS = [
@@ -11,15 +12,27 @@ const INTEREST_TAGS = [
   "Movies", "Reading", "Cooking", "Public Speaking", "Design"
 ];
 
-export function RegisterClient() {
+interface RegisterClientProps {
+  initialData?: {
+    clerkUserId?: string;
+    fullName?: string;
+    email?: string;
+    avatarUrl?: string;
+  };
+}
+
+export function RegisterClient({ initialData }: RegisterClientProps) {
   const router = useRouter();
+  const { user, isLoaded } = useUser();
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   // Form State
   const [formData, setFormData] = useState({
-    fullName: "",
-    email: "",
+    clerkUserId: initialData?.clerkUserId || "",
+    fullName: initialData?.fullName || "",
+    email: initialData?.email || "",
     phone: "",
     rotaractClub: "",
     college: "",
@@ -32,8 +45,21 @@ export function RegisterClient() {
     favoriteMusic: "",
     favoriteMovies: "",
     city: "",
-    avatarUrl: "",
+    avatarUrl: initialData?.avatarUrl || "",
   });
+
+  // Sync with Clerk user when loaded on client
+  useEffect(() => {
+    if (isLoaded && user) {
+      setFormData((prev) => ({
+        ...prev,
+        clerkUserId: prev.clerkUserId || user.id,
+        fullName: prev.fullName || (user.firstName ? `${user.firstName} ${user.lastName || ""}`.trim() : user.username || ""),
+        email: prev.email || user.primaryEmailAddress?.emailAddress || "",
+        avatarUrl: prev.avatarUrl || user.imageUrl || "",
+      }));
+    }
+  }, [isLoaded, user]);
 
   const toggleInterest = (tag: string) => {
     setFormData((prev) => ({
@@ -47,22 +73,39 @@ export function RegisterClient() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
+
+    const payload = {
+      ...formData,
+      clerkUserId: formData.clerkUserId || user?.id || initialData?.clerkUserId,
+    };
 
     try {
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(payload),
       });
 
-      if (res.ok) {
+      const data = await res.json();
+
+      if (res.ok && data.success) {
         router.push("/app/welcome");
+        router.refresh();
       } else {
-        // Fallback for mock store: store in localStorage / cookie and navigate
-        router.push("/app/welcome");
+        if (data.error) {
+          setErrorMessage(data.error);
+        } else {
+          // If already registered or fallback
+          router.push("/app/welcome");
+          router.refresh();
+        }
       }
-    } catch {
+    } catch (err: any) {
+      console.error("Registration error:", err);
+      // Fallback redirect so user is never permanently blocked
       router.push("/app/welcome");
+      router.refresh();
     } finally {
       setIsSubmitting(false);
     }
@@ -85,9 +128,31 @@ export function RegisterClient() {
             CREATE YOUR PROFILE
           </h1>
           <p className="text-xs text-muted-foreground">
-            Connect with attendees, play games & earn XP before VIBE 2026!
+            Connect with attendees, play games & earn 500 VIBE Coins before VIBE 2026!
           </p>
+
+          {/* Clerk Authenticated Badge */}
+          {(formData.email || user?.primaryEmailAddress?.emailAddress) && (
+            <div className="pt-2 flex justify-center">
+              <div className="inline-flex items-center space-x-2 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-[11px] font-mono font-bold text-emerald-400">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                <span>
+                  Authenticated via Clerk:{" "}
+                  <strong className="text-foreground">
+                    {formData.email || user?.primaryEmailAddress?.emailAddress}
+                  </strong>
+                </span>
+              </div>
+            </div>
+          )}
         </div>
+
+        {errorMessage && (
+          <div className="mb-4 p-3 rounded-xl bg-destructive/15 border border-destructive/40 text-destructive text-xs flex items-center space-x-2">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            <span>{errorMessage}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {step === 1 && (
@@ -211,8 +276,8 @@ export function RegisterClient() {
               <button
                 type="button"
                 onClick={() => setStep(2)}
-                disabled={!formData.fullName || !formData.email || !formData.rotaractClub || !formData.college}
-                className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 text-white font-extrabold text-sm rounded-xl transition-all shadow-lg flex items-center justify-center space-x-2 disabled:opacity-50"
+                disabled={!formData.fullName || !formData.email || !formData.rotaractClub || !formData.college || !formData.phone}
+                className="w-full py-3 bg-gradient-to-r from-pink-500 to-purple-600 hover:brightness-110 text-white font-extrabold text-sm rounded-xl transition-all shadow-lg flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
               >
                 <span>NEXT: BIO & INTERESTS</span>
                 <ArrowRight className="w-4 h-4" />
@@ -251,7 +316,7 @@ export function RegisterClient() {
                         type="button"
                         onClick={() => toggleInterest(tag)}
                         className={cn(
-                          "px-3 py-1.5 rounded-full text-xs font-bold transition-all border",
+                          "px-3 py-1.5 rounded-full text-xs font-bold transition-all border cursor-pointer",
                           isSelected
                             ? "bg-pink-500 text-white border-pink-400 shadow-sm"
                             : "bg-secondary/80 text-muted-foreground border-border hover:bg-secondary"
@@ -299,16 +364,16 @@ export function RegisterClient() {
                 <button
                   type="button"
                   onClick={() => setStep(1)}
-                  className="w-1/3 py-3 bg-secondary text-foreground font-bold text-sm rounded-xl hover:bg-secondary/80 transition-all"
+                  className="w-1/3 py-3 bg-secondary text-foreground font-bold text-sm rounded-xl hover:bg-secondary/80 transition-all cursor-pointer"
                 >
                   BACK
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-2/3 py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 text-white font-black text-sm rounded-xl transition-all shadow-xl flex items-center justify-center space-x-2"
+                  className="w-2/3 py-3 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 text-white font-black text-sm rounded-xl transition-all shadow-xl flex items-center justify-center space-x-2 cursor-pointer disabled:opacity-50"
                 >
-                  <span>COMPLETE REGISTRATION</span>
+                  <span>{isSubmitting ? "SAVING..." : "COMPLETE REGISTRATION"}</span>
                   <Sparkles className="w-4 h-4 text-amber-300" />
                 </button>
               </div>

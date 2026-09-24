@@ -139,10 +139,11 @@ export default function LandingPage() {
               Sign In
             </Link>
             <Link
-              href="/app"
+              href="/register"
+              id="join-vibe-nav-btn"
               className="neo-btn-primary px-4 py-2 text-xs font-black uppercase tracking-wider shadow-[3px_3px_0px_var(--border)] hover:shadow-neon-pink transition-all"
             >
-              Open App
+              Join VIBE
             </Link>
           </div>
         </div>
@@ -178,10 +179,12 @@ export default function LandingPage() {
         <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
           <Link
             href="/register"
-            className="neo-btn-primary w-full sm:w-auto px-8 py-4 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2.5 shadow-[5px_5px_0px_#000] hover:shadow-neon-pink active:translate-x-[2px] active:translate-y-[2px] transition-all"
+            id="join-vibe-hero-btn"
+            className="neo-btn-primary w-full sm:w-auto px-8 py-4 text-sm font-black uppercase tracking-wider flex items-center justify-center space-x-2.5 shadow-[5px_5px_0px_#000] hover:shadow-neon-pink active:translate-x-[2px] active:translate-y-[2px] transition-all group"
           >
-            <span>Register & Claim 500 VIBE Coins</span>
-            <ArrowRight className="w-4 h-4" />
+            <span>JOIN VIBE</span>
+            <span className="text-xs opacity-90">• Claim 500 Coins</span>
+            <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </Link>
 
           <Link
@@ -243,9 +246,10 @@ export default function LandingPage() {
             {officialZones.map((z) => {
               const Icon = z.icon;
               return (
-                <div
+                <Link
                   key={z.name}
-                  className={`p-4 bg-gradient-to-br ${z.bgGradient} border-2 border-border shadow-[4px_4px_0px_var(--border)] transition-all duration-200 ${z.borderHover} group relative flex flex-col justify-between space-y-3`}
+                  href="/register"
+                  className={`p-4 bg-gradient-to-br ${z.bgGradient} border-2 border-border shadow-[4px_4px_0px_var(--border)] transition-all duration-200 ${z.borderHover} group relative flex flex-col justify-between space-y-3 cursor-pointer`}
                 >
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -280,7 +284,7 @@ export default function LandingPage() {
                       Join Zone →
                     </span>
                   </div>
-                </div>
+                </Link>
               );
             })}
           </div>
