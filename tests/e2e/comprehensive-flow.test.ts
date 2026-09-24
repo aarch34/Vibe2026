@@ -53,6 +53,8 @@ describe("🌊 VIBE 2026 — Comprehensive E2E Application Testing", () => {
       instagramUsername: "ananya.vibe",
       bio: "Excited for VIBE 2026! Love music and networking.",
       interests: ["Music", "Networking", "Gaming"],
+      dpdpConsent: true,
+      dpdpAgeConfirmed: true,
     };
 
     const res = await fetch(`${BASE_URL}/api/register`, {

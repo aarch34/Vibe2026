@@ -701,6 +701,10 @@ export default function LandingPage() {
             <Link href="/app" className="hover:text-primary transition-colors">
               Open App
             </Link>
+            <span>•</span>
+            <Link href="/privacy" className="text-pink-400 hover:text-pink-300 transition-colors font-bold">
+              DPDP Privacy Notice
+            </Link>
           </div>
           <p className="text-[11px] text-muted-foreground font-mono">
             © 2026 Rotaract District 3192 • ROCCO Freshers • VIBE Pre-Event Platform

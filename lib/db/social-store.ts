@@ -427,6 +427,32 @@ class PersistentSocialStore {
     return this.data.postLikes.some((l) => l.post_id === postId && l.profile_id === profileId);
   }
 
+  getUserPosts(profileId: string): Post[] {
+    return this.data.posts.filter((p) => p.author_id === profileId);
+  }
+
+  getUserComments(profileId: string): PostComment[] {
+    return this.data.postComments.filter((c) => c.profile_id === profileId);
+  }
+
+  getUserLikes(profileId: string): PostLike[] {
+    return this.data.postLikes.filter((l) => l.profile_id === profileId);
+  }
+
+  eraseUserData(profileId: string) {
+    this.data.posts = this.data.posts.filter((p) => p.author_id !== profileId);
+    this.data.postComments = this.data.postComments.filter((c) => c.profile_id !== profileId);
+    this.data.postLikes = this.data.postLikes.filter((l) => l.profile_id !== profileId);
+    this.data.connectionRequests = this.data.connectionRequests.filter(
+      (r) => r.sender_id !== profileId && r.receiver_id !== profileId
+    );
+    this.data.connections = this.data.connections.filter(
+      (c) => c.user_id_1 !== profileId && c.user_id_2 !== profileId
+    );
+    this.saveToDisk();
+    this.syncToMockDb();
+  }
+
   // --- COMMENTS ---
 
   getPostComments(postId: string): { id: string; authorName: string; authorAvatar?: string; comment: string; createdAt: string }[] {

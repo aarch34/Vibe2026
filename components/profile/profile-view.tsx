@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Sparkles,
   Instagram,
@@ -18,6 +19,17 @@ import {
   Calendar,
   CheckCircle2,
   Pencil,
+  Download,
+  ShieldCheck,
+  Trash2,
+  UserCheck,
+  FileText,
+  AlertTriangle,
+  Loader2,
+  X,
+  Scale,
+  Mail,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Profile, Post, Level } from "@/types/database";
@@ -37,10 +49,35 @@ export function ProfileView({
   userPosts,
   highScores,
 }: ProfileViewProps) {
+  const router = useRouter();
   const [currentProfile, setCurrentProfile] = useState<Profile>(profile);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDiscoverable, setIsDiscoverable] = useState(currentProfile.is_discoverable);
   const [connectionStatus, setConnectionStatus] = useState<"none" | "pending" | "connected">("none");
+
+  // DPDP Modals & State
+  const [isErasureModalOpen, setIsErasureModalOpen] = useState(false);
+  const [isNomineeModalOpen, setIsNomineeModalOpen] = useState(false);
+  const [isGrievanceModalOpen, setIsGrievanceModalOpen] = useState(false);
+
+  const [isDownloadingData, setIsDownloadingData] = useState(false);
+  const [isErasing, setIsErasing] = useState(false);
+  const [privacyNotice, setPrivacyNotice] = useState<string | null>(null);
+
+  // Nominee form state
+  const [nomineeName, setNomineeName] = useState("");
+  const [nomineeEmail, setNomineeEmail] = useState("");
+  const [nomineePhone, setNomineePhone] = useState("");
+  const [nomineeRelationship, setNomineeRelationship] = useState("Family / Legal Heir");
+  const [nomineeSuccess, setNomineeSuccess] = useState<string | null>(null);
+  const [nomineeLoading, setNomineeLoading] = useState(false);
+
+  // Grievance form state
+  const [grievanceCategory, setGrievanceCategory] = useState("Right to Access");
+  const [grievanceSubject, setGrievanceSubject] = useState("");
+  const [grievanceDesc, setGrievanceDesc] = useState("");
+  const [grievanceResult, setGrievanceResult] = useState<{ id: string; message: string } | null>(null);
+  const [grievanceLoading, setGrievanceLoading] = useState(false);
 
   // Sync internal state when server-passed profile prop updates
   useEffect(() => {
@@ -55,8 +92,22 @@ export function ProfileView({
   const totalLevelRange = Math.max(1, maxXp - minXp);
   const progressPercent = Math.min(100, Math.floor((currentLevelXp / totalLevelRange) * 100));
 
-  const toggleDiscoverable = () => {
-    setIsDiscoverable(!isDiscoverable);
+  const toggleDiscoverable = async () => {
+    const nextVal = !isDiscoverable;
+    setIsDiscoverable(nextVal);
+    setPrivacyNotice(nextVal ? "Profile is now PUBLIC on Discover page." : "Profile is now PRIVATE and hidden from search.");
+
+    try {
+      await fetch("/api/profile/privacy", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_discoverable: nextVal }),
+      });
+    } catch {
+      // Keep optimistic
+    }
+
+    setTimeout(() => setPrivacyNotice(null), 3500);
   };
 
   const handleSendRequest = async () => {
@@ -69,6 +120,110 @@ export function ProfileView({
       });
     } catch {
       // fallback
+    }
+  };
+
+  // DPDP Section 11: Download Personal Data
+  const handleDownloadPersonalData = async () => {
+    setIsDownloadingData(true);
+    try {
+      const res = await fetch("/api/dpdp/export");
+      if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `vibe2026-data-principal-${currentProfile.username || "me"}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      console.error("Data export error:", err);
+    } finally {
+      setIsDownloadingData(false);
+    }
+  };
+
+  // DPDP Section 12: Erase Account and Data
+  const handleEraseAccountData = async () => {
+    setIsErasing(true);
+    try {
+      const res = await fetch("/api/dpdp/delete", { method: "POST" });
+      if (res.ok) {
+        setIsErasureModalOpen(false);
+        router.push("/sign-in");
+      }
+    } catch (err) {
+      console.error("Account erasure error:", err);
+    } finally {
+      setIsErasing(false);
+    }
+  };
+
+  // DPDP Section 14: Register Nominee
+  const handleNomineeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!nomineeName.trim() || !nomineeEmail.trim()) return;
+
+    setNomineeLoading(true);
+    setNomineeSuccess(null);
+    try {
+      const res = await fetch("/api/dpdp/nominee", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nomineeName: nomineeName.trim(),
+          nomineeEmail: nomineeEmail.trim(),
+          nomineePhone: nomineePhone.trim(),
+          nomineeRelationship: nomineeRelationship.trim(),
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setNomineeSuccess(data.message || "Nominee designated successfully under Section 14.");
+      }
+    } catch (err) {
+      console.error("Nominee submission error:", err);
+    } finally {
+      setNomineeLoading(false);
+    }
+  };
+
+  // DPDP Section 13: Submit Grievance
+  const handleGrievanceSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!grievanceSubject.trim() || !grievanceDesc.trim()) return;
+
+    setGrievanceLoading(true);
+    setGrievanceResult(null);
+    try {
+      const res = await fetch("/api/dpdp/grievance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          category: grievanceCategory,
+          subject: grievanceSubject.trim(),
+          description: grievanceDesc.trim(),
+          contactEmail: currentProfile.email,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        setGrievanceResult({
+          id: data.trackingId,
+          message: data.message,
+        });
+        setGrievanceSubject("");
+        setGrievanceDesc("");
+      }
+    } catch (err) {
+      console.error("Grievance submission error:", err);
+    } finally {
+      setGrievanceLoading(false);
     }
   };
 
@@ -87,6 +242,7 @@ export function ProfileView({
           </span>
         </div>
       )}
+
       {/* Profile Header Card */}
       <div className="p-6 sm:p-8 rounded-3xl bg-card border border-pink-500/30 shadow-2xl relative overflow-hidden space-y-6">
         {/* Glow BG */}
@@ -230,28 +386,35 @@ export function ProfileView({
           </div>
         </div>
 
-        {/* Optional Privacy Settings for Self */}
+        {/* Discoverability Privacy Toggle */}
         {isSelf && (
-          <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30 border border-border/50 text-xs">
-            <span className="font-bold text-muted-foreground flex items-center space-x-1.5">
-              {isDiscoverable ? (
-                <Globe className="w-4 h-4 text-cyan-400" />
-              ) : (
-                <Lock className="w-4 h-4 text-pink-400" />
-              )}
-              <span>Discoverable in People Search</span>
-            </span>
-            <button
-              onClick={toggleDiscoverable}
-              className={cn(
-                "px-3 py-1 rounded-full font-extrabold text-[11px] transition-all cursor-pointer",
-                isDiscoverable
-                  ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
-                  : "bg-pink-500/20 text-pink-400 border border-pink-500/40"
-              )}
-            >
-              {isDiscoverable ? "PUBLIC" : "PRIVATE"}
-            </button>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between p-3.5 rounded-2xl bg-secondary/40 border border-border text-xs">
+              <span className="font-bold text-foreground flex items-center space-x-2">
+                {isDiscoverable ? (
+                  <Globe className="w-4 h-4 text-cyan-400" />
+                ) : (
+                  <Lock className="w-4 h-4 text-pink-400" />
+                )}
+                <span>Discoverable in People Search (DPDP Opt-In)</span>
+              </span>
+              <button
+                onClick={toggleDiscoverable}
+                className={cn(
+                  "px-3 py-1 rounded-full font-extrabold text-[11px] transition-all cursor-pointer",
+                  isDiscoverable
+                    ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/40"
+                    : "bg-pink-500/20 text-pink-400 border border-pink-500/40"
+                )}
+              >
+                {isDiscoverable ? "PUBLIC" : "PRIVATE"}
+              </button>
+            </div>
+            {privacyNotice && (
+              <p className="text-[11px] text-cyan-400 font-mono font-bold animate-in fade-in">
+                ✓ {privacyNotice}
+              </p>
+            )}
           </div>
         )}
       </div>
@@ -291,91 +454,24 @@ export function ProfileView({
         </div>
       </div>
 
-      {/* Game High Scores Breakdown */}
-      <div className="p-5 rounded-3xl bg-card border border-border space-y-3">
-        <h3 className="font-black text-base text-foreground flex items-center space-x-2">
-          <Trophy className="w-4 h-4 text-amber-400" />
-          <span>Game High Scores</span>
+      {/* User Posts Section */}
+      <div className="space-y-4">
+        <h3 className="text-base font-black text-foreground flex items-center space-x-2">
+          <MessageSquare className="w-4 h-4 text-pink-400" />
+          <span>Posts by {isSelf ? "You" : currentProfile.display_name}</span>
         </h3>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center text-xs">
-          <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60">
-            <span className="text-muted-foreground block font-semibold mb-1">Rotaract Game</span>
-            <span className="font-mono font-black text-purple-400 text-base">
-              {highScores.rotaract_game || 0}
-            </span>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60">
-            <span className="text-muted-foreground block font-semibold mb-1">Minion Run</span>
-            <span className="font-mono font-black text-yellow-400 text-base">
-              {highScores.minion_game || 0}
-            </span>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60">
-            <span className="text-muted-foreground block font-semibold mb-1">Memory Match</span>
-            <span className="font-mono font-black text-pink-400 text-base">
-              {highScores.memory_game || 0}
-            </span>
-          </div>
-
-          <div className="p-3 rounded-2xl bg-secondary/50 border border-border/60">
-            <span className="text-muted-foreground block font-semibold mb-1">VIBE Quiz</span>
-            <span className="font-mono font-black text-cyan-400 text-base">
-              {highScores.vibe_quiz || 0}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Optional Details (Skills, Hobbies, Music, Movies) */}
-      {currentProfile.skills?.length ||
-      currentProfile.hobbies?.length ||
-      currentProfile.favorite_music?.length ||
-      currentProfile.favorite_movies?.length ? (
-        <div className="p-5 rounded-3xl bg-card border border-border space-y-3 text-xs">
-          <h3 className="font-black text-sm text-foreground">Favorites & Skills</h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {currentProfile.skills?.length ? (
-              <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40">
-                <span className="font-bold text-cyan-400 block mb-1">Skills</span>
-                <span className="text-foreground">{currentProfile.skills.join(", ")}</span>
-              </div>
-            ) : null}
-
-            {currentProfile.hobbies?.length ? (
-              <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40">
-                <span className="font-bold text-pink-400 block mb-1">Hobbies</span>
-                <span className="text-foreground">{currentProfile.hobbies.join(", ")}</span>
-              </div>
-            ) : null}
-
-            {currentProfile.favorite_music?.length ? (
-              <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40">
-                <span className="font-bold text-purple-400 block mb-1">Favorite Music</span>
-                <span className="text-foreground">{currentProfile.favorite_music.join(", ")}</span>
-              </div>
-            ) : null}
-
-            {currentProfile.favorite_movies?.length ? (
-              <div className="p-3 rounded-2xl bg-secondary/40 border border-border/40">
-                <span className="font-bold text-amber-400 block mb-1">Favorite Movies</span>
-                <span className="text-foreground">{currentProfile.favorite_movies.join(", ")}</span>
-              </div>
-            ) : null}
-          </div>
-        </div>
-      ) : null}
-
-      {/* Posts Published */}
-      <div className="space-y-3">
-        <h3 className="font-black text-base text-foreground">User Posts ({userPosts.length})</h3>
-
         {userPosts.length === 0 ? (
-          <div className="p-6 rounded-2xl bg-card border border-border text-center text-muted-foreground text-xs">
-            No posts published yet!
+          <div className="p-8 text-center rounded-2xl bg-card border border-border text-muted-foreground text-xs space-y-2">
+            <p>No posts published yet.</p>
+            {isSelf && (
+              <Link
+                href="/app/post"
+                className="inline-block px-4 py-2 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-bold rounded-xl mt-2 hover:brightness-110 transition-all"
+              >
+                Create Your First Post (+50 XP)
+              </Link>
+            )}
           </div>
         ) : (
           userPosts.map((post) => (
@@ -404,6 +500,136 @@ export function ProfileView({
         )}
       </div>
 
+      {/* DPDP ACT 2023: DATA PRINCIPAL RIGHTS & PRIVACY HUB */}
+      {isSelf && (
+        <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-purple-950/20 via-card to-pink-950/20 border-2 border-purple-500/30 shadow-2xl space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-border/80 pb-4">
+            <div className="space-y-1">
+              <div className="inline-flex items-center space-x-1.5 px-3 py-0.5 rounded-full bg-purple-500/10 text-purple-400 border border-purple-500/20 text-[10px] font-mono font-bold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>DPDP ACT, 2023 COMPLIANT (INDIA)</span>
+              </div>
+              <h3 className="text-lg font-black text-foreground">
+                Your Privacy & Data Principal Rights
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                Exercise your statutory rights under Sections 11, 12, 13, and 14 of the Digital Personal Data Protection Act, 2023.
+              </p>
+            </div>
+
+            <Link
+              href="/privacy"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs font-bold text-pink-400 hover:text-pink-300 underline flex items-center space-x-1"
+            >
+              <span>Statutory DPDP Notice</span>
+              <ExternalLink className="w-3 h-3" />
+            </Link>
+          </div>
+
+          {/* 4 Interactive Rights Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {/* 1. Right to Access (Section 11) */}
+            <div className="p-4 rounded-2xl bg-secondary/40 border border-border/80 space-y-3 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2 text-cyan-400">
+                  <Download className="w-4 h-4" />
+                  <h4 className="font-black text-xs uppercase tracking-wider text-foreground">
+                    Section 11: Export Data
+                  </h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Download a digital copy of all personal data, game sessions, XP history, and connections held about you.
+                </p>
+              </div>
+
+              <button
+                onClick={handleDownloadPersonalData}
+                disabled={isDownloadingData}
+                className="w-full py-2.5 px-3 rounded-xl bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-400 font-extrabold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer disabled:opacity-50"
+              >
+                {isDownloadingData ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Download className="w-3.5 h-3.5" />
+                )}
+                <span>{isDownloadingData ? "Exporting Data..." : "Download Personal Data (JSON)"}</span>
+              </button>
+            </div>
+
+            {/* 2. Right to Nominate (Section 14) */}
+            <div className="p-4 rounded-2xl bg-secondary/40 border border-border/80 space-y-3 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2 text-amber-400">
+                  <UserCheck className="w-4 h-4" />
+                  <h4 className="font-black text-xs uppercase tracking-wider text-foreground">
+                    Section 14: Data Nominee
+                  </h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Designate an individual who shall exercise your data rights in the event of death or incapacity.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsNomineeModalOpen(true)}
+                className="w-full py-2.5 px-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-400 font-extrabold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer"
+              >
+                <UserCheck className="w-3.5 h-3.5" />
+                <span>Designate Nominee</span>
+              </button>
+            </div>
+
+            {/* 3. Right of Grievance Redressal (Section 13) */}
+            <div className="p-4 rounded-2xl bg-secondary/40 border border-border/80 space-y-3 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2 text-purple-400">
+                  <Scale className="w-4 h-4" />
+                  <h4 className="font-black text-xs uppercase tracking-wider text-foreground">
+                    Section 13: File Grievance
+                  </h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Submit an inquiry or complaint directly to our Grievance Redressal Officer (48h acknowledgment, 7d resolution).
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsGrievanceModalOpen(true)}
+                className="w-full py-2.5 px-3 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/40 text-purple-400 font-extrabold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer"
+              >
+                <Scale className="w-3.5 h-3.5" />
+                <span>Submit Grievance</span>
+              </button>
+            </div>
+
+            {/* 4. Right to Erasure / Deletion (Section 12) */}
+            <div className="p-4 rounded-2xl bg-secondary/40 border border-border/80 space-y-3 flex flex-col justify-between">
+              <div className="space-y-1.5">
+                <div className="flex items-center space-x-2 text-rose-400">
+                  <Trash2 className="w-4 h-4" />
+                  <h4 className="font-black text-xs uppercase tracking-wider text-foreground">
+                    Section 12: Erase All Data
+                  </h4>
+                </div>
+                <p className="text-[11px] text-muted-foreground leading-relaxed">
+                  Permanently delete your profile, accreditation pass, social posts, comments, and game scores from all systems.
+                </p>
+              </div>
+
+              <button
+                onClick={() => setIsErasureModalOpen(true)}
+                className="w-full py-2.5 px-3 rounded-xl bg-rose-500/15 hover:bg-rose-500/25 border border-rose-500/40 text-rose-400 font-extrabold text-xs flex items-center justify-center space-x-2 transition-all cursor-pointer"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Erase My Account & Data</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Edit Profile Modal Dialog */}
       {isSelf && (
         <EditProfileModal
@@ -412,6 +638,230 @@ export function ProfileView({
           profile={currentProfile}
           onProfileUpdated={(updated) => setCurrentProfile(updated)}
         />
+      )}
+
+      {/* DPDP Section 12: Erasure Confirmation Modal */}
+      {isErasureModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-md bg-card border-2 border-rose-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center space-x-2 text-rose-400">
+                <AlertTriangle className="w-5 h-5 text-rose-400" />
+                <h3 className="font-black text-sm uppercase">Permanent Data Erasure</h3>
+              </div>
+              <button
+                onClick={() => setIsErasureModalOpen(false)}
+                className="p-1 rounded-full hover:bg-secondary text-muted-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              In accordance with Section 12 of the DPDP Act 2023, confirming this request will immediately and permanently erase:
+            </p>
+
+            <ul className="text-xs space-y-1 text-foreground/90 list-disc list-inside bg-secondary/40 p-3 rounded-2xl font-mono">
+              <li>Your VIBE ID and event entry credentials</li>
+              <li>All uploaded posts, images, and captions</li>
+              <li>All posted comments and likes</li>
+              <li>Your arcade high scores and earned XP</li>
+              <li>Your connections and pending requests</li>
+            </ul>
+
+            <div className="flex items-center space-x-2 pt-2">
+              <button
+                onClick={() => setIsErasureModalOpen(false)}
+                className="flex-1 py-2.5 rounded-2xl bg-secondary text-foreground text-xs font-bold hover:bg-secondary/80 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleEraseAccountData}
+                disabled={isErasing}
+                className="flex-1 py-2.5 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-black shadow-md transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {isErasing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />}
+                <span>{isErasing ? "Erasing Data..." : "Confirm Deletion"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DPDP Section 14: Nominee Modal */}
+      {isNomineeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-md bg-card border border-amber-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center space-x-2 text-amber-400">
+                <UserCheck className="w-5 h-5 text-amber-400" />
+                <h3 className="font-black text-sm uppercase">Section 14: Designate Nominee</h3>
+              </div>
+              <button
+                onClick={() => setIsNomineeModalOpen(false)}
+                className="p-1 rounded-full hover:bg-secondary text-muted-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Under Section 14 of the DPDP Act 2023, you can nominate a person who may exercise your rights in case of death or incapacity.
+            </p>
+
+            {nomineeSuccess && (
+              <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold rounded-2xl">
+                ✓ {nomineeSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleNomineeSubmit} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-muted-foreground block mb-1">Nominee Full Name *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Priya Sharma"
+                  value={nomineeName}
+                  onChange={(e) => setNomineeName(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-secondary/50 border border-border text-foreground focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-muted-foreground block mb-1">Nominee Email Address *</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="e.g. priya.sharma@example.com"
+                  value={nomineeEmail}
+                  onChange={(e) => setNomineeEmail(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-secondary/50 border border-border text-foreground focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-muted-foreground block mb-1">Nominee Relationship</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Parent, Sibling, Legal Heir"
+                  value={nomineeRelationship}
+                  onChange={(e) => setNomineeRelationship(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-secondary/50 border border-border text-foreground focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsNomineeModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-2xl bg-secondary text-foreground font-bold hover:bg-secondary/80 transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  disabled={nomineeLoading || !nomineeName.trim() || !nomineeEmail.trim()}
+                  className="flex-1 py-2.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-black font-black shadow-md transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {nomineeLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <UserCheck className="w-3.5 h-3.5" />}
+                  <span>{nomineeLoading ? "Saving..." : "Save Nominee"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* DPDP Section 13: Grievance Modal */}
+      {isGrievanceModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in">
+          <div className="w-full max-w-md bg-card border border-purple-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-border pb-3">
+              <div className="flex items-center space-x-2 text-purple-400">
+                <Scale className="w-5 h-5 text-purple-400" />
+                <h3 className="font-black text-sm uppercase">Section 13: File DPDP Grievance</h3>
+              </div>
+              <button
+                onClick={() => setIsGrievanceModalOpen(false)}
+                className="p-1 rounded-full hover:bg-secondary text-muted-foreground"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground">
+              Submit your inquiry or complaint to the Data Protection Grievance Officer of Rotaract District 3192. Guaranteed acknowledgment in 48 hours.
+            </p>
+
+            {grievanceResult && (
+              <div className="p-3 bg-purple-500/15 border border-purple-500/30 text-purple-300 text-xs rounded-2xl space-y-1">
+                <p className="font-black text-white">Tracking ID: {grievanceResult.id}</p>
+                <p>{grievanceResult.message}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleGrievanceSubmit} className="space-y-3 text-xs">
+              <div>
+                <label className="font-bold text-muted-foreground block mb-1">Grievance Category</label>
+                <select
+                  value={grievanceCategory}
+                  onChange={(e) => setGrievanceCategory(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-secondary/50 border border-border text-foreground focus:outline-none focus:border-purple-400"
+                >
+                  <option value="Right to Access">Right to Access Personal Data (Sec 11)</option>
+                  <option value="Correction / Erasure">Correction or Erasure Request (Sec 12)</option>
+                  <option value="Consent Withdrawal">Consent Withdrawal (Sec 6)</option>
+                  <option value="Security / Breach Concern">Data Security or Misuse Concern (Sec 8)</option>
+                  <option value="Other">Other Data Protection Inquiry</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-muted-foreground block mb-1">Subject *</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Summary of your request or issue"
+                  value={grievanceSubject}
+                  onChange={(e) => setGrievanceSubject(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-secondary/50 border border-border text-foreground focus:outline-none focus:border-purple-400"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-muted-foreground block mb-1">Detailed Description *</label>
+                <textarea
+                  required
+                  rows={3}
+                  placeholder="Provide complete context regarding your data protection request..."
+                  value={grievanceDesc}
+                  onChange={(e) => setGrievanceDesc(e.target.value)}
+                  className="w-full p-2.5 rounded-xl bg-secondary/50 border border-border text-foreground focus:outline-none focus:border-purple-400 resize-none"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsGrievanceModalOpen(false)}
+                  className="flex-1 py-2.5 rounded-2xl bg-secondary text-foreground font-bold hover:bg-secondary/80 transition-all cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="submit"
+                  disabled={grievanceLoading || !grievanceSubject.trim() || !grievanceDesc.trim()}
+                  className="flex-1 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black shadow-md transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
+                >
+                  {grievanceLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Scale className="w-3.5 h-3.5" />}
+                  <span>{grievanceLoading ? "Submitting..." : "Submit Grievance"}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
       )}
     </div>
   );

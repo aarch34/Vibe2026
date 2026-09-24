@@ -93,6 +93,9 @@ export async function POST(req: Request) {
     }
 
     profile.profile_completed = true;
+    (profile as any).dpdp_consent = Boolean(body.dpdpConsent);
+    (profile as any).dpdp_consent_timestamp = body.dpdpConsentTimestamp || new Date().toISOString();
+    (profile as any).dpdp_age_confirmed = Boolean(body.dpdpAgeConfirmed);
 
     // 4. Sync with Live Supabase if configured
     if (isUsingLiveSupabase() && supabaseAdmin) {

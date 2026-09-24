@@ -15,6 +15,8 @@ import {
   AlertCircle,
   Tag,
   FileText,
+  ShieldCheck,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -50,6 +52,8 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [isComplete, setIsComplete] = useState(false);
+  const [dpdpConsent, setDpdpConsent] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
@@ -133,6 +137,11 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
       return;
     }
 
+    if (!dpdpConsent || !ageConfirmed) {
+      setErrorMsg("Under the DPDP Act 2023, you must consent to personal data processing and confirm your age to register.");
+      return;
+    }
+
     setIsSubmitting(true);
     setErrorMsg("");
 
@@ -152,6 +161,9 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
           bio: formData.bio.trim() || null,
           interests: formData.interests,
           avatarUrl: formData.avatarUrl,
+          dpdpConsent: true,
+          dpdpConsentTimestamp: new Date().toISOString(),
+          dpdpAgeConfirmed: true,
         }),
       });
 
@@ -420,6 +432,58 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
               </div>
             </div>
 
+            {/* DPDP Act 2023 Statutory Consent Section */}
+            <div className="p-4 rounded-2xl bg-secondary/50 border border-purple-500/30 space-y-3">
+              <div className="flex items-center space-x-2 text-purple-400">
+                <ShieldCheck className="w-4 h-4 shrink-0 text-purple-400" />
+                <span className="text-xs font-mono font-black uppercase tracking-wider">
+                  DPDP Act, 2023 Consent & Notice
+                </span>
+              </div>
+
+              <p className="text-[11px] text-muted-foreground leading-relaxed">
+                Rotaract District 3192 processes your name, institutional details, contact info, and photo strictly for VIBE 2026 accreditation, networking, and festival gamification under India's Digital Personal Data Protection Act, 2023.
+              </p>
+
+              <div className="space-y-2 pt-1 border-t border-border/60">
+                {/* Checkbox 1: Consent */}
+                <label className="flex items-start space-x-2.5 cursor-pointer text-xs select-none">
+                  <input
+                    type="checkbox"
+                    checked={dpdpConsent}
+                    onChange={(e) => setDpdpConsent(e.target.checked)}
+                    className="mt-0.5 rounded border-border text-purple-600 focus:ring-purple-500 h-4 w-4 shrink-0 cursor-pointer"
+                  />
+                  <span className="text-foreground leading-snug">
+                    I give my free, specific, and informed consent to Rotaract District 3192 to collect and process my personal data for VIBE 2026 in accordance with the{" "}
+                    <a
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-pink-400 underline hover:text-pink-300 font-bold inline-flex items-center space-x-0.5"
+                    >
+                      <span>DPDP Privacy Notice</span>
+                      <ExternalLink className="w-2.5 h-2.5 inline ml-0.5" />
+                    </a>
+                    .
+                  </span>
+                </label>
+
+                {/* Checkbox 2: Age Declaration */}
+                <label className="flex items-start space-x-2.5 cursor-pointer text-xs select-none">
+                  <input
+                    type="checkbox"
+                    checked={ageConfirmed}
+                    onChange={(e) => setAgeConfirmed(e.target.checked)}
+                    className="mt-0.5 rounded border-border text-purple-600 focus:ring-purple-500 h-4 w-4 shrink-0 cursor-pointer"
+                  />
+                  <span className="text-foreground leading-snug">
+                    I confirm that I am 18 years of age or older (or have guardian consent pursuant to Section 9 of the DPDP Act).
+                  </span>
+                </label>
+              </div>
+            </div>
+
             {/* Submit Button */}
             <button
               type="submit"
@@ -428,7 +492,9 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
                 !formData.fullName.trim() ||
                 !formData.rotaractClub.trim() ||
                 !formData.designation.trim() ||
-                !formData.instagramUsername.trim()
+                !formData.instagramUsername.trim() ||
+                !dpdpConsent ||
+                !ageConfirmed
               }
               className="neo-btn-primary w-full py-4 text-xs font-black uppercase tracking-wider flex items-center justify-center space-x-2 shadow-[4px_4px_0px_var(--border)] hover:shadow-neon-pink disabled:opacity-50 transition-all cursor-pointer"
             >
