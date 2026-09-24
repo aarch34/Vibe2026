@@ -1,10 +1,12 @@
 import { NextResponse } from "next/server";
-import { getCurrentUserSession } from "@/lib/auth/session";
-import { mockDb } from "@/lib/db/mock-store";
+import { getCurrentUserSession, invalidateSessionCache } from "@/lib/auth/session";
+import { socialStore } from "@/lib/db/social-store";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const posts = mockDb.getPosts();
+    const posts = await socialStore.getPostsWithAuthors();
     return NextResponse.json({ success: true, posts });
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
@@ -17,12 +19,19 @@ export async function POST(req: Request) {
     const { caption, imageUrl } = await req.json();
 
     if (!caption?.trim() && !imageUrl?.trim()) {
-      return NextResponse.json({ success: false, error: "Caption or Image required" }, { status: 400 });
+      return NextResponse.json({ success: false, error: "Caption or image is required." }, { status: 400 });
     }
 
-    const { post, xpEarned } = mockDb.createPost(session.profile.id, caption?.trim() || "", imageUrl?.trim());
-    const author = mockDb.getProfile(session.profile.id) || session.profile;
-    const fullPost = { ...post, author };
+    const { post, xpEarned } = await socialStore.createPost(
+      session.profile.id,
+      caption?.trim() || "",
+      imageUrl?.trim() || null
+    );
+
+    const fullPost = { ...post, author: session.profile };
+
+    invalidateSessionCache(session.clerkUserId);
+    invalidateSessionCache(session.profile.id);
 
     return NextResponse.json({ success: true, post: fullPost, xpEarned });
   } catch (error) {

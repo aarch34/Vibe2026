@@ -2,7 +2,9 @@
 
 import React, { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Image as ImageIcon, Send, Sparkles, ArrowLeft, X, AlertCircle } from "lucide-react";
+import { Image as ImageIcon, Send, Sparkles, ArrowLeft, X, AlertCircle, Camera, Tag } from "lucide-react";
+
+const VIBE_TAGS = ["#VIBE2026", "#Rotaract3192", "#FresherFestival", "#DistrictCouncil", "#Bengaluru", "#MeetTheDistrict"];
 
 export default function CreatePostPage() {
   const router = useRouter();
@@ -14,7 +16,44 @@ export default function CreatePostPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Compress image on the client before upload for speed and reliability
+  const compressImage = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          const maxDim = 1200;
+          if (width > maxDim || height > maxDim) {
+            if (width > height) {
+              height = Math.round((height * maxDim) / width);
+              width = maxDim;
+            } else {
+              width = Math.round((width * maxDim) / height);
+              height = maxDim;
+            }
+          }
+          const canvas = document.createElement("canvas");
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL("image/jpeg", 0.85));
+          } else {
+            resolve(e.target?.result as string);
+          }
+        };
+        img.onerror = reject;
+        img.src = e.target?.result as string;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
     setErrorMsg(null);
     const file = e.target.files?.[0];
@@ -25,18 +64,18 @@ export default function CreatePostPage() {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setFileError("Image size exceeds 5MB limit. Please select a smaller photo.");
+    if (file.size > 15 * 1024 * 1024) {
+      setFileError("Image size exceeds 15MB limit. Please select a smaller photo.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      setImagePreview(dataUrl);
-      setImageUrl(dataUrl);
-    };
-    reader.readAsDataURL(file);
+    try {
+      const optimizedDataUrl = await compressImage(file);
+      setImagePreview(optimizedDataUrl);
+      setImageUrl(optimizedDataUrl);
+    } catch {
+      setFileError("Could not process image file. Please try another image.");
+    }
   };
 
   const removeImage = () => {
@@ -44,6 +83,12 @@ export default function CreatePostPage() {
     setImageUrl("");
     setFileError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const addTag = (tag: string) => {
+    if (!caption.includes(tag)) {
+      setCaption((prev) => (prev ? `${prev.trim()} ${tag}` : tag));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,11 +105,12 @@ export default function CreatePostPage() {
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caption, imageUrl }),
+        body: JSON.stringify({ caption: caption.trim(), imageUrl: imageUrl.trim() || null }),
       });
 
       if (res.ok) {
         router.push("/app");
+        router.refresh();
       } else {
         const data = await res.json();
         setErrorMsg(data.error || "Couldn't publish your post. Please try again.");
@@ -86,38 +132,59 @@ export default function CreatePostPage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-black text-foreground">CREATE VIBE POST</h1>
+        <h1 className="text-xl font-black text-foreground font-mono uppercase tracking-tight">CREATE VIBE POST</h1>
         <div className="w-9" />
       </div>
 
       <form onSubmit={handleSubmit} className="p-6 rounded-3xl bg-card border border-border shadow-xl space-y-4">
-        <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/30 text-xs font-bold">
+        <div className="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-pink-500/10 text-pink-400 border border-pink-500/30 text-xs font-bold font-mono">
           <Sparkles className="w-3.5 h-3.5" />
-          <span>Earn +50 XP on your 1st post!</span>
+          <span>Earn +50 XP on your 1st post! ⭐</span>
         </div>
 
         {errorMsg && (
-          <div className="p-3.5 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-bold flex items-center space-x-2">
+          <div className="p-3.5 rounded-2xl bg-destructive/15 border border-destructive/30 text-destructive text-xs font-bold flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
+        {/* Caption Area */}
         <div>
-          <label className="text-xs font-bold text-muted-foreground block mb-1">Caption / Message *</label>
+          <label className="text-xs font-black uppercase text-muted-foreground block mb-1">
+            Caption & Story *
+          </label>
           <textarea
             rows={4}
-            placeholder="Introduce yourself to Rotaract District 3192! What are you most excited for at VIBE 2026?"
+            placeholder="Share your pre-VIBE moment with Rotaract District 3192! What are you most excited for?"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
-            className="w-full p-4 bg-secondary/50 border border-border rounded-2xl text-sm focus:outline-none focus:border-pink-500 transition-all text-foreground resize-none"
+            className="w-full p-4 bg-secondary/50 border border-border rounded-2xl text-sm focus:outline-none focus:border-pink-500 transition-all text-foreground resize-none leading-relaxed"
           />
         </div>
 
-        <div>
-          <label className="text-xs font-bold text-muted-foreground block mb-1 flex items-center space-x-1">
+        {/* Quick Tag Pills */}
+        <div className="space-y-1.5">
+          <span className="text-[11px] font-bold text-muted-foreground block">Tap to add vibe tags:</span>
+          <div className="flex flex-wrap gap-1.5">
+            {VIBE_TAGS.map((tag) => (
+              <button
+                key={tag}
+                type="button"
+                onClick={() => addTag(tag)}
+                className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-bold bg-secondary hover:bg-pink-500/20 text-muted-foreground hover:text-pink-400 border border-border/80 transition-all cursor-pointer"
+              >
+                {tag}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Photo Upload Area */}
+        <div className="space-y-2">
+          <label className="text-xs font-black uppercase text-muted-foreground block flex items-center space-x-1">
             <ImageIcon className="w-3.5 h-3.5 text-pink-400" />
-            <span>Upload Photo</span>
+            <span>Upload Photo / Moment</span>
           </label>
 
           <input
@@ -129,42 +196,46 @@ export default function CreatePostPage() {
             id="post-page-file-upload"
           />
 
-          <label
-            htmlFor="post-page-file-upload"
-            className="w-full py-3 px-4 bg-secondary/50 border border-dashed border-border hover:border-pink-500/60 rounded-xl text-xs font-bold text-muted-foreground hover:text-pink-400 transition-all flex items-center justify-center space-x-2 cursor-pointer block"
-          >
-            <ImageIcon className="w-4 h-4 text-pink-400" />
-            <span>{imagePreview ? "Change Selected Photo" : "Choose Image File (Max 5MB)"}</span>
-          </label>
+          {!imagePreview ? (
+            <label
+              htmlFor="post-page-file-upload"
+              className="w-full py-8 px-4 bg-secondary/40 border-2 border-dashed border-border hover:border-pink-500/60 rounded-2xl text-xs font-bold text-muted-foreground hover:text-pink-400 transition-all flex flex-col items-center justify-center space-y-2 cursor-pointer block text-center"
+            >
+              <div className="w-12 h-12 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400">
+                <Camera className="w-6 h-6" />
+              </div>
+              <span className="font-extrabold text-foreground">Choose Photo from Gallery or Camera</span>
+              <span className="text-[10px] text-muted-foreground">JPEG, PNG, WebP, GIF (Auto-optimized)</span>
+            </label>
+          ) : (
+            <div className="relative rounded-2xl overflow-hidden border-2 border-pink-500/40 bg-black/60 shadow-lg">
+              <img src={imagePreview} alt="Preview" className="w-full max-h-72 object-contain mx-auto" />
+              <button
+                type="button"
+                onClick={removeImage}
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 hover:bg-destructive text-white transition-all shadow-md cursor-pointer"
+                title="Remove photo"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
 
         {fileError && (
-          <p className="text-xs text-red-400 font-bold flex items-center space-x-1">
+          <p className="text-xs text-destructive font-bold flex items-center space-x-1">
             <AlertCircle className="w-3.5 h-3.5" />
             <span>{fileError}</span>
           </p>
         )}
 
-        {imagePreview && (
-          <div className="relative rounded-2xl overflow-hidden border border-pink-500/40 max-h-60 bg-black/40">
-            <img src={imagePreview} alt="Preview" className="w-full h-48 object-cover" />
-            <button
-              type="button"
-              onClick={removeImage}
-              className="absolute top-2 right-2 p-1.5 rounded-full bg-black/70 hover:bg-red-600 text-white transition-all shadow-md"
-              title="Remove image"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
-        )}
-
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={isSubmitting || (!caption.trim() && !imageUrl.trim())}
-          className="w-full py-3.5 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 text-white font-black text-sm rounded-2xl transition-all shadow-xl flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+          className="w-full py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
         >
-          <span>{isSubmitting ? "PUBLISHING..." : "PUBLISH POST"}</span>
+          <span>{isSubmitting ? "PUBLISHING TO VIBE..." : "SHARE POST ON VIBE 🚀"}</span>
           <Send className="w-4 h-4" />
         </button>
       </form>

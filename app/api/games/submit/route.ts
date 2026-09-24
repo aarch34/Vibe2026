@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
-import { getCurrentUserSession } from "@/lib/auth/session";
-import { mockDb } from "@/lib/db/mock-store";
+import { getCurrentUserSession, invalidateSessionCache } from "@/lib/auth/session";
+import { mockDb, calculateLevel } from "@/lib/db/mock-store";
+import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
+import { socialStore } from "@/lib/db/social-store";
+import { GameType } from "@/types/database";
 
 export async function POST(req: Request) {
   try {
@@ -11,8 +14,150 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "gameType and score required" }, { status: 400 });
     }
 
-    const result = mockDb.submitGameScore(session.profile.id, gameType, score, maxScore || 100, timeSeconds);
-    return NextResponse.json(result);
+    const numScore = Number(score) || 0;
+    const numMax = Number(maxScore) || 100;
+    const profileId = session.profile.id;
+
+    // Generous and progressive XP calculation
+    // Always reward base participation + performance bonus so players always gain XP
+    let xpAwarded = 25;
+    const gameTitles: Record<string, string> = {
+      rotaract_game: "Rotaract Game",
+      minion_game: "VIBE Minion Game",
+      memory_game: "Memory Match",
+      vibe_quiz: "VIBE Quiz",
+    };
+    const title = gameTitles[gameType] || "VIBE Game";
+
+    if (gameType === "rotaract_game" || gameType === "vibe_quiz") {
+      const pct = numMax > 0 ? (numScore / numMax) * 100 : 0;
+      if (pct >= 90) xpAwarded = 150;
+      else if (pct >= 70) xpAwarded = 100;
+      else if (pct >= 40) xpAwarded = 75;
+      else if (pct >= 20) xpAwarded = 50;
+      else xpAwarded = 25;
+    } else if (gameType === "minion_game") {
+      if (numScore >= 1000) xpAwarded = 125;
+      else if (numScore >= 600) xpAwarded = 100;
+      else if (numScore >= 300) xpAwarded = 75;
+      else if (numScore >= 100) xpAwarded = 50;
+      else xpAwarded = 25;
+    } else if (gameType === "memory_game") {
+      if (timeSeconds && timeSeconds <= 20) xpAwarded = 125;
+      else if (timeSeconds && timeSeconds <= 35) xpAwarded = 100;
+      else if (timeSeconds && timeSeconds <= 50) xpAwarded = 75;
+      else if (numScore >= 800) xpAwarded = 100;
+      else if (numScore >= 500) xpAwarded = 75;
+      else xpAwarded = 50;
+    }
+
+    // 1. Update in-memory mockDb
+    if (!mockDb.getProfile(profileId)) {
+      mockDb.profiles.set(profileId, { ...session.profile });
+    }
+    const memProfile = mockDb.getProfile(profileId);
+    if (memProfile) {
+      memProfile.games_played_count = (memProfile.games_played_count || 0) + 1;
+    }
+
+    const gameSession = {
+      id: `gs-${Date.now()}-${Math.floor(Math.random() * 10000)}`,
+      profile_id: profileId,
+      game_type: gameType as GameType,
+      score: Math.round(numScore),
+      max_score: Math.round(numMax),
+      xp_earned: xpAwarded,
+      played_at: new Date().toISOString(),
+    };
+    mockDb.gameSessions.push(gameSession);
+
+    mockDb.addXpToProfile(
+      profileId,
+      xpAwarded,
+      `Scored ${numScore} in ${title} (+${xpAwarded} XP)`
+    );
+
+    // 2. Update Supabase if live
+    let finalTotalXp = (session.profile.xp || 0) + xpAwarded;
+    let finalGamesPlayed = (session.profile.games_played_count || 0) + 1;
+    let newLevel = calculateLevel(finalTotalXp);
+
+    if (isUsingLiveSupabase() && supabaseAdmin) {
+      try {
+        // Record game session in Supabase game_sessions table
+        await supabaseAdmin.from("game_sessions").insert({
+          event_id: session.eventId || "a0000000-0000-0000-0000-000000000001",
+          profile_id: profileId,
+          game_type: gameType,
+          score: Math.round(numScore),
+          max_score: Math.round(numMax),
+          coin_spent: 0,
+          coin_earned: 0,
+          xp_earned: xpAwarded,
+          played_at: new Date().toISOString(),
+        });
+
+        // Get fresh profile XP from Supabase
+        const { data: currentP } = await supabaseAdmin
+          .from("profiles")
+          .select("xp, games_played_count, level_number")
+          .eq("id", profileId)
+          .single();
+
+        if (currentP) {
+          finalTotalXp = (currentP.xp || 0) + xpAwarded;
+          finalGamesPlayed = (currentP.games_played_count || 0) + 1;
+          newLevel = calculateLevel(finalTotalXp);
+
+          await supabaseAdmin
+            .from("profiles")
+            .update({
+              xp: finalTotalXp,
+              games_played_count: finalGamesPlayed,
+              level_number: newLevel.level_number,
+              level_name: newLevel.level_name,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", profileId);
+
+          // Check for Level Up!
+          if (newLevel.level_number > (currentP.level_number || 1)) {
+            await socialStore.createNotification({
+              profile_id: profileId,
+              type: "level_unlocked",
+              title: `🎉 LEVEL UP! ${newLevel.badge} ${newLevel.level_name}`,
+              message: `Incredible! You just unlocked Level ${newLevel.level_number}: ${newLevel.level_name}!`,
+              link: "/app/profile",
+            });
+          }
+        }
+
+        // Send XP Earned notification
+        await socialStore.createNotification({
+          profile_id: profileId,
+          type: "xp_earned",
+          title: `+${xpAwarded} XP Earned! 🎮`,
+          message: `Great game! You scored ${numScore} in ${title} and earned +${xpAwarded} XP!`,
+          link: "/app/games",
+        });
+      } catch (err) {
+        console.warn("Supabase game session recording warning:", err);
+      }
+    }
+
+    // Invalidate session cache so all pages and headers reflect updated XP and level immediately
+    invalidateSessionCache(session.clerkUserId);
+    invalidateSessionCache(profileId);
+    invalidateSessionCache();
+
+    return NextResponse.json({
+      success: true,
+      xpEarned: xpAwarded,
+      newTotalXp: finalTotalXp,
+      level: newLevel,
+      gamesPlayed: finalGamesPlayed,
+      message: `+${xpAwarded} XP earned! Keep playing to level up!`,
+    });
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }

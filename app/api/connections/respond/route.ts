@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { getCurrentUserSession } from "@/lib/auth/session";
-import { mockDb } from "@/lib/db/mock-store";
+import { getCurrentUserSession, invalidateSessionCache } from "@/lib/auth/session";
+import { socialStore } from "@/lib/db/social-store";
 
 export async function POST(req: Request) {
   try {
@@ -11,13 +11,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "requestId and action are required" }, { status: 400 });
     }
 
-    if (action === "accept") {
-      const result = mockDb.acceptConnectionRequest(requestId, session.profile.id);
-      return NextResponse.json(result);
-    } else {
-      const result = mockDb.declineConnectionRequest(requestId, session.profile.id);
-      return NextResponse.json(result);
+    if (action !== "accept" && action !== "decline") {
+      return NextResponse.json({ success: false, error: "action must be accept or decline" }, { status: 400 });
     }
+
+    const result = await socialStore.respondConnectionRequest(
+      requestId,
+      session.profile.id,
+      action,
+      session.profile.display_name
+    );
+
+    invalidateSessionCache(session.clerkUserId);
+    invalidateSessionCache(session.profile.id);
+
+    return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }

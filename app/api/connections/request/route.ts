@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUserSession } from "@/lib/auth/session";
-import { mockDb } from "@/lib/db/mock-store";
+import { socialStore } from "@/lib/db/social-store";
 
 export async function POST(req: Request) {
   try {
@@ -11,7 +11,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "receiverId is required" }, { status: 400 });
     }
 
-    const result = mockDb.sendConnectionRequest(session.profile.id, receiverId);
+    const result = await socialStore.sendConnectionRequest(
+      session.profile.id,
+      receiverId,
+      session.profile.display_name,
+      session.profile.rotaract_club
+    );
+
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });

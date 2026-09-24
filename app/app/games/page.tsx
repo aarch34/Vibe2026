@@ -1,14 +1,38 @@
 import React from "react";
 import { getCurrentUserSession } from "@/lib/auth/session";
 import { mockDb } from "@/lib/db/mock-store";
-import { GamesHub } from "@/components/games/games-hub";
+import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
+import { GamesHub, GameSummary } from "@/components/games/games-hub";
 
 export const dynamic = "force-dynamic";
 
 export default async function GamesPage() {
   const session = await getCurrentUserSession();
   const currentProfile = mockDb.getProfile(session.profile.id) || session.profile;
-  const initialSummary = mockDb.getGameSummary(currentProfile.id);
+  const initialSummary: GameSummary = mockDb.getGameSummary(currentProfile.id);
+
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    try {
+      const { data: dbSessions } = await supabaseAdmin
+        .from("game_sessions")
+        .select("game_type, score, max_score, xp_earned")
+        .eq("profile_id", currentProfile.id);
+
+      if (dbSessions && dbSessions.length > 0) {
+        dbSessions.forEach((gs: any) => {
+          const item = initialSummary[gs.game_type as keyof GameSummary];
+          if (item) {
+            item.attempts += 1;
+            item.completed = true;
+            item.bestScore = Math.max(item.bestScore, gs.score);
+            item.totalXp += gs.xp_earned || 0;
+          }
+        });
+      }
+    } catch (err) {
+      console.warn("Could not load game sessions from Supabase:", err);
+    }
+  }
 
   return <GamesHub currentProfile={currentProfile} initialSummary={initialSummary} />;
 }

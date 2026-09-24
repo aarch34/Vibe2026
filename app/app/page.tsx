@@ -6,6 +6,7 @@ import { mockDb, calculateLevel } from "@/lib/db/mock-store";
 import { getAllDiscoverableProfiles } from "@/lib/db/profiles";
 import { VibeFeed } from "@/components/social/vibe-feed";
 import { SocialChallengesCard } from "@/components/social/challenges-card";
+import { socialStore } from "@/lib/db/social-store";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export default async function AttendeeHomePage() {
   const totalLevelRange = Math.max(1, maxXp - minXp);
   const progressPercent = Math.min(100, Math.floor((currentLevelXp / totalLevelRange) * 100));
 
-  const posts = mockDb.getPosts();
+  const posts = await socialStore.getPostsWithAuthors();
   const challenges = mockDb.getChallenges();
   const completedChallengeIds = mockDb.getUserCompletedChallengeIds(currentProfile.id);
   const suggestedPeople = (await getAllDiscoverableProfiles(currentProfile.id)).slice(0, 4);

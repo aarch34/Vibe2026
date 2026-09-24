@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUserSession } from "@/lib/auth/session";
-import { mockDb } from "@/lib/db/mock-store";
+import { socialStore } from "@/lib/db/social-store";
 
 export async function DELETE(
   req: Request,
@@ -8,7 +8,7 @@ export async function DELETE(
 ) {
   try {
     const session = await getCurrentUserSession();
-    const success = mockDb.deletePost(params.id, session.profile.id);
+    const success = socialStore.deletePost(params.id, session.profile.id);
 
     if (!success) {
       return NextResponse.json(
