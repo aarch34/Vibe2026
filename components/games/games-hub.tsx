@@ -122,7 +122,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
               <p className="text-[10px] font-bold text-cyan-400">XP: +{summary.rotaract_quiz.totalXp} XP</p>
             </div>
 
-            {/* Sanjay Run */}
+            {/* Sanjay Run - DISABLED TEMPORARILY
             <div className="p-3 rounded-2xl bg-secondary/50 border border-border/80 space-y-1 font-mono">
               <span className="text-[10px] text-muted-foreground uppercase font-bold block">🏃 Sanjay Run</span>
               <p className="text-xs font-black text-foreground">
@@ -130,6 +130,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
               </p>
               <p className="text-[10px] font-bold text-yellow-400">XP: +{summary.sanjay_run.totalXp} XP</p>
             </div>
+            */}
           </div>
         </div>
       )}
@@ -151,6 +152,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
         />
       )}
 
+      {/* Sanjay Run - DISABLED TEMPORARILY
       {activeGame === "sanjay_run" && (
         <SanjayRun
           userBalance={currentProfile.xp}
@@ -159,6 +161,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
           onFinished={() => setActiveGame(null)}
         />
       )}
+      */}
 
       {/* 2 Game Cards */}
       {!activeGame && (
@@ -248,7 +251,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
             </button>
           </div>
 
-          {/* 3. SANJAY RUN */}
+          {/* 3. SANJAY RUN - DISABLED TEMPORARILY
           <div className="p-6 rounded-3xl bg-gradient-to-br from-yellow-900/30 to-card border border-yellow-500/30 shadow-lg space-y-4 hover:border-yellow-400 transition-all flex flex-col justify-between">
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -293,6 +296,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
               <span>{summary.sanjay_run.completed ? "PLAY AGAIN" : "PLAY NOW"}</span>
             </button>
           </div>
+          */}
 
         </div>
       )}
