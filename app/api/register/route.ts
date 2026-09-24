@@ -130,10 +130,9 @@ export async function POST(req: Request) {
               display_name: profile.display_name,
               email: profile.email,
               phone: profile.phone,
-              club: profile.rotaract_club, // Correct column in Supabase
+              rotaract_club: profile.rotaract_club,
               college: profile.college,
               course_year: profile.course_year,
-              instagram_id: cleanIg,
               instagram_username: cleanIg,
               username: resolvedUsername,
               bio: profile.bio,
@@ -156,6 +155,7 @@ export async function POST(req: Request) {
 
         if (supaErr) {
           console.error("Supabase profile upsert error on /api/register:", supaErr);
+          return NextResponse.json({ success: false, error: "Failed to save profile in database. " + supaErr.message }, { status: 500 });
         }
 
         if (supaProfile) {

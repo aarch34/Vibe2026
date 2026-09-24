@@ -214,7 +214,7 @@ export const getCurrentUserSession = serverCache(async function getCurrentUserSe
 
     // Enforce registration completion: if attendee has not filled in their registration details, redirect to /register
     const isTestOrSpecial = clerkUserId.startsWith("test-") || clerkUserId.startsWith("usr-reg-");
-    if (!isTestOrSpecial && clerkRole !== "admin" && !profile.profile_completed && !profile.club) {
+    if (!isTestOrSpecial && clerkRole !== "admin" && !profile.profile_completed && !profile.rotaract_club) {
       redirect("/register");
     }
 

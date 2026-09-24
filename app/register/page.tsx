@@ -37,11 +37,11 @@ export default async function RegisterPage() {
       if (isUsingLiveSupabase() && supabaseAdmin) {
         const { data: existingProfile } = await supabaseAdmin
           .from("profiles")
-          .select("id, profile_completed, club, phone")
+          .select("id, profile_completed, rotaract_club, phone")
           .eq("clerk_user_id", clerkUserId)
           .maybeSingle();
 
-        if (existingProfile && (existingProfile.profile_completed || (existingProfile.club && existingProfile.phone))) {
+        if (existingProfile && (existingProfile.profile_completed || (existingProfile.rotaract_club && existingProfile.phone))) {
           isAlreadyRegistered = true;
         }
       }

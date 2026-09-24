@@ -22,17 +22,15 @@ export const metadata: Metadata = {
   manifest: "/site.webmanifest",
   icons: {
     icon: [
-      { url: "/favicon.ico" },
-      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
-      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/vibe-logo.jpg" },
     ],
-    shortcut: "/favicon.ico",
-    apple: "/apple-touch-icon.png",
+    shortcut: "/vibe-logo.jpg",
+    apple: "/vibe-logo.jpg",
   },
   openGraph: {
     title: "VIBE 2026 — Rotaract Freshers Party",
     description: "Connect, play and experience VIBE before the big event. Ride the wave, own the vibe.",
-    images: [{ url: "/images/vibe-og.jpg", width: 1200, height: 630, alt: "VIBE 2026 Rotaract Freshers Party" }],
+    images: [{ url: "/vibe-logo.jpg", width: 800, height: 800, alt: "VIBE 2026 Rotaract Freshers Party" }],
   },
   appleWebApp: {
     title: "VIBE 2026",
