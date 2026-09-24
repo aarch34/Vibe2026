@@ -126,8 +126,10 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
       {/* Active Game Views */}
       {activeGame === "flappy_rocco" && (
         <FlappyRocco
+          userBalance={currentProfile.xp}
           onScoreSubmitted={(s, m, xp) => handleScoreSubmit("flappy_rocco", s, m, xp)}
           onClose={() => setActiveGame(null)}
+          onFinished={() => setActiveGame(null)}
         />
       )}
 

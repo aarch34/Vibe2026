@@ -84,4 +84,18 @@ describe("ROCO Flappie & Social Integrity Unit Tests", () => {
     const refetchedB = mockDb.getProfile(profB.id)!;
     expect(refetchedB.xp).toBe(initialXpB + 10);
   });
+
+  it("should enforce skill gate on Flappy ROCCO scoring in mock-store", () => {
+    const profA = mockDb.getProfileByClerkId("clerk-a")!;
+    const initialXp = profA.xp;
+
+    // Submitting a score of 300 (equivalent to pillar clears) awards tiered XP
+    const res = mockDb.submitGameScore(profA.id, "flappy_rocco", 350, 20);
+    expect(res.success).toBe(true);
+    expect(res.xpEarned).toBe(50);
+
+    const afterXp = mockDb.getProfile(profA.id)!.xp;
+    expect(afterXp).toBe(initialXp + 50);
+  });
 });
+

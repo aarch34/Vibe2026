@@ -156,12 +156,16 @@ export function DiscoverClient({
                 >
                   <div className="flex items-center space-x-3 min-w-0">
                     <img
-                      src={sender.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=sender"}
+                      src={sender.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sender.display_name || "sender")}`}
                       alt={sender.display_name}
+                      onError={(e) => {
+                        const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(sender.display_name || "sender")}`;
+                        if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                      }}
                       width={40}
                       height={40}
                       style={{ width: "40px", height: "40px", maxWidth: "40px", maxHeight: "40px" }}
-                      className="w-10 h-10 rounded-full border border-pink-500/40 object-cover shrink-0"
+                      className="w-10 h-10 rounded-full border border-pink-500/40 object-cover shrink-0 bg-secondary/40"
                     />
                     <div className="min-w-0">
                       <h4 className="font-extrabold text-xs text-foreground truncate">{sender.display_name}</h4>
@@ -213,12 +217,16 @@ export function DiscoverClient({
                     <div className="flex items-center space-x-3">
                       <Link href={`/app/profile?id=${person.id}`}>
                         <img
-                          src={person.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=user"}
+                          src={person.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(person.display_name || "user")}`}
                           alt={person.display_name}
+                          onError={(e) => {
+                            const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(person.display_name || "user")}`;
+                            if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                          }}
                           width={56}
                           height={56}
                           style={{ width: "56px", height: "56px", maxWidth: "56px", maxHeight: "56px" }}
-                          className="w-14 h-14 rounded-full border-2 border-cyan-400/40 object-cover hover:scale-105 transition-transform shrink-0"
+                          className="w-14 h-14 rounded-full border-2 border-cyan-400/40 object-cover hover:scale-105 transition-transform shrink-0 bg-secondary/40"
                         />
                       </Link>
                       <div>

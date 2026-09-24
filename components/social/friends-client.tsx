@@ -213,7 +213,11 @@ export function FriendsClient({
                       <img
                         src={sender?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${sender?.username || request.sender_id}`}
                         alt={sender?.display_name || "Sender"}
-                        className="w-14 h-14 rounded-2xl border-2 border-purple-500/40 object-cover"
+                        onError={(e) => {
+                          const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${sender?.username || request.sender_id}`;
+                          if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                        }}
+                        className="w-14 h-14 rounded-2xl border-2 border-purple-500/40 object-cover bg-secondary/40"
                       />
                       <span className="absolute -bottom-1 -right-1 bg-purple-600 text-[10px] text-white px-1.5 py-0.5 rounded-full font-black">
                         L{sender?.level_number || 1}
@@ -341,7 +345,11 @@ export function FriendsClient({
                         <img
                           src={friend.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.username || friend.id}`}
                           alt={friend.display_name}
-                          className="w-14 h-14 rounded-2xl border-2 border-border group-hover:border-purple-500/60 object-cover transition-colors"
+                          onError={(e) => {
+                            const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.username || friend.id}`;
+                            if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                          }}
+                          className="w-14 h-14 rounded-2xl border-2 border-border group-hover:border-purple-500/60 object-cover transition-colors bg-secondary/40"
                         />
                       </Link>
 
@@ -438,7 +446,11 @@ export function FriendsClient({
                     <img
                       src={receiver?.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${receiver?.username || request.receiver_id}`}
                       alt={receiver?.display_name || "Receiver"}
-                      className="w-12 h-12 rounded-2xl border border-border object-cover shrink-0"
+                      onError={(e) => {
+                        const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${receiver?.username || request.receiver_id}`;
+                        if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                      }}
+                      className="w-12 h-12 rounded-2xl border border-border object-cover shrink-0 bg-secondary/40"
                     />
                     <div className="min-w-0">
                       <h4 className="font-black text-sm text-foreground truncate">

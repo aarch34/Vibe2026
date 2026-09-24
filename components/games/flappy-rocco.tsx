@@ -1,634 +1,701 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Play, RotateCcw, Trophy, Zap, X, Volume2, VolumeX } from "lucide-react";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
+import {
+  Trophy,
+  Award,
+  CheckCircle2,
+  Loader2,
+  RefreshCw,
+  Play,
+  Volume2,
+  VolumeX,
+  Sparkles,
+} from "lucide-react";
+import { submitGameResultAction } from "@/actions/games/play";
+import confetti from "canvas-confetti";
 
-interface FlappyRoccoProps {
-  onScoreSubmitted: (score: number, maxScore: number, xp: number) => Promise<void>;
-  onClose: () => void;
+export interface FlappyRoccoProps {
+  userBalance?: number;
+  onFinished?: () => void;
+  onClose?: () => void;
+  onScoreSubmitted?: (score: number, maxScore: number, xp: number) => void;
 }
 
-interface Obstacle {
+interface PipePair {
   x: number;
   topHeight: number;
-  bottomHeight: number;
+  bottomY: number;
   passed: boolean;
-  hasBonus: boolean;
-  bonusCollected: boolean;
 }
 
-interface Particle {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  color: string;
-  alpha: number;
-  size: number;
-}
-
-export function FlappyRocco({ onScoreSubmitted, onClose }: FlappyRoccoProps) {
+export function FlappyRocco({
+  userBalance = 0,
+  onFinished,
+  onClose,
+  onScoreSubmitted,
+}: FlappyRoccoProps) {
+  const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
   const [gameState, setGameState] = useState<"ready" | "playing" | "gameover">("ready");
   const [score, setScore] = useState(0);
-  const [bestScore, setBestScore] = useState(0);
-  const [xpEarned, setXpEarned] = useState(0);
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const [highScore, setHighScore] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [payoutResult, setPayoutResult] = useState<any>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Audio Context (Synthesized sound effects)
-  const audioCtxRef = useRef<AudioContext | null>(null);
+  // Sound effects toggle
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
-  const playSound = (type: "flap" | "point" | "bonus" | "crash") => {
+  // References for game loop
+  const roccoImgRef = useRef<HTMLImageElement | null>(null);
+  const animFrameIdRef = useRef<number | null>(null);
+  const stateRef = useRef({
+    gameState: "ready" as "ready" | "playing" | "gameover",
+    birdY: 200,
+    velocity: 0,
+    gravity: 0.38,
+    jump: -6.8,
+    pipes: [] as PipePair[],
+    score: 0,
+    frameCount: 0,
+    width: 380,
+    height: 500,
+  });
+
+  // Load high score from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("vibe_flappy_rocco_best");
+      if (saved) setHighScore(parseInt(saved, 10) || 0);
+    } catch (_) {}
+  }, []);
+
+  // Preload ROCCO sprite
+  useEffect(() => {
+    const img = new Image();
+    img.src = "/assets/rocco/rocco_flappy_sprite.png";
+    img.onload = () => {
+      roccoImgRef.current = img;
+    };
+    img.onerror = () => {
+      img.src = "/images/games/roco.png";
+    };
+  }, []);
+
+  // Simple web audio synth for jump & score beeps
+  function playBeep(type: "jump" | "score" | "hit") {
     if (!soundEnabled) return;
     try {
-      if (!audioCtxRef.current) {
-        audioCtxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      const ctx = audioCtxRef.current;
-      if (ctx.state === "suspended") ctx.resume();
-
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
 
-      const now = ctx.currentTime;
-      if (type === "flap") {
-        osc.type = "sine";
-        osc.frequency.setValueAtTime(320, now);
-        osc.frequency.exponentialRampToValueAtTime(540, now + 0.1);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.1);
-        osc.start(now);
-        osc.stop(now + 0.1);
-      } else if (type === "point") {
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(600, now);
-        osc.frequency.setValueAtTime(800, now + 0.08);
-        gain.gain.setValueAtTime(0.2, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
-        osc.start(now);
-        osc.stop(now + 0.18);
-      } else if (type === "bonus") {
-        osc.type = "square";
-        osc.frequency.setValueAtTime(500, now);
-        osc.frequency.setValueAtTime(750, now + 0.06);
-        osc.frequency.setValueAtTime(1000, now + 0.12);
-        gain.gain.setValueAtTime(0.15, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.22);
-        osc.start(now);
-        osc.stop(now + 0.22);
-      } else if (type === "crash") {
+      if (type === "jump") {
+        osc.frequency.setValueAtTime(320, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + 0.1);
+        gain.gain.setValueAtTime(0.12, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.1);
+      } else if (type === "score") {
+        osc.frequency.setValueAtTime(580, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
+        gain.gain.setValueAtTime(0.18, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.15);
+      } else if (type === "hit") {
         osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(180, now);
-        osc.frequency.exponentialRampToValueAtTime(60, now + 0.25);
-        gain.gain.setValueAtTime(0.3, now);
-        gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
+        osc.frequency.setValueAtTime(220, ctx.currentTime);
+        osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.2);
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.2);
       }
-    } catch {
-      // Audio not supported or blocked
+    } catch (_) {}
+  }
+
+  // Flap jump action
+  function handleFlap() {
+    if (stateRef.current.gameState === "ready") {
+      stateRef.current.gameState = "playing";
+      setGameState("playing");
+      stateRef.current.velocity = stateRef.current.jump;
+      playBeep("jump");
+    } else if (stateRef.current.gameState === "playing") {
+      stateRef.current.velocity = stateRef.current.jump;
+      playBeep("jump");
     }
-  };
+  }
 
-  // Game Engine State (Refs for 60fps loop)
-  const engineRef = useRef({
-    rocoY: 220,
-    rocoVelocity: 0,
-    rocoRotation: 0,
-    obstacles: [] as Obstacle[],
-    particles: [] as Particle[],
-    score: 0,
-    gameRunning: false,
-    groundOffset: 0,
-    cityOffset: 0,
-    imgLoaded: false,
-    rocoImg: null as HTMLImageElement | null,
-  });
-
-  // Load Roco character image
+  // Keyboard handler (Space or Up arrow)
   useEffect(() => {
-    const img = new window.Image();
-    img.src = "/images/games/roco.png";
-    img.onload = () => {
-      engineRef.current.rocoImg = img;
-      engineRef.current.imgLoaded = true;
-    };
-  }, []);
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.code === "Space" || e.code === "ArrowUp") {
+        e.preventDefault();
+        handleFlap();
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [soundEnabled]);
 
-  // Main Game Loop
+  // Main game loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let animationId: number;
+    const width = 380;
+    const height = 500;
+    canvas.width = width;
+    canvas.height = height;
+    stateRef.current.width = width;
+    stateRef.current.height = height;
 
-    const gravity = 0.36;
-    const jumpImpulse = -7.2;
-    const pipeSpeed = 2.4;
-    const pipeWidth = 58;
-    const pipeGap = 135;
-    const spawnDistance = 220;
+    const birdRadius = 15;
+    const pipeWidth = 52;
+    const pipeGap = 145; // Comfortable, fair vertical clearance
+    const minPipeDistance = 215; // Generous horizontal spacing so pillars NEVER overlap or bunch up
+    const groundHeight = 36;
+    const speed = 2.2; // Smooth arcade scroll rate
 
-    const gameWidth = canvas.width;
-    const gameHeight = canvas.height;
-    const groundHeight = 55;
+    let isRunning = true;
 
-    const handleFlap = () => {
-      if (!engineRef.current.gameRunning) return;
-      engineRef.current.rocoVelocity = jumpImpulse;
-      playSound("flap");
+    function resetGame() {
+      stateRef.current.birdY = 220;
+      stateRef.current.velocity = 0;
+      stateRef.current.pipes = [];
+      stateRef.current.score = 0;
+      setScore(0);
+      stateRef.current.frameCount = 0;
+    }
 
-      // Spawn flap dust particles
-      for (let i = 0; i < 4; i++) {
-        engineRef.current.particles.push({
-          x: 80,
-          y: engineRef.current.rocoY + 15,
-          vx: -(Math.random() * 2 + 1),
-          vy: Math.random() * 2 - 1,
-          color: Math.random() > 0.5 ? "#f43f5e" : "#06b6d4",
-          alpha: 0.8,
-          size: Math.random() * 3 + 2,
-        });
-      }
-    };
+    resetGame();
 
-    const triggerGameOver = () => {
-      engineRef.current.gameRunning = false;
-      playSound("crash");
-
-      const finalScore = engineRef.current.score;
-      // Calculate XP: 25 base XP for participating, +5 XP per 10 points, max 125 XP
-      const calculatedXp = Math.min(125, 25 + Math.floor(finalScore / 2) * 5);
-
-      setScore(finalScore);
-      setBestScore((prev) => Math.max(prev, finalScore));
-      setXpEarned(calculatedXp);
+    async function triggerGameOver(finalScore: number) {
+      if (stateRef.current.gameState === "gameover") return;
+      stateRef.current.gameState = "gameover";
       setGameState("gameover");
+      playBeep("hit");
+
+      // Update local best
+      setHighScore((prev) => {
+        const nextBest = Math.max(prev, finalScore);
+        try {
+          localStorage.setItem("vibe_flappy_rocco_best", nextBest.toString());
+        } catch (_) {}
+        return nextBest;
+      });
+
+      // STRICT SKILL GATE: XP is ONLY awarded if at least 5 pillars are cleared!
+      // Scores < 5 earn 0 XP and 0 coins to prevent instant death farming.
+      const isMaster = finalScore >= 10;
+      const isQualified = finalScore >= 5;
+      const xpPayout = isMaster ? 25 : isQualified ? 15 : 0;
+      const coinPayout = isMaster ? 10 : 0;
 
       setIsSubmitting(true);
-      onScoreSubmitted(finalScore, 50, calculatedXp).finally(() => {
+      setErrorMsg(null);
+      try {
+        const res = await submitGameResultAction({
+          gameType: "flappy_rocco",
+          score: finalScore,
+          maxScore: 20,
+          coinCost: 0,
+          coinReward: coinPayout,
+          xpReward: xpPayout,
+        });
+
+        if (!res.success) {
+          setErrorMsg(res.message || "Failed to register score");
+        } else {
+          setPayoutResult(res);
+          if (isMaster) {
+            confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
+          }
+          if (onScoreSubmitted) {
+            onScoreSubmitted(finalScore, 20, xpPayout);
+          }
+          router.refresh();
+        }
+      } catch (err: any) {
+        setErrorMsg(err.message || "Network error submitting score");
+      } finally {
         setIsSubmitting(false);
-      });
-    };
-
-    // Keyboard & Touch Listeners
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.code === "Space" || e.code === "ArrowUp") {
-        e.preventDefault();
-        if (gameState === "playing") {
-          handleFlap();
-        } else if (gameState === "ready") {
-          startGame();
-        }
       }
-    };
+    }
 
-    window.addEventListener("keydown", onKeyDown);
+    function render() {
+      if (!isRunning || !ctx) return;
 
-    const render = () => {
-      const state = engineRef.current;
+      const state = stateRef.current;
+      state.frameCount++;
 
-      // ── 1. Clear & Background Sky ──
-      const grad = ctx.createLinearGradient(0, 0, 0, gameHeight);
-      grad.addColorStop(0, "#0b031d");
-      grad.addColorStop(0.5, "#25093f");
-      grad.addColorStop(0.85, "#4c0556");
-      grad.addColorStop(1, "#831843");
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, gameWidth, gameHeight);
+      // 1. Draw Arcade Cyber Background
+      ctx.fillStyle = "#090915";
+      ctx.fillRect(0, 0, width, height);
 
-      // Background Synthwave Sun
-      ctx.save();
-      const sunGrad = ctx.createRadialGradient(gameWidth / 2, 280, 10, gameWidth / 2, 280, 120);
-      sunGrad.addColorStop(0, "rgba(244, 63, 94, 0.45)");
-      sunGrad.addColorStop(0.6, "rgba(236, 72, 153, 0.2)");
-      sunGrad.addColorStop(1, "rgba(236, 72, 153, 0)");
-      ctx.fillStyle = sunGrad;
-      ctx.beginPath();
-      ctx.arc(gameWidth / 2, 280, 120, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      // Distant City Skyline
-      if (state.gameRunning) {
-        state.cityOffset = (state.cityOffset + 0.4) % 120;
+      // Distant neon grid lines
+      ctx.strokeStyle = "rgba(76, 29, 149, 0.25)";
+      ctx.lineWidth = 1;
+      for (let y = 30; y < height - groundHeight; y += 35) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
       }
-      ctx.fillStyle = "rgba(15, 6, 35, 0.75)";
-      for (let x = -state.cityOffset; x < gameWidth + 60; x += 30) {
-        const h = 40 + ((Math.abs(x * 13)) % 55);
-        ctx.fillRect(x, gameHeight - groundHeight - h, 26, h);
+      for (let x = (state.frameCount * 0.4) % 35; x < width; x += 35) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height - groundHeight);
+        ctx.stroke();
       }
 
-      // ── 2. Update Physics when Playing ──
-      if (state.gameRunning) {
-        state.rocoVelocity += gravity;
-        state.rocoY += state.rocoVelocity;
-        state.rocoRotation = Math.min(Math.PI / 4, Math.max(-Math.PI / 6, state.rocoVelocity * 0.08));
+      // 2. Physics & Logic when Playing
+      if (state.gameState === "playing") {
+        state.velocity += state.gravity;
+        state.birdY += state.velocity;
 
-        // Ground collision
-        if (state.rocoY >= gameHeight - groundHeight - 20) {
-          state.rocoY = gameHeight - groundHeight - 20;
-          triggerGameOver();
-        }
-        // Ceiling clamp
-        if (state.rocoY < 18) {
-          state.rocoY = 18;
-          state.rocoVelocity = 0;
-        }
-
-        // Move Ground
-        state.groundOffset = (state.groundOffset + pipeSpeed) % 24;
-
-        // Obstacles movement & spawning
-        for (let i = state.obstacles.length - 1; i >= 0; i--) {
-          const obs = state.obstacles[i];
-          obs.x -= pipeSpeed;
-
-          // Check passed for points
-          if (!obs.passed && obs.x + pipeWidth < 80) {
-            obs.passed = true;
-            state.score += 1;
-            setScore(state.score);
-            playSound("point");
-          }
-
-          // Bonus item collision
-          if (obs.hasBonus && !obs.bonusCollected) {
-            const bonusX = obs.x + pipeWidth / 2;
-            const bonusY = obs.topHeight + pipeGap / 2;
-            const dist = Math.hypot(80 - bonusX, state.rocoY - bonusY);
-            if (dist < 28) {
-              obs.bonusCollected = true;
-              state.score += 5;
-              setScore(state.score);
-              playSound("bonus");
-
-              // Sparkle particles for bonus
-              for (let p = 0; p < 8; p++) {
-                state.particles.push({
-                  x: bonusX,
-                  y: bonusY,
-                  vx: (Math.random() - 0.5) * 4,
-                  vy: (Math.random() - 0.5) * 4,
-                  color: "#fbbf24",
-                  alpha: 1,
-                  size: Math.random() * 4 + 2,
-                });
-              }
-            }
-          }
-
-          // Pipe Collision Detection
-          const rocoBox = {
-            left: 64,
-            right: 96,
-            top: state.rocoY - 16,
-            bottom: state.rocoY + 16,
-          };
-
-          const pipeBoxTop = {
-            left: obs.x,
-            right: obs.x + pipeWidth,
-            top: 0,
-            bottom: obs.topHeight,
-          };
-
-          const pipeBoxBottom = {
-            left: obs.x,
-            right: obs.x + pipeWidth,
-            top: obs.topHeight + pipeGap,
-            bottom: gameHeight - groundHeight,
-          };
-
-          const collides = (a: typeof rocoBox, b: typeof pipeBoxTop) => {
-            return a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
-          };
-
-          if (collides(rocoBox, pipeBoxTop) || collides(rocoBox, pipeBoxBottom)) {
-            triggerGameOver();
-          }
-
-          // Remove offscreen
-          if (obs.x < -pipeWidth) {
-            state.obstacles.splice(i, 1);
-          }
-        }
-
-        // Spawn new obstacle
-        const lastObstacle = state.obstacles[state.obstacles.length - 1];
-        if (!lastObstacle || lastObstacle.x <= gameWidth - spawnDistance) {
-          const minPipe = 60;
-          const maxPipe = gameHeight - groundHeight - pipeGap - minPipe;
-          const topHeight = Math.floor(Math.random() * (maxPipe - minPipe)) + minPipe;
-          const hasBonus = Math.random() > 0.45;
-
-          state.obstacles.push({
-            x: gameWidth + 10,
-            topHeight,
-            bottomHeight: gameHeight - groundHeight - pipeGap - topHeight,
+        // Deterministic distance-based pipe generation
+        const lastPipe = state.pipes[state.pipes.length - 1];
+        if (!lastPipe) {
+          const minH = 65;
+          const maxH = height - groundHeight - pipeGap - minH;
+          const topH = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
+          state.pipes.push({
+            x: width + 60,
+            topHeight: topH,
+            bottomY: topH + pipeGap,
             passed: false,
-            hasBonus,
-            bonusCollected: false,
+          });
+        } else if (lastPipe.x <= width - minPipeDistance) {
+          const minH = 65;
+          const maxH = height - groundHeight - pipeGap - minH;
+          const topH = Math.floor(Math.random() * (maxH - minH + 1)) + minH;
+          state.pipes.push({
+            x: width + 10,
+            topHeight: topH,
+            bottomY: topH + pipeGap,
+            passed: false,
           });
         }
+
+        // Move pipes
+        for (let i = 0; i < state.pipes.length; i++) {
+          const p = state.pipes[i];
+          p.x -= speed;
+
+          // Check score pass
+          const birdX = 85;
+          if (!p.passed && p.x + pipeWidth < birdX) {
+            p.passed = true;
+            state.score++;
+            setScore(state.score);
+            playBeep("score");
+          }
+
+          // Fair collision check with forgiving hitbox margins
+          const birdBox = {
+            left: birdX - birdRadius + 3,
+            right: birdX + birdRadius - 3,
+            top: state.birdY - birdRadius + 3,
+            bottom: state.birdY + birdRadius - 3,
+          };
+
+          // Hit upper pipe
+          if (
+            birdBox.right > p.x &&
+            birdBox.left < p.x + pipeWidth &&
+            birdBox.top < p.topHeight
+          ) {
+            triggerGameOver(state.score);
+          }
+
+          // Hit lower pipe
+          if (
+            birdBox.right > p.x &&
+            birdBox.left < p.x + pipeWidth &&
+            birdBox.bottom > p.bottomY
+          ) {
+            triggerGameOver(state.score);
+          }
+        }
+
+        // Clean up off-screen pipes
+        state.pipes = state.pipes.filter((p) => p.x + pipeWidth > -30);
+
+        // Ceiling collision (soft clamp - don't instakill)
+        if (state.birdY - birdRadius < 0) {
+          state.birdY = birdRadius;
+          state.velocity = 0;
+        }
+
+        // Floor collision
+        if (state.birdY + birdRadius >= height - groundHeight) {
+          state.birdY = height - groundHeight - birdRadius;
+          triggerGameOver(state.score);
+        }
+      } else if (state.gameState === "ready") {
+        // Bobbing hover animation
+        state.birdY = 220 + Math.sin(state.frameCount * 0.08) * 6;
       }
 
-      // ── 3. Draw Neon Pipes ──
-      for (const obs of state.obstacles) {
+      // 3. Draw Pipes (Neon Soundwave Equalizer Columns)
+      for (const p of state.pipes) {
         // Top Pipe
-        const topGrad = ctx.createLinearGradient(obs.x, 0, obs.x + pipeWidth, 0);
-        topGrad.addColorStop(0, "#06b6d4");
-        topGrad.addColorStop(0.5, "#3b82f6");
-        topGrad.addColorStop(1, "#1e3a8a");
+        const topGrad = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
+        topGrad.addColorStop(0, "#7C3AED");
+        topGrad.addColorStop(0.5, "#A855F7");
+        topGrad.addColorStop(1, "#6D28D9");
         ctx.fillStyle = topGrad;
-        ctx.fillRect(obs.x, 0, pipeWidth, obs.topHeight);
+        ctx.fillRect(p.x, 0, pipeWidth, p.topHeight);
 
-        // Pipe rim
-        ctx.fillStyle = "#38bdf8";
-        ctx.fillRect(obs.x - 3, obs.topHeight - 16, pipeWidth + 6, 16);
+        // Top Pipe Border & Cap
+        ctx.strokeStyle = "#C084FC";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(p.x, 0, pipeWidth, p.topHeight);
+        ctx.fillStyle = "#E9D5FF";
+        ctx.fillRect(p.x - 3, p.topHeight - 12, pipeWidth + 6, 12);
+        ctx.strokeRect(p.x - 3, p.topHeight - 12, pipeWidth + 6, 12);
+
+        // Soundwave accent line inside top pipe
+        ctx.strokeStyle = "rgba(233, 213, 255, 0.4)";
+        ctx.beginPath();
+        ctx.moveTo(p.x + pipeWidth / 2, 0);
+        ctx.lineTo(p.x + pipeWidth / 2, p.topHeight - 12);
+        ctx.stroke();
 
         // Bottom Pipe
-        const btmY = obs.topHeight + pipeGap;
-        const btmHeight = gameHeight - groundHeight - btmY;
-        const btmGrad = ctx.createLinearGradient(obs.x, btmY, obs.x + pipeWidth, btmY);
-        btmGrad.addColorStop(0, "#ec4899");
-        btmGrad.addColorStop(0.5, "#d946ef");
-        btmGrad.addColorStop(1, "#831843");
-        ctx.fillStyle = btmGrad;
-        ctx.fillRect(obs.x, btmY, pipeWidth, btmHeight);
+        const botH = height - groundHeight - p.bottomY;
+        const botGrad = ctx.createLinearGradient(p.x, 0, p.x + pipeWidth, 0);
+        botGrad.addColorStop(0, "#0284C7");
+        botGrad.addColorStop(0.5, "#00D2FF");
+        botGrad.addColorStop(1, "#0369A1");
+        ctx.fillStyle = botGrad;
+        ctx.fillRect(p.x, p.bottomY, pipeWidth, botH);
 
-        // Pipe rim
-        ctx.fillStyle = "#f472b6";
-        ctx.fillRect(obs.x - 3, btmY, pipeWidth + 6, 16);
+        // Bottom Pipe Border & Cap
+        ctx.strokeStyle = "#38BDF8";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(p.x, p.bottomY, pipeWidth, botH);
+        ctx.fillStyle = "#BAE6FD";
+        ctx.fillRect(p.x - 3, p.bottomY, pipeWidth + 6, 12);
+        ctx.strokeRect(p.x - 3, p.bottomY, pipeWidth + 6, 12);
 
-        // Draw Collectible Bonus Item (Popcorn bucket / Rotaract Star)
-        if (obs.hasBonus && !obs.bonusCollected) {
-          const bonusX = obs.x + pipeWidth / 2;
-          const bonusY = obs.topHeight + pipeGap / 2;
-          ctx.save();
-          ctx.shadowColor = "#fbbf24";
-          ctx.shadowBlur = 12;
-          ctx.font = "20px sans-serif";
-          ctx.textAlign = "center";
-          ctx.textBaseline = "middle";
-          ctx.fillText("🍿", bonusX, bonusY);
-          ctx.restore();
-        }
-      }
-
-      // ── 4. Draw Particles ──
-      for (let i = state.particles.length - 1; i >= 0; i--) {
-        const p = state.particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
-        p.alpha -= 0.03;
-        if (p.alpha <= 0) {
-          state.particles.splice(i, 1);
-          continue;
-        }
-        ctx.save();
-        ctx.globalAlpha = p.alpha;
-        ctx.fillStyle = p.color;
+        // Soundwave accent line inside bottom pipe
+        ctx.strokeStyle = "rgba(186, 230, 253, 0.4)";
         ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
+        ctx.moveTo(p.x + pipeWidth / 2, p.bottomY + 12);
+        ctx.lineTo(p.x + pipeWidth / 2, height - groundHeight);
+        ctx.stroke();
       }
 
-      // ── 5. Draw ROCO Player ──
-      ctx.save();
-      ctx.translate(80, state.rocoY);
-      ctx.rotate(state.rocoRotation);
+      // 4. Draw Ground Platform
+      const groundGrad = ctx.createLinearGradient(0, height - groundHeight, 0, height);
+      groundGrad.addColorStop(0, "#1F1A3A");
+      groundGrad.addColorStop(1, "#0D0A1E");
+      ctx.fillStyle = groundGrad;
+      ctx.fillRect(0, height - groundHeight, width, groundHeight);
 
-      if (state.imgLoaded && state.rocoImg) {
-        // Draw Roco Character with subtle glow
-        ctx.shadowColor = "#ec4899";
-        ctx.shadowBlur = 10;
-        // Image aspect ratio adjustment
-        ctx.drawImage(state.rocoImg, -24, -28, 48, 56);
+      // Neon ground separator stripe
+      ctx.strokeStyle = "#FF2E93";
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, height - groundHeight);
+      ctx.lineTo(width, height - groundHeight);
+      ctx.stroke();
+
+      // Moving ground hazard dashes
+      ctx.strokeStyle = "rgba(255, 46, 147, 0.4)";
+      ctx.lineWidth = 2;
+      const groundOffset = (state.frameCount * 2.5) % 20;
+      for (let x = -groundOffset; x < width; x += 20) {
+        ctx.beginPath();
+        ctx.moveTo(x, height - groundHeight + 4);
+        ctx.lineTo(x + 8, height);
+        ctx.stroke();
+      }
+
+      // 5. Draw ROCCO (The Flappy Bird)
+      const birdX = 85;
+      const birdY = state.birdY;
+      const angle = Math.min(
+        Math.PI / 4,
+        Math.max(-Math.PI / 5, state.velocity * 0.08)
+      );
+
+      ctx.save();
+      ctx.translate(birdX, birdY);
+      ctx.rotate(angle);
+
+      if (roccoImgRef.current && roccoImgRef.current.complete) {
+        const size = 38;
+        ctx.drawImage(roccoImgRef.current, -size / 2, -size / 2, size, size);
       } else {
-        // Fallback Raccoon Emoji
-        ctx.font = "34px sans-serif";
+        ctx.beginPath();
+        ctx.arc(0, 0, birdRadius, 0, Math.PI * 2);
+        ctx.fillStyle = "#334155";
+        ctx.fill();
+        ctx.strokeStyle = "#FF2E93";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.font = "bold 14px monospace";
+        ctx.fillStyle = "#FFFFFF";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("🦝", 0, 0);
       }
+
       ctx.restore();
 
-      // ── 6. Draw Moving Ground ──
-      ctx.fillStyle = "#090214";
-      ctx.fillRect(0, gameHeight - groundHeight, gameWidth, groundHeight);
-
-      // Neon Top Border of Ground
-      const lineGrad = ctx.createLinearGradient(0, 0, gameWidth, 0);
-      lineGrad.addColorStop(0, "#06b6d4");
-      lineGrad.addColorStop(0.5, "#ec4899");
-      lineGrad.addColorStop(1, "#eab308");
-      ctx.fillStyle = lineGrad;
-      ctx.fillRect(0, gameHeight - groundHeight, gameWidth, 4);
-
-      // Grid Lines on Ground
-      ctx.strokeStyle = "rgba(168, 85, 247, 0.25)";
-      ctx.lineWidth = 1;
-      for (let gx = -state.groundOffset; gx < gameWidth; gx += 24) {
-        ctx.beginPath();
-        ctx.moveTo(gx, gameHeight - groundHeight + 4);
-        ctx.lineTo(gx - 20, gameHeight);
-        ctx.stroke();
-      }
-
-      // ── 7. Top HUD (Live Score) ──
-      if (state.gameRunning) {
-        ctx.save();
-        ctx.font = "900 36px monospace";
-        ctx.fillStyle = "#ffffff";
-        ctx.shadowColor = "rgba(0,0,0,0.8)";
-        ctx.shadowBlur = 8;
+      // 6. Draw HUD Score & Skill Gate Tracker
+      if (state.gameState === "playing") {
+        ctx.font = "900 32px monospace";
         ctx.textAlign = "center";
-        ctx.fillText(`${state.score}`, gameWidth / 2, 48);
-        ctx.restore();
+        ctx.fillStyle = "#000000";
+        ctx.fillText(`${state.score}`, width / 2 + 2, 48);
+        ctx.fillStyle =
+          state.score >= 10 ? "#FACC15" : state.score >= 5 ? "#10B981" : "#00D2FF";
+        ctx.fillText(`${state.score}`, width / 2, 46);
+
+        // Skill Gate Badge underneath
+        ctx.font = "bold 10px monospace";
+        if (state.score >= 10) {
+          ctx.fillStyle = "#FACC15";
+          ctx.fillText("⭐ MASTER BONUS UNLOCKED (+25 XP) ⭐", width / 2, 68);
+        } else if (state.score >= 5) {
+          ctx.fillStyle = "#34D399";
+          ctx.fillText("✨ SKILL GATE PASSED (+15 XP) ✨", width / 2, 68);
+        } else {
+          ctx.fillStyle = "#94A3B8";
+          ctx.fillText(`GATE: ${state.score}/5 PILLARS FOR XP`, width / 2, 68);
+        }
       }
 
-      animationId = requestAnimationFrame(render);
-    };
+      // Draw Ready Hint
+      if (state.gameState === "ready") {
+        ctx.font = "900 14px monospace";
+        ctx.textAlign = "center";
+        ctx.fillStyle = "#FF2E93";
+        ctx.fillText("TAP SCREEN OR PRESS SPACE", width / 2, 320);
+        ctx.font = "bold 11px sans-serif";
+        ctx.fillStyle = "#CBD5E1";
+        ctx.fillText("Jump ≥ 5 pillars to earn XP rewards!", width / 2, 344);
+      }
 
-    animationId = requestAnimationFrame(render);
+      animFrameIdRef.current = requestAnimationFrame(render);
+    }
+
+    animFrameIdRef.current = requestAnimationFrame(render);
 
     return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener("keydown", onKeyDown);
+      isRunning = false;
+      if (animFrameIdRef.current) {
+        cancelAnimationFrame(animFrameIdRef.current);
+      }
     };
-  }, [gameState, soundEnabled]);
+  }, [soundEnabled]);
 
-  const startGame = () => {
-    engineRef.current.rocoY = 220;
-    engineRef.current.rocoVelocity = 0;
-    engineRef.current.rocoRotation = 0;
-    engineRef.current.obstacles = [];
-    engineRef.current.particles = [];
-    engineRef.current.score = 0;
-    engineRef.current.gameRunning = true;
+  function handlePlayAgain() {
+    setGameState("ready");
+    stateRef.current.gameState = "ready";
+    stateRef.current.birdY = 220;
+    stateRef.current.velocity = 0;
+    stateRef.current.pipes = [];
+    stateRef.current.score = 0;
     setScore(0);
-    setGameState("playing");
-    playSound("flap");
-  };
+    setPayoutResult(null);
+    setErrorMsg(null);
+  }
 
-  const handleCanvasClick = (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if (gameState === "ready") {
-      startGame();
-    } else if (gameState === "playing") {
-      engineRef.current.rocoVelocity = -7.2;
-      playSound("flap");
-    }
-  };
+  const isHighScoreSession = score >= 10;
 
   return (
-    <div className="relative w-full max-w-md mx-auto rounded-3xl overflow-hidden border border-purple-500/30 bg-black shadow-2xl select-none">
-      {/* Top Header Bar */}
-      <div className="absolute top-0 left-0 right-0 z-20 flex items-center justify-between p-3.5 bg-gradient-to-b from-black/80 to-transparent">
+    <div className="max-w-md mx-auto space-y-4">
+      {/* Arcade Header Bar */}
+      <div className="p-3 bg-card border-2 border-border shadow-neo flex items-center justify-between">
         <div className="flex items-center space-x-2">
-          <div className="w-8 h-8 rounded-full overflow-hidden border border-amber-400 bg-secondary/80 flex items-center justify-center">
-            <Image
-              src="/images/games/roco.png"
-              alt="ROCO"
-              width={32}
-              height={32}
-              className="object-cover"
-              priority
-            />
-          </div>
+          <span className="text-xl">🦝</span>
           <div>
-            <h2 className="text-xs font-black text-white tracking-wide uppercase">ROCO FLAPPIE</h2>
-            <span className="text-[10px] text-amber-400 font-mono font-bold">VIBE 2026 OFFICIAL</span>
+            <h2 className="text-xs font-black text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
+              <span>Flappy ROCCO</span>
+              <span className="text-[9px] px-1.5 py-0.2 bg-primary text-primary-foreground border border-border">
+                MASCOT FLAP
+              </span>
+            </h2>
+            <span className="text-[10px] text-muted-foreground font-mono">
+              Best Score: <strong>{highScore}</strong>
+            </span>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => setSoundEnabled(!soundEnabled)}
-            className="p-1.5 rounded-full bg-black/40 text-muted-foreground hover:text-white transition-all"
+            onClick={() => setSoundEnabled((v) => !v)}
+            className="p-1.5 bg-muted text-foreground border border-border hover:bg-card active:scale-95 transition-all cursor-pointer"
             aria-label="Toggle Sound"
           >
-            {soundEnabled ? <Volume2 className="w-4 h-4 text-emerald-400" /> : <VolumeX className="w-4 h-4" />}
+            {soundEnabled ? (
+              <Volume2 className="w-4 h-4 text-emerald-400" />
+            ) : (
+              <VolumeX className="w-4 h-4 text-muted-foreground" />
+            )}
           </button>
-          <button
-            onClick={onClose}
-            className="p-1.5 rounded-full bg-black/40 text-muted-foreground hover:text-white transition-all"
-            aria-label="Close Game"
-          >
-            <X className="w-4 h-4" />
-          </button>
+
+          {(onClose || onFinished) && (
+            <button
+              onClick={() => (onClose ? onClose() : onFinished?.())}
+              className="p-1.5 bg-muted text-foreground border border-border hover:bg-destructive hover:text-white active:scale-95 transition-all cursor-pointer text-[10px] font-mono font-bold px-2.5"
+            >
+              Exit
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Main Canvas */}
+      {/* Main Game Stage Area */}
       <div
-        className="w-full flex justify-center cursor-pointer"
-        onClick={handleCanvasClick}
-        onTouchStart={handleCanvasClick}
+        className="relative bg-black border-2 border-border shadow-neo overflow-hidden select-none cursor-pointer flex justify-center items-center"
+        onClick={handleFlap}
+        style={{ touchAction: "manipulation" }}
       >
-        <canvas
-          ref={canvasRef}
-          width={380}
-          height={520}
-          className="w-full h-auto max-h-[560px] block"
-        />
+        <canvas ref={canvasRef} className="block w-full max-w-[380px] h-[500px]" />
+
+        {/* Game Over Pop-Up Modal */}
+        {gameState === "gameover" && (
+          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm z-30 p-5 flex flex-col justify-center items-center text-center space-y-3">
+            {/* Popcorn Shocked ROCCO Mascot Photo */}
+            <div className="relative w-24 h-28 mx-auto rounded-xl border-2 border-border overflow-hidden shadow-neo bg-[#120E26]">
+              <img
+                src="/assets/rocco/rocco_game_over.png"
+                alt="Shocked ROCCO eating popcorn"
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "/images/games/roco.png";
+                }}
+              />
+              <div className="absolute top-1 right-1 px-1 bg-red-600 text-white text-[9px] font-mono font-black border border-black">
+                CRASH!
+              </div>
+            </div>
+
+            <div>
+              <span className="text-[10px] uppercase font-mono font-black text-pink-400 tracking-wider">
+                Run Concluded
+              </span>
+              <h3 className="text-xl font-black text-white font-mono mt-0.5">
+                Score: {score} Pillars
+              </h3>
+              <p className="text-xs text-slate-300 max-w-xs mx-auto mt-0.5">
+                {isHighScoreSession
+                  ? "🎉 Incredible flight! You unlocked the Master Flapper bonus (+25 XP & +10 VIBE)!"
+                  : score >= 5
+                  ? "Great control! You passed the 5-pillar skill gate and earned +15 XP!"
+                  : `You must jump through at least 5 pillars to earn XP. (Reached: ${score}/5)`}
+              </p>
+            </div>
+
+            {score < 5 && (
+              <div className="p-2 bg-amber-950/80 border border-amber-500/40 text-amber-300 text-[11px] font-mono font-bold max-w-xs mx-auto">
+                ⚠️ Jump ≥ 5 pillars to unlock XP rewards!
+              </div>
+            )}
+
+            {/* Reward Payout Breakdown */}
+            {isSubmitting ? (
+              <div className="py-2 flex items-center justify-center space-x-2 text-xs font-mono text-cyan-300">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Recording score...</span>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-2 p-2.5 bg-slate-900 border border-slate-700 w-full max-w-xs font-mono text-xs text-white shadow-inner">
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-bold uppercase">
+                    XP Earned
+                  </span>
+                  <span
+                    className={
+                      score >= 5
+                        ? "text-purple-300 font-black text-sm"
+                        : "text-slate-500 font-bold text-sm"
+                    }
+                  >
+                    +{isHighScoreSession ? 25 : score >= 5 ? 15 : 0} XP
+                  </span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-400 block font-bold uppercase">
+                    VIBE Bonus
+                  </span>
+                  <span
+                    className={
+                      score >= 10
+                        ? "text-amber-400 font-black text-sm"
+                        : "text-slate-500 font-bold text-sm"
+                    }
+                  >
+                    +{isHighScoreSession ? 10 : 0} VIBE
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {errorMsg && <p className="text-xs text-rose-400 font-bold">{errorMsg}</p>}
+
+            <div className="flex items-center space-x-2 pt-1 w-full max-w-xs">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePlayAgain();
+                }}
+                className="flex-1 py-3 neo-btn-primary text-xs font-black uppercase tracking-wider space-x-1 flex items-center justify-center cursor-pointer"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                <span>Flap Again</span>
+              </button>
+
+              {(onClose || onFinished) && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onClose) onClose();
+                    else if (onFinished) onFinished();
+                  }}
+                  className="py-3 px-3 neo-btn-card text-xs font-black uppercase tracking-wider cursor-pointer"
+                >
+                  Hub
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Start Screen Overlay */}
-      {gameState === "ready" && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-black/60 backdrop-blur-sm text-center space-y-4">
-          <div className="relative w-28 h-28 mx-auto animate-bounce">
-            <Image
-              src="/images/games/roco.png"
-              alt="ROCO Mascot"
-              fill
-              className="object-contain drop-shadow-[0_0_20px_rgba(244,63,94,0.6)]"
-              priority
-            />
-          </div>
-
-          <div className="space-y-1">
-            <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-pink-500 to-cyan-400 tracking-wider">
-              ROCO FLAPPIE
-            </h1>
-            <p className="text-xs text-muted-foreground max-w-xs">
-              Guide ROCO through the neon towers! Collect popcorn 🍿 for +5 bonus points and earn milestone XP.
-            </p>
-          </div>
-
-          <button
-            onClick={startGame}
-            className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 text-white font-black text-sm tracking-wide shadow-lg hover:brightness-110 active:scale-95 transition-all flex items-center space-x-2"
-          >
-            <Play className="w-4 h-4 fill-white" />
-            <span>TAP TO FLAP</span>
-          </button>
-
-          <p className="text-[11px] text-muted-foreground/80 font-mono">
-            Keyboard: Spacebar or ↑ Arrow
-          </p>
+      {/* Footer Instructions & Bonus Criteria */}
+      <div className="p-3 bg-card border-2 border-border shadow-neo space-y-1.5 text-xs text-muted-foreground font-mono">
+        <div className="flex items-center justify-between text-[11px] font-bold text-foreground">
+          <span>Controls: Click / Tap / Spacebar</span>
+          <span className="text-emerald-400 font-black">Entry: FREE</span>
         </div>
-      )}
-
-      {/* Game Over Screen Overlay */}
-      {gameState === "gameover" && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-6 bg-black/80 backdrop-blur-md text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
-          <div className="w-14 h-14 rounded-full bg-pink-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400">
-            <Trophy className="w-7 h-7 text-amber-400" />
-          </div>
-
-          <div className="space-y-1">
-            <h2 className="text-xl font-black text-foreground uppercase tracking-wide">
-              GAME OVER!
-            </h2>
-            <p className="text-xs text-muted-foreground">Nice flight! Keep practicing to climb the leaderboard.</p>
-          </div>
-
-          {/* Stats Box */}
-          <div className="w-full max-w-xs p-4 rounded-2xl bg-secondary/60 border border-border/80 space-y-2">
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-muted-foreground font-bold">SCORE:</span>
-              <span className="font-mono font-black text-xl text-foreground">{score}</span>
-            </div>
-            <div className="flex justify-between items-center text-xs">
-              <span className="text-muted-foreground font-bold">BEST:</span>
-              <span className="font-mono font-black text-base text-cyan-400">{bestScore}</span>
-            </div>
-            <div className="border-t border-border/60 pt-2 flex justify-between items-center text-xs">
-              <span className="text-amber-400 font-bold flex items-center space-x-1">
-                <Zap className="w-3.5 h-3.5 fill-amber-400" />
-                <span>XP EARNED:</span>
-              </span>
-              <span className="font-mono font-black text-amber-400 text-sm">+{xpEarned} XP</span>
-            </div>
-          </div>
-
-          {/* Buttons */}
-          <div className="flex items-center space-x-3 w-full max-w-xs pt-2">
-            <button
-              onClick={startGame}
-              className="flex-1 py-2.5 rounded-2xl bg-gradient-to-r from-pink-500 to-purple-600 text-white font-extrabold text-xs shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center justify-center space-x-1.5"
-            >
-              <RotateCcw className="w-4 h-4" />
-              <span>PLAY AGAIN</span>
-            </button>
-            <button
-              onClick={onClose}
-              className="flex-1 py-2.5 rounded-2xl bg-secondary hover:bg-secondary/80 text-foreground font-extrabold text-xs border border-border transition-all"
-            >
-              EXIT ARENA
-            </button>
-          </div>
-        </div>
-      )}
+        <p className="text-[10px] leading-relaxed">
+          🏆 <strong>Skill Threshold:</strong> Jump <strong>≥ 5 pillars</strong> to earn{" "}
+          <span className="text-purple-400 font-black">+15 XP</span>. Jump{" "}
+          <strong>≥ 10 pillars</strong> for Master Bonus (
+          <span className="text-purple-400 font-black">+25 XP</span> &{" "}
+          <span className="text-amber-400 font-black">+10 VIBE Coins</span>
+          ). Scores below 5 earn 0 XP.
+        </p>
+      </div>
     </div>
   );
 }

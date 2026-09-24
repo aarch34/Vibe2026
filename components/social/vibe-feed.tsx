@@ -356,12 +356,16 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
         <div className="flex items-start space-x-3">
           <Link href="/app/profile">
             <img
-              src={currentProfile.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=me"}
+              src={currentProfile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentProfile.display_name || "me")}`}
               alt={currentProfile.display_name}
+              onError={(e) => {
+                const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(currentProfile.display_name || "me")}`;
+                if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+              }}
               width={42}
               height={42}
               style={{ width: "42px", height: "42px" }}
-              className="w-10 h-10 rounded-full border-2 border-pink-500/50 object-cover shrink-0 hover:scale-105 transition-transform"
+              className="w-10 h-10 rounded-full border-2 border-pink-500/50 object-cover shrink-0 hover:scale-105 transition-transform bg-secondary/40"
             />
           </Link>
           <div className="flex-1 space-y-2.5">
@@ -466,8 +470,12 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
                   <Link href={`/app/profile?id=${author.id}`} className="shrink-0">
                     <div className="p-0.5 rounded-full bg-gradient-to-tr from-pink-500 to-cyan-400">
                       <img
-                        src={author.avatar_url || "https://api.dicebear.com/7.x/avataaars/svg?seed=author"}
+                        src={author.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(author.display_name || "author")}`}
                         alt={author.display_name}
+                        onError={(e) => {
+                          const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(author.display_name || "author")}`;
+                          if (e.currentTarget.src !== fb) e.currentTarget.src = fb;
+                        }}
                         width={40}
                         height={40}
                         loading="lazy"
