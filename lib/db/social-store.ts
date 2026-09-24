@@ -158,17 +158,19 @@ class PersistentSocialStore {
       }
 
       if (fs.existsSync(STORAGE_FILE)) {
-        const raw = fs.readFileSync(STORAGE_FILE, "utf8");
-        const parsed = JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.posts)) {
-          return {
-            posts: parsed.posts || [],
-            postLikes: parsed.postLikes || [],
-            postComments: parsed.postComments || [],
-            connectionRequests: parsed.connectionRequests || [],
-            connections: parsed.connections || [],
-            awardedLikeXp: parsed.awardedLikeXp || [],
-          };
+        const raw = fs.readFileSync(STORAGE_FILE, "utf8").trim();
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.posts)) {
+            return {
+              posts: parsed.posts || [],
+              postLikes: parsed.postLikes || [],
+              postComments: parsed.postComments || [],
+              connectionRequests: parsed.connectionRequests || [],
+              connections: parsed.connections || [],
+              awardedLikeXp: parsed.awardedLikeXp || [],
+            };
+          }
         }
       }
     } catch (err) {

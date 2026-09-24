@@ -29,6 +29,30 @@ export function FriendsClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [acceptedNotice, setAcceptedNotice] = useState<string | null>(null);
 
+  // Background sync every 10 seconds without manual refresh
+  React.useEffect(() => {
+    let isMounted = true;
+    const syncRequests = async () => {
+      try {
+        const res = await fetch("/api/notifications");
+        if (res.ok) {
+          const data = await res.json();
+          if (isMounted && data.incomingRequests) {
+            setIncoming(data.incomingRequests);
+          }
+        }
+      } catch {
+        // Silently ignore
+      }
+    };
+
+    const interval = setInterval(syncRequests, 10000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
+
   const handleRespond = async (requestId: string, action: "accept" | "decline") => {
     setRespondingId(requestId);
     setAcceptedNotice(null);

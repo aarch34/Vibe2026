@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -53,7 +53,36 @@ export function TopHeader({
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [acceptedRequests, setAcceptedRequests] = useState<Set<string>>(new Set());
 
-  // Dynamic notification polling every 5 seconds
+  // Real-time connection request pop-up state
+  const [activePopupRequest, setActivePopupRequest] = useState<{ request: ConnectionRequest; sender?: Profile } | null>(null);
+  const [popupAcceptedSuccess, setPopupAcceptedSuccess] = useState(false);
+  const seenRequestIdsRef = useRef<Set<string>>(new Set());
+  const dismissedPopupIdsRef = useRef<Set<string>>(new Set());
+  const isFirstRunRef = useRef<boolean>(true);
+
+  // Synthesize gentle notification chime via Web Audio API (zero external assets needed)
+  const playChimeSound = () => {
+    try {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (!AudioCtx) return;
+      const ctx = new AudioCtx();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5 note
+      osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15); // A5 note
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.45);
+    } catch {
+      // Handled silently if autoplay restricted
+    }
+  };
+
+  // Background polling every 10 seconds to update without refresh & prevent backend overload
   useEffect(() => {
     let isMounted = true;
 
@@ -64,7 +93,28 @@ export function TopHeader({
           const data = await res.json();
           if (isMounted && data.success) {
             setNotifsList(data.notifications || []);
-            setIncomingRequests(data.incomingRequests || []);
+            const currentIncoming: { request: ConnectionRequest; sender?: Profile }[] = data.incomingRequests || [];
+            setIncomingRequests(currentIncoming);
+
+            if (isFirstRunRef.current) {
+              currentIncoming.forEach((r) => seenRequestIdsRef.current.add(r.request.id));
+              isFirstRunRef.current = false;
+            } else {
+              // Detect newly arrived incoming connection requests
+              const newReq = currentIncoming.find(
+                (r) =>
+                  !seenRequestIdsRef.current.has(r.request.id) &&
+                  !dismissedPopupIdsRef.current.has(r.request.id) &&
+                  !acceptedRequests.has(r.request.id)
+              );
+
+              if (newReq) {
+                seenRequestIdsRef.current.add(newReq.request.id);
+                setActivePopupRequest(newReq);
+                setPopupAcceptedSuccess(false);
+                playChimeSound();
+              }
+            }
           }
         }
       } catch {
@@ -73,13 +123,23 @@ export function TopHeader({
     };
 
     fetchNotifs();
-    const interval = setInterval(fetchNotifs, 5000);
+    // Strictly 10 seconds interval (10,000ms) to ensure low backend load while keeping state live
+    const interval = setInterval(fetchNotifs, 10000);
 
     return () => {
       isMounted = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [acceptedRequests]);
+
+  // Auto-dismiss the floating pop-up after 12 seconds if not interacted with
+  useEffect(() => {
+    if (!activePopupRequest || popupAcceptedSuccess) return;
+    const timer = setTimeout(() => {
+      setActivePopupRequest(null);
+    }, 12000);
+    return () => clearTimeout(timer);
+  }, [activePopupRequest, popupAcceptedSuccess]);
 
   const unreadNotifs = notifsList.filter((n) => !n.read).length;
   const unreadCount = unreadNotifs + incomingRequests.filter((r) => !acceptedRequests.has(r.request.id)).length;
@@ -404,6 +464,107 @@ export function TopHeader({
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* REAL-TIME CONNECTION REQUEST POP-UP BANNER (Updates every 10s without refreshing) */}
+      {activePopupRequest && (
+        <div className="fixed top-18 right-3 sm:right-6 z-50 max-w-sm w-[calc(100vw-1.5rem)] sm:w-96 animate-in slide-in-from-top-4 fade-in duration-300">
+          <div className="p-4 sm:p-5 rounded-3xl bg-card/95 backdrop-blur-2xl border-2 border-pink-500 shadow-[0_12px_40px_rgba(255,27,122,0.45)] space-y-3 relative overflow-hidden">
+            {/* Ambient colorful glow */}
+            <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-pink-500/25 via-purple-500/15 to-transparent pointer-events-none rounded-full blur-xl" />
+
+            {/* Header with live pinging indicator */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="relative flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-pink-500"></span>
+                </span>
+                <span className="text-[11px] font-black uppercase tracking-wider text-pink-400 font-mono">
+                  New Connection Request! 👋
+                </span>
+              </div>
+
+              <button
+                onClick={() => {
+                  dismissedPopupIdsRef.current.add(activePopupRequest.request.id);
+                  setActivePopupRequest(null);
+                }}
+                className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer"
+                title="Dismiss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Sender profile card */}
+            <div className="flex items-center space-x-3 pt-1">
+              <img
+                src={
+                  activePopupRequest.sender?.avatar_url ||
+                  `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+                    activePopupRequest.sender?.display_name || "VIBE"
+                  )}`
+                }
+                alt={activePopupRequest.sender?.display_name || "Sender"}
+                className="w-12 h-12 rounded-full border-2 border-pink-500/60 object-cover shrink-0 shadow-md"
+              />
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-black text-foreground truncate">
+                  {activePopupRequest.sender?.display_name || "A Fellow Attendee"}
+                </h4>
+                <p className="text-[11px] text-muted-foreground truncate">
+                  {activePopupRequest.sender?.rotaract_club ||
+                    activePopupRequest.sender?.college ||
+                    "Rotaract District 3192"}
+                </p>
+                {activePopupRequest.sender?.instagram_username && (
+                  <span className="text-[10px] text-pink-400 font-mono">
+                    @{activePopupRequest.sender.instagram_username}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="flex items-center space-x-2 pt-2">
+              <button
+                onClick={async () => {
+                  await handleRespondRequest(activePopupRequest.request.id, "accept");
+                  setPopupAcceptedSuccess(true);
+                  setTimeout(() => {
+                    setActivePopupRequest(null);
+                    setPopupAcceptedSuccess(false);
+                  }, 1500);
+                }}
+                disabled={respondingId === activePopupRequest.request.id || popupAcceptedSuccess}
+                className="flex-1 py-2.5 px-3 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 text-white font-black text-xs uppercase tracking-wider shadow-lg hover:shadow-neon-pink transition-all flex items-center justify-center space-x-1.5 cursor-pointer disabled:opacity-50"
+              >
+                {popupAcceptedSuccess ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-300" />
+                    <span>Connected! +25 XP 🎉</span>
+                  </>
+                ) : respondingId === activePopupRequest.request.id ? (
+                  <span>Connecting...</span>
+                ) : (
+                  <>
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>Accept (+25 XP)</span>
+                  </>
+                )}
+              </button>
+
+              <Link
+                href="/app/friends"
+                onClick={() => setActivePopupRequest(null)}
+                className="py-2.5 px-3 rounded-2xl bg-secondary/80 hover:bg-secondary text-foreground text-xs font-bold transition-all flex items-center justify-center cursor-pointer"
+              >
+                View
+              </Link>
             </div>
           </div>
         </div>
