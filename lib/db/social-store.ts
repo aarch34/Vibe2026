@@ -17,63 +17,9 @@ interface SocialStoreData {
 const TMP_DIR = path.join(process.cwd(), ".tmp");
 const STORAGE_FILE = path.join(TMP_DIR, "vibe-social.json");
 
-// Default initial curated posts from Rotaract District 3192 so the feed is never dead
-const INITIAL_CURATED_POSTS: Post[] = [
-  {
-    id: "post-seed-1",
-    author_id: "prof-curated-1",
-    caption: "Welcome to VIBE 2026! 🎉 The pre-event social hub is officially live. Connect with fellow delegates, play arcade games, and get ready for the biggest fresher festival in District 3192! #VIBE2026 #Rotaract3192",
-    image_url: "https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&auto=format&fit=crop&q=80",
-    likes_count: 18,
-    comments_count: 4,
-    created_at: new Date(Date.now() - 3600000 * 3).toISOString(),
-    updated_at: new Date(Date.now() - 3600000 * 3).toISOString(),
-  },
-  {
-    id: "post-seed-2",
-    author_id: "prof-curated-2",
-    caption: "Who else has tried the Minion Game and Memory Match? Just scored 850 PTS in the arcade arena! Drop your high scores below 🔥🎮",
-    image_url: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800&auto=format&fit=crop&q=80",
-    likes_count: 12,
-    comments_count: 2,
-    created_at: new Date(Date.now() - 3600000 * 6).toISOString(),
-    updated_at: new Date(Date.now() - 3600000 * 6).toISOString(),
-  },
-  {
-    id: "post-seed-3",
-    author_id: "prof-curated-3",
-    caption: "Can't wait to meet everyone at ROCCO '26! Sending connection requests to all delegates from Bangalore colleges. Let's connect! 🤝✨",
-    image_url: "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=800&auto=format&fit=crop&q=80",
-    likes_count: 24,
-    comments_count: 3,
-    created_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-    updated_at: new Date(Date.now() - 3600000 * 12).toISOString(),
-  },
-];
+const INITIAL_CURATED_POSTS: Post[] = [];
 
-const INITIAL_CURATED_COMMENTS: PostComment[] = [
-  {
-    id: "cmt-seed-1",
-    post_id: "post-seed-1",
-    profile_id: "prof-curated-2",
-    comment: "Super excited for this! Just registered my profile.",
-    created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-  },
-  {
-    id: "cmt-seed-2",
-    post_id: "post-seed-1",
-    profile_id: "prof-curated-3",
-    comment: "See you all at the festival stage! 🎵",
-    created_at: new Date(Date.now() - 3600000 * 1).toISOString(),
-  },
-  {
-    id: "cmt-seed-3",
-    post_id: "post-seed-2",
-    profile_id: "prof-curated-1",
-    comment: "Just hit 1000 PTS on Minion Game! Best score so far.",
-    created_at: new Date(Date.now() - 3600000 * 4).toISOString(),
-  },
-];
+const INITIAL_CURATED_COMMENTS: PostComment[] = [];
 
 function isUUID(val?: string | null): boolean {
   if (!val || typeof val !== "string") return false;
@@ -109,44 +55,7 @@ function createCuratedProfile(data: Partial<Profile> & { id: string; display_nam
   };
 }
 
-const CURATED_PROFILES: Record<string, Profile> = {
-  "prof-curated-1": createCuratedProfile({
-    id: "prof-curated-1",
-    display_name: "Rotaract 3192 Team",
-    username: "rotaract_district3192",
-    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=DistrictTeam",
-    college: "Rotaract District 3192",
-    rotaract_club: "District Council",
-    instagram_username: "rotaract3192",
-    xp: 2500,
-    level_number: 6,
-    level_name: "VIBE LEGEND",
-  }),
-  "prof-curated-2": createCuratedProfile({
-    id: "prof-curated-2",
-    display_name: "Aarav Sharma",
-    username: "aarav_vibe",
-    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Aarav",
-    college: "RV College of Engineering",
-    rotaract_club: "RC Koramangala",
-    instagram_username: "aarav.sharma",
-    xp: 950,
-    level_number: 3,
-    level_name: "VIBE SEEKER",
-  }),
-  "prof-curated-3": createCuratedProfile({
-    id: "prof-curated-3",
-    display_name: "Ananya Rao",
-    username: "ananya_r",
-    avatar_url: "https://api.dicebear.com/7.x/avataaars/svg?seed=Ananya",
-    college: "PES University",
-    rotaract_club: "RC Bangalore South",
-    instagram_username: "ananya.rao",
-    xp: 1400,
-    level_number: 4,
-    level_name: "VIBE RIDER",
-  }),
-};
+const CURATED_PROFILES: Record<string, Profile> = {};
 
 const isTestEnv = process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
 
