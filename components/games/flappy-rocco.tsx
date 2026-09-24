@@ -13,7 +13,6 @@ import {
   VolumeX,
   Sparkles,
 } from "lucide-react";
-import { submitGameResultAction } from "@/actions/games/play";
 import confetti from "canvas-confetti";
 
 export interface FlappyRoccoProps {
@@ -198,36 +197,20 @@ export function FlappyRocco({
       });
 
       // STRICT SKILL GATE: XP is ONLY awarded if at least 5 pillars are cleared!
-      // Scores < 5 earn 0 XP and 0 coins to prevent instant death farming.
       const isMaster = finalScore >= 10;
       const isQualified = finalScore >= 5;
       const xpPayout = isMaster ? 25 : isQualified ? 15 : 0;
-      const coinPayout = isMaster ? 10 : 0;
 
       setIsSubmitting(true);
       setErrorMsg(null);
       try {
-        const res = await submitGameResultAction({
-          gameType: "flappy_rocco",
-          score: finalScore,
-          maxScore: 20,
-          coinCost: 0,
-          coinReward: coinPayout,
-          xpReward: xpPayout,
-        });
-
-        if (!res.success) {
-          setErrorMsg(res.message || "Failed to register score");
-        } else {
-          setPayoutResult(res);
-          if (isMaster) {
-            confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
-          }
-          if (onScoreSubmitted) {
-            onScoreSubmitted(finalScore, 20, xpPayout);
-          }
-          router.refresh();
+        if (isMaster) {
+          confetti({ particleCount: 90, spread: 75, origin: { y: 0.6 } });
         }
+        if (onScoreSubmitted) {
+          await onScoreSubmitted(finalScore, 20, xpPayout);
+        }
+        router.refresh();
       } catch (err: any) {
         setErrorMsg(err.message || "Network error submitting score");
       } finally {

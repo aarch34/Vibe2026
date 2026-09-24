@@ -39,7 +39,8 @@ export async function POST(req: Request) {
       else if (numScore >= 600) xpAwarded = 100;
       else if (numScore >= 300) xpAwarded = 75;
       else if (numScore >= 100) xpAwarded = 50;
-      else xpAwarded = 25;
+      else if (numScore >= 5) xpAwarded = 25;
+      else xpAwarded = 0;
     }
 
     // 1. Update in-memory mockDb
@@ -62,11 +63,13 @@ export async function POST(req: Request) {
     };
     mockDb.gameSessions.push(gameSession);
 
-    mockDb.addXpToProfile(
-      profileId,
-      xpAwarded,
-      `Scored ${numScore} in ${title} (+${xpAwarded} XP)`
-    );
+    if (xpAwarded > 0) {
+      mockDb.addXpToProfile(
+        profileId,
+        xpAwarded,
+        `Scored ${numScore} in ${title} (+${xpAwarded} XP)`
+      );
+    }
 
     // 2. Update Supabase if live
     let finalTotalXp = (session.profile.xp || 0) + xpAwarded;
@@ -124,13 +127,15 @@ export async function POST(req: Request) {
         }
 
         // Send XP Earned notification
-        await socialStore.createNotification({
-          profile_id: profileId,
-          type: "xp_earned",
-          title: `+${xpAwarded} XP Earned! 🎮`,
-          message: `Great game! You scored ${numScore} in ${title} and earned +${xpAwarded} XP!`,
-          link: "/app/games",
-        });
+        if (xpAwarded > 0) {
+          await socialStore.createNotification({
+            profile_id: profileId,
+            type: "xp_earned",
+            title: `+${xpAwarded} XP Earned! 🎮`,
+            message: `Great game! You scored ${numScore} in ${title} and earned +${xpAwarded} XP!`,
+            link: "/app/games",
+          });
+        }
       } catch (err) {
         console.warn("Supabase game session recording warning:", err);
       }
