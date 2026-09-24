@@ -96,6 +96,32 @@ img, svg {
   * {
     border-color: var(--border);
   }
+
+  /* Fix: Ensure all form inputs have explicit text and background colors
+     so browsers cannot override them with autofill or system themes */
+  input,
+  textarea,
+  select {
+    color: var(--foreground);
+    background-color: transparent;
+    caret-color: var(--primary);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted-foreground);
+    opacity: 0.8;
+  }
+
+  /* Kill browser autofill yellow/blue tint */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill {
+    -webkit-text-fill-color: var(--foreground) !important;
+    -webkit-box-shadow: 0 0 0px 1000px var(--card) inset !important;
+    transition: background-color 5000s ease-in-out 0s;
+  }
 }
 
 body {

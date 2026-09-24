@@ -59,6 +59,8 @@ export function TopHeader({
   const seenRequestIdsRef = useRef<Set<string>>(new Set());
   const dismissedPopupIdsRef = useRef<Set<string>>(new Set());
   const isFirstRunRef = useRef<boolean>(true);
+  // Keep acceptedRequests in a ref as well so the polling closure stays stable
+  const acceptedRequestsRef = useRef<Set<string>>(new Set());
 
   // Synthesize gentle notification chime via Web Audio API (zero external assets needed)
   const playChimeSound = () => {
@@ -105,7 +107,7 @@ export function TopHeader({
                 (r) =>
                   !seenRequestIdsRef.current.has(r.request.id) &&
                   !dismissedPopupIdsRef.current.has(r.request.id) &&
-                  !acceptedRequests.has(r.request.id)
+                  !acceptedRequestsRef.current.has(r.request.id)
               );
 
               if (newReq) {
@@ -130,7 +132,7 @@ export function TopHeader({
       isMounted = false;
       clearInterval(interval);
     };
-  }, [acceptedRequests]);
+  }, []); // Empty deps: interval is stable for the component lifetime
 
   // Auto-dismiss the floating pop-up after 12 seconds if not interacted with
   useEffect(() => {
@@ -176,6 +178,7 @@ export function TopHeader({
       });
       if (res.ok) {
         if (action === "accept") {
+          acceptedRequestsRef.current.add(requestId);
           setAcceptedRequests((prev) => new Set(prev).add(requestId));
         } else {
           setIncomingRequests((prev) => prev.filter((r) => r.request.id !== requestId));

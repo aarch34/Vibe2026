@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import {
   Heart,
@@ -304,7 +304,7 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
     }
   };
 
-  const formatTimeAgo = (dateStr: string) => {
+  const formatTimeAgo = useCallback((dateStr: string) => {
     const diffMs = Date.now() - new Date(dateStr).getTime();
     const diffSec = Math.floor(diffMs / 1000);
     if (diffSec < 60) return "Just now";
@@ -314,7 +314,15 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
     if (diffHour < 24) return `${diffHour}h ago`;
     const diffDay = Math.floor(diffHour / 24);
     return `${diffDay}d ago`;
-  };
+  }, []);
+
+  const handleLikeCb = useCallback(handleLike, [likedPostIds, posts]);
+  const handleDoubleTapCb = useCallback(handleDoubleTapPhoto, [likedPostIds]);
+  const toggleCommentsCb = useCallback(toggleComments, [activeCommentPostId, commentsMap]);
+  const handleAddCommentCb = useCallback(handleAddComment, [commentText, currentProfile]);
+  const handleDeletePostCb = useCallback(handleDeletePost, []);
+  const handleConnectCb = useCallback(handleConnect, []);
+  const handleShareCb = useCallback(handleShare, []);
 
   return (
     <div className="space-y-6">
@@ -437,6 +445,8 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
                         alt={author.display_name}
                         width={40}
                         height={40}
+                        loading="lazy"
+                        decoding="async"
                         style={{ width: "40px", height: "40px" }}
                         className="w-10 h-10 rounded-full bg-background object-cover"
                       />
@@ -511,6 +521,8 @@ export function VibeFeed({ initialPosts, currentProfile }: VibeFeedProps) {
                   <img
                     src={post.image_url}
                     alt="Post photo"
+                    loading="lazy"
+                    decoding="async"
                     className="w-full max-h-[500px] object-cover transition-transform duration-300 group-hover:scale-[1.01]"
                   />
 
