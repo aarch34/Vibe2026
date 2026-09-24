@@ -33,7 +33,17 @@ export function UserNav({ vibeId, displayName, avatarUrl }: UserNavProps) {
           >
             {fallbackAvatar ? (
               <div className="w-7 h-7 overflow-hidden bg-primary/20 shrink-0">
-                <img src={fallbackAvatar} alt={displayName || "User"} className="w-full h-full object-cover" />
+                <img 
+                  src={fallbackAvatar} 
+                  alt={displayName || "User"} 
+                  className="w-full h-full object-cover" 
+                  onError={(e) => {
+                    const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName || "user")}`;
+                    if ((e.target as HTMLImageElement).src !== fb) {
+                      (e.target as HTMLImageElement).src = fb;
+                    }
+                  }}
+                />
               </div>
             ) : (
               <div className="w-7 h-7 bg-primary text-primary-foreground font-black text-xs flex items-center justify-center">
@@ -55,7 +65,17 @@ export function UserNav({ vibeId, displayName, avatarUrl }: UserNavProps) {
             >
               {fallbackAvatar ? (
                 <div className="w-7 h-7 overflow-hidden bg-primary/20 shrink-0">
-                  <img src={fallbackAvatar} alt={displayName || "User"} className="w-full h-full object-cover" />
+                  <img 
+                    src={fallbackAvatar} 
+                    alt={displayName || "User"} 
+                    className="w-full h-full object-cover" 
+                    onError={(e) => {
+                      const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName || "user")}`;
+                      if ((e.target as HTMLImageElement).src !== fb) {
+                        (e.target as HTMLImageElement).src = fb;
+                      }
+                    }}
+                  />
                 </div>
               ) : (
                 <div className="w-7 h-7 bg-primary text-primary-foreground font-black text-xs flex items-center justify-center">
@@ -86,7 +106,17 @@ export function UserNav({ vibeId, displayName, avatarUrl }: UserNavProps) {
     >
       {fallbackAvatar ? (
         <div className="w-7 h-7 overflow-hidden bg-primary/20 shrink-0">
-          <img src={fallbackAvatar} alt={displayName || "User"} className="w-full h-full object-cover" />
+          <img 
+            src={fallbackAvatar} 
+            alt={displayName || "User"} 
+            className="w-full h-full object-cover" 
+            onError={(e) => {
+              const fb = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(displayName || "user")}`;
+              if ((e.target as HTMLImageElement).src !== fb) {
+                (e.target as HTMLImageElement).src = fb;
+              }
+            }}
+          />
         </div>
       ) : (
         <div className="w-7 h-7 bg-primary text-primary-foreground font-black text-xs flex items-center justify-center">

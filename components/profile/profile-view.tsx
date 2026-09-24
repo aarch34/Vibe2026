@@ -42,6 +42,7 @@ interface ProfileViewProps {
   userPosts: Post[];
   highScores: Record<string, number>;
   initialConnectionStatus?: "connected" | "pending" | "none";
+  friends?: Profile[];
 }
 
 export function ProfileView({
@@ -50,6 +51,7 @@ export function ProfileView({
   userPosts,
   highScores,
   initialConnectionStatus = "none",
+  friends = [],
 }: ProfileViewProps) {
   const router = useRouter();
   const [currentProfile, setCurrentProfile] = useState<Profile>(profile);
@@ -58,6 +60,29 @@ export function ProfileView({
   const [connectionStatus, setConnectionStatus] = useState<"none" | "pending" | "connected">(
     initialConnectionStatus
   );
+  
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+  const [postComments, setPostComments] = useState<{ id?: string; authorName: string; authorAvatar?: string; comment: string }[]>([]);
+  const [loadingComments, setLoadingComments] = useState(false);
+
+  const openPostModal = async (post: Post) => {
+    setSelectedPost(post);
+    setLoadingComments(true);
+    setPostComments([]);
+    try {
+      const res = await fetch(`/api/posts/${post.id}/comment`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.comments) {
+          setPostComments(data.comments);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load comments", err);
+    } finally {
+      setLoadingComments(false);
+    }
+  };
 
   // DPDP Modals & State
   const [isErasureModalOpen, setIsErasureModalOpen] = useState(false);
@@ -496,29 +521,90 @@ export function ProfileView({
             )}
           </div>
         ) : (
-          userPosts.map((post) => (
-            <div
-              key={post.id}
-              className="p-4 rounded-2xl bg-card border border-border space-y-2 text-xs"
-            >
-              <p className="text-foreground font-medium">{post.caption}</p>
-              {post.image_url && (
-                <img
-                  src={post.image_url}
-                  alt="Post image"
-                  className="w-full max-h-60 object-cover rounded-xl"
-                />
-              )}
-              <div className="flex items-center justify-between text-muted-foreground pt-1">
-                <span>
-                  {post.likes_count} Likes • {post.comments_count} Comments
-                </span>
-                <span className="font-mono text-[10px]">
-                  {new Date(post.created_at).toLocaleDateString()}
-                </span>
+          <div className="grid grid-cols-3 gap-1 sm:gap-2">
+            {userPosts.map((post) => (
+              <div
+                key={post.id}
+                onClick={() => openPostModal(post)}
+                className="relative aspect-square group cursor-pointer overflow-hidden rounded-md sm:rounded-xl bg-secondary/50 border border-border/50"
+              >
+                {post.image_url ? (
+                  <img
+                    src={post.image_url}
+                    alt="Post"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center p-2 bg-gradient-to-br from-purple-900/40 to-pink-900/40">
+                    <p className="text-[10px] sm:text-xs text-foreground font-medium text-center line-clamp-4">
+                      {post.caption}
+                    </p>
+                  </div>
+                )}
+                
+                {/* Hover overlay with likes and comments */}
+                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-4 text-white text-xs sm:text-sm font-bold">
+                  <div className="flex items-center gap-1.5">
+                    <Heart className="w-4 h-4 fill-white" />
+                    <span>{post.likes_count}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <MessageSquare className="w-4 h-4 fill-white" />
+                    <span>{post.comments_count}</span>
+                  </div>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Friends Section */}
+      <div className="space-y-4">
+        <h3 className="text-base font-black text-foreground flex items-center space-x-2">
+          <Users className="w-4 h-4 text-cyan-400" />
+          <span>Friends ({currentProfile.connections_count})</span>
+        </h3>
+
+        {friends.length === 0 ? (
+          <div className="p-8 text-center rounded-2xl bg-card border border-border text-muted-foreground text-xs space-y-2">
+            <p>No friends added yet.</p>
+            {isSelf && (
+              <Link
+                href="/app/discover"
+                className="inline-block px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold rounded-xl mt-2 hover:brightness-110 transition-all"
+              >
+                Discover New Friends
+              </Link>
+            )}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+            {friends.map((friend) => (
+              <Link
+                key={friend.id}
+                href={`/app/profile?id=${friend.id}`}
+                className="p-3 rounded-2xl bg-card border border-border flex flex-col items-center text-center space-y-2 hover:bg-secondary/60 hover:border-cyan-500/40 transition-all"
+              >
+                <div className="relative w-12 h-12 rounded-full overflow-hidden border-2 border-cyan-500/30">
+                  <img
+                    src={friend.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.id}`}
+                    alt={friend.display_name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${friend.id}`;
+                    }}
+                  />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-foreground line-clamp-1">{friend.display_name}</p>
+                  <p className="text-[10px] text-muted-foreground line-clamp-1">
+                    {friend.rotaract_club || friend.college || "Vibe Attendee"}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
         )}
       </div>
 
@@ -882,6 +968,99 @@ export function ProfileView({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Selected Post Modal */}
+      {selectedPost && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in">
+          <div className="bg-card border border-border w-full max-w-lg max-h-[90vh] rounded-3xl overflow-hidden flex flex-col shadow-2xl relative">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <div className="flex items-center gap-2">
+                <img
+                  src={currentProfile.avatar_url || `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentProfile.id}`}
+                  alt={currentProfile.display_name}
+                  className="w-8 h-8 rounded-full border border-pink-500/30 bg-secondary"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${currentProfile.id}`;
+                  }}
+                />
+                <span className="font-bold text-sm">{currentProfile.display_name}</span>
+              </div>
+              <button
+                onClick={() => setSelectedPost(null)}
+                className="p-1.5 rounded-full hover:bg-secondary text-muted-foreground transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto flex-1">
+              {selectedPost.image_url ? (
+                <img src={selectedPost.image_url} alt="Post image" className="w-full object-cover max-h-96" />
+              ) : (
+                <div className="w-full h-48 flex items-center justify-center p-4 bg-gradient-to-br from-purple-900/40 to-pink-900/40">
+                  <p className="text-foreground text-center italic opacity-70">No image attached</p>
+                </div>
+              )}
+              
+              <div className="p-4 space-y-4">
+                <div className="flex items-center gap-4 text-sm font-bold text-foreground">
+                  <div className="flex items-center gap-1.5">
+                    <Heart className="w-5 h-5 text-pink-500 fill-pink-500/20" />
+                    <span>{selectedPost.likes_count} likes</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <MessageSquare className="w-5 h-5 text-cyan-400" />
+                    <span>{selectedPost.comments_count} comments</span>
+                  </div>
+                </div>
+
+                <div className="text-sm">
+                  <span className="font-bold mr-2">{currentProfile.display_name}</span>
+                  <span className="text-foreground/90 leading-relaxed">{selectedPost.caption}</span>
+                </div>
+                
+                <div className="text-[10px] text-muted-foreground font-mono">
+                  {new Date(selectedPost.created_at).toLocaleString()}
+                </div>
+
+                <div className="border-t border-border/50 pt-4 space-y-3">
+                  <h4 className="font-bold text-xs text-muted-foreground uppercase">Comments</h4>
+                  {loadingComments ? (
+                    <div className="flex justify-center p-4">
+                      <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : postComments.length === 0 ? (
+                    <p className="text-xs text-muted-foreground italic text-center py-4">No comments yet. Be the first to comment on the Discover feed!</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {postComments.map((comment, i) => (
+                        <div key={comment.id || i} className="flex gap-2 text-xs">
+                          <img
+                            src={comment.authorAvatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.authorName}`}
+                            alt={comment.authorName}
+                            className="w-6 h-6 rounded-full shrink-0 border border-border"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = `https://api.dicebear.com/7.x/avataaars/svg?seed=${comment.authorName}`;
+                            }}
+                          />
+                          <div>
+                            <span className="font-bold mr-1">{comment.authorName}</span>
+                            <span className="text-foreground/80 break-words">{comment.comment}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+            {/* Action Footer indicating where to comment/like */}
+            <div className="p-3 bg-secondary/30 border-t border-border text-center text-[10px] text-muted-foreground">
+              Like or comment on this post by finding it in the <Link href="/app/discover" className="text-pink-400 hover:underline">Discover Feed</Link>.
+            </div>
           </div>
         </div>
       )}

@@ -65,6 +65,8 @@ export default async function ProfilePage({
     }
   }
 
+  const friends = await socialStore.getConnectionsAsync(targetProfile.id);
+
   return (
     <ProfileView
       profile={targetProfile}
@@ -72,6 +74,7 @@ export default async function ProfilePage({
       userPosts={userPosts}
       highScores={highScores}
       initialConnectionStatus={initialConnectionStatus}
+      friends={friends}
     />
   );
 }

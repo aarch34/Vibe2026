@@ -273,11 +273,11 @@ export function TopHeader({
           </nav>
 
           {/* XP & Level Progress */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div className="flex items-center space-x-1 sm:space-x-3 flex-shrink-0">
             {/* Level Pill */}
-            <div className="flex items-center space-x-1 text-xs font-bold text-foreground bg-secondary/80 border border-secondary/60 px-2.5 py-1 rounded-full shadow-sm">
+            <div className="flex items-center space-x-1 text-xs font-bold text-foreground bg-secondary/80 border border-secondary/60 px-2 sm:px-2.5 py-1 rounded-full shadow-sm">
               <span className="text-sm">{badgeIcon}</span>
-              <span className="truncate max-w-[90px] sm:max-w-none text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
+              <span className="hidden sm:inline-block truncate max-w-[90px] sm:max-w-none text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-cyan-400">
                 {levelName}
               </span>
             </div>
@@ -293,14 +293,14 @@ export function TopHeader({
           </div>
 
           {/* Right Action Icons: Notification Bell, Theme, User Nav */}
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1.5 sm:space-x-2 flex-shrink-0">
             {/* Notification Bell */}
             <button
               onClick={() => setIsNotifOpen(true)}
               className="relative p-2 rounded-full bg-secondary/60 hover:bg-secondary text-foreground transition-all active:scale-95 border border-border/50 cursor-pointer"
               aria-label="Notifications"
             >
-              <Bell className="w-4 h-4 text-foreground" />
+              <Bell className="w-4 h-4 sm:w-4 sm:h-4 text-foreground" />
               {unreadCount > 0 && (
                 <span className="absolute -top-1 -right-1 w-4 h-4 bg-pink-500 text-white font-extrabold text-[10px] rounded-full flex items-center justify-center animate-pulse shadow-md">
                   {unreadCount}
@@ -311,7 +311,7 @@ export function TopHeader({
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2 rounded-full bg-secondary/60 hover:bg-secondary text-foreground transition-all active:scale-95 border border-border/50 cursor-pointer"
+              className="hidden sm:flex p-2 rounded-full bg-secondary/60 hover:bg-secondary text-foreground transition-all active:scale-95 border border-border/50 cursor-pointer"
               aria-label="Toggle Theme"
             >
               {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-purple-400" />}

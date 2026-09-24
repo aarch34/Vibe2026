@@ -1359,24 +1359,42 @@ class PersistentSocialStore {
     // 1. Supabase check if live
     if (isUsingLiveSupabase() && supabaseAdmin && isUUID(senderId) && isUUID(receiverId)) {
       try {
-        const { data: conn } = await (supabaseAdmin as any)
+        // Check if user_id_1 = sender, user_id_2 = receiver
+        let { data: conn } = await supabaseAdmin
           .from("connections")
           .select("id")
-          .or(`and(user_id_1.eq.${senderId},user_id_2.eq.${receiverId}),and(user_id_1.eq.${receiverId},user_id_2.eq.${senderId})`)
+          .match({ user_id_1: senderId, user_id_2: receiverId })
           .maybeSingle();
-
+        
         if (conn) return "connected";
 
-        const { data: req } = await (supabaseAdmin as any)
+        // Check if user_id_1 = receiver, user_id_2 = sender
+        let { data: conn2 } = await supabaseAdmin
+          .from("connections")
+          .select("id")
+          .match({ user_id_1: receiverId, user_id_2: senderId })
+          .maybeSingle();
+          
+        if (conn2) return "connected";
+
+        // Check pending requests where sender sent it
+        const { data: req1 } = await supabaseAdmin
           .from("connection_requests")
           .select("sender_id, receiver_id, status")
-          .eq("status", "pending")
-          .or(`and(sender_id.eq.${senderId},receiver_id.eq.${receiverId}),and(sender_id.eq.${receiverId},receiver_id.eq.${senderId})`)
+          .match({ sender_id: senderId, receiver_id: receiverId, status: "pending" })
           .maybeSingle();
 
-        if (req) {
-          return req.sender_id === senderId ? "pending_sent" : "pending_received";
-        }
+        if (req1) return "pending_sent";
+
+        // Check pending requests where receiver sent it
+        const { data: req2 } = await supabaseAdmin
+          .from("connection_requests")
+          .select("sender_id, receiver_id, status")
+          .match({ sender_id: receiverId, receiver_id: senderId, status: "pending" })
+          .maybeSingle();
+
+        if (req2) return "pending_received";
+
       } catch (err) {
         console.warn("[socialStore] Supabase getConnectionStatusAsync error:", err);
       }
