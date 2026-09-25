@@ -29,6 +29,8 @@ interface PipePair {
   passed: boolean;
 }
 
+let sharedAudioCtx: any = null;
+
 export function FlappyRocco({
   userBalance = 0,
   onFinished,
@@ -88,9 +90,17 @@ export function FlappyRocco({
   function playBeep(type: "jump" | "score" | "hit") {
     if (!soundEnabled) return;
     try {
-      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-      if (!AudioCtx) return;
-      const ctx = new AudioCtx();
+      if (typeof window !== "undefined" && !sharedAudioCtx) {
+        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioCtx) sharedAudioCtx = new AudioCtx();
+      }
+      if (!sharedAudioCtx) return;
+      const ctx = sharedAudioCtx;
+      
+      if (ctx.state === "suspended") {
+        ctx.resume();
+      }
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
@@ -186,6 +196,10 @@ export function FlappyRocco({
       stateRef.current.gameState = "gameover";
       setGameState("gameover");
       playBeep("hit");
+      
+      if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(200);
+      }
 
       // Update local best
       setHighScore((prev) => {

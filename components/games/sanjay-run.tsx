@@ -159,6 +159,10 @@ export function SanjayRun({
       stateRef.current.gameState = "gameover";
       setGameState("gameover");
 
+      if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
+        window.navigator.vibrate(200);
+      }
+
       const finalScore = Math.floor(stateRef.current.score);
       setBestScore((prev) => {
         const next = Math.max(prev, finalScore);
