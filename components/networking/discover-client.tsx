@@ -17,22 +17,58 @@ const INTEREST_FILTERS = ["all", "Music", "Dance", "Gaming", "Photography", "Cod
 
 export function DiscoverClient({
   currentProfile,
-  initialProfiles,
+  initialProfiles = [],
   incomingRequests: initialIncoming,
   initialConnectionStates = {},
 }: DiscoverClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedInterest, setSelectedInterest] = useState("all");
-  const [profiles, setProfiles] = useState<Profile[]>(initialProfiles);
+
+  // Read from localStorage synchronously on client to avoid flash
+  const [profiles, setProfiles] = useState<Profile[]>(() => {
+    if (initialProfiles && initialProfiles.length > 0) return initialProfiles;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("vibe_discover_profiles_v1");
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch { /* ignore */ }
+    }
+    return [];
+  });
+
+  const [isLoading, setIsLoading] = useState<boolean>(() => {
+    if (initialProfiles && initialProfiles.length > 0) return false;
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("vibe_discover_profiles_v1");
+        if (stored && JSON.parse(stored)?.length > 0) return false;
+      } catch { /* ignore */ }
+    }
+    return true;
+  });
+
   const [incoming, setIncoming] = useState(initialIncoming);
   const [connectionStates, setConnectionStates] = useState<Record<string, "none" | "pending" | "connected">>(
     initialConnectionStates
   );
   const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncTime, setLastSyncTime] = useState<string>(() => new Date().toISOString());
+  const [lastSyncTime, setLastSyncTime] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("vibe_discover_last_sync_v1") || "";
+    }
+    return "";
+  });
 
-  // Restore cached optimistic connection states from sessionStorage if available
+  // Automatic Cache Load & Delta-Sync on mount
   useEffect(() => {
+    let isMounted = true;
+    const CACHE_KEY = "vibe_discover_profiles_v1";
+    const SYNC_KEY = "vibe_discover_last_sync_v1";
+
+    // 1. Restore pending connection states from sessionStorage
     try {
       const stored = sessionStorage.getItem(`vibe_discover_states_${currentProfile.id}`);
       if (stored) {
@@ -40,13 +76,94 @@ export function DiscoverClient({
         setConnectionStates((prev) => ({ ...prev, ...parsed }));
       }
     } catch { /* ignore */ }
+
+    // 2. Read from localStorage
+    let localCached: Profile[] = [];
+    let savedSync = "";
+    try {
+      const raw = localStorage.getItem(CACHE_KEY);
+      if (raw) localCached = JSON.parse(raw);
+      savedSync = localStorage.getItem(SYNC_KEY) || "";
+    } catch { /* ignore */ }
+
+    if (localCached.length > 0 || (initialProfiles && initialProfiles.length > 0)) {
+      const baseList = localCached.length > 0 ? localCached : initialProfiles;
+      setProfiles(baseList);
+      setIsLoading(false);
+
+      // DELTA SYNC: Only ask the backend for what changed since lastSync
+      const deltaUrl = savedSync
+        ? `/api/discover?since=${encodeURIComponent(savedSync)}`
+        : `/api/discover`;
+
+      setIsSyncing(true);
+      fetch(deltaUrl)
+        .then((r) => r.json())
+        .then((data) => {
+          if (!isMounted || !data.success) return;
+          if (data.profiles && data.profiles.length > 0) {
+            setProfiles((prev) => {
+              const map = new Map(prev.map((p) => [p.id, p]));
+              data.profiles.forEach((np: Profile) => map.set(np.id, np));
+              const merged = Array.from(map.values()).sort((a, b) => b.xp - a.xp);
+              try {
+                localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
+                if (data.timestamp) {
+                  localStorage.setItem(SYNC_KEY, data.timestamp);
+                  setLastSyncTime(data.timestamp);
+                }
+              } catch { /* ignore */ }
+              return merged;
+            });
+          } else if (data.timestamp) {
+            localStorage.setItem(SYNC_KEY, data.timestamp);
+            setLastSyncTime(data.timestamp);
+          }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (isMounted) setIsSyncing(false);
+        });
+    } else {
+      // FIRST VISIT: Cache is empty, do a single full fetch and store in localStorage
+      setIsLoading(true);
+      fetch("/api/discover")
+        .then((r) => r.json())
+        .then((data) => {
+          if (!isMounted || !data.success) return;
+          const loaded = data.profiles || [];
+          setProfiles(loaded);
+          try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(loaded));
+            if (data.timestamp) {
+              localStorage.setItem(SYNC_KEY, data.timestamp);
+              setLastSyncTime(data.timestamp);
+            }
+          } catch { /* ignore */ }
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (isMounted) setIsLoading(false);
+        });
+    }
+
+    return () => {
+      isMounted = false;
+    };
   }, [currentProfile.id]);
 
   const handleDeltaSync = useCallback(async () => {
     if (isSyncing) return;
     setIsSyncing(true);
+    const CACHE_KEY = "vibe_discover_profiles_v1";
+    const SYNC_KEY = "vibe_discover_last_sync_v1";
+    const currentSync = typeof window !== "undefined" ? localStorage.getItem(SYNC_KEY) || lastSyncTime : lastSyncTime;
+
     try {
-      const res = await fetch(`/api/discover?since=${encodeURIComponent(lastSyncTime)}`);
+      const url = currentSync
+        ? `/api/discover?since=${encodeURIComponent(currentSync)}`
+        : `/api/discover`;
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         if (data.profiles && data.profiles.length > 0) {
@@ -55,10 +172,18 @@ export function DiscoverClient({
             data.profiles.forEach((np: Profile) => {
               map.set(np.id, np);
             });
-            return Array.from(map.values()).sort((a, b) => b.xp - a.xp);
+            const merged = Array.from(map.values()).sort((a, b) => b.xp - a.xp);
+            try {
+              localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
+              if (data.timestamp) {
+                localStorage.setItem(SYNC_KEY, data.timestamp);
+                setLastSyncTime(data.timestamp);
+              }
+            } catch { /* ignore */ }
+            return merged;
           });
-        }
-        if (data.timestamp) {
+        } else if (data.timestamp) {
+          localStorage.setItem(SYNC_KEY, data.timestamp);
           setLastSyncTime(data.timestamp);
         }
       }
@@ -254,7 +379,27 @@ export function DiscoverClient({
 
       {/* Profile Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredProfiles.length === 0 ? (
+        {isLoading && profiles.length === 0 ? (
+          // First-time visitor skeleton — cache is empty, data is loading
+          Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="p-5 rounded-3xl bg-card border border-border/80 shadow-md space-y-4 animate-pulse">
+              <div className="flex items-center space-x-3">
+                <div className="w-14 h-14 rounded-full bg-secondary/60 shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 bg-secondary/60 rounded-xl w-3/4" />
+                  <div className="h-3 bg-secondary/40 rounded-xl w-1/2" />
+                  <div className="h-3 bg-secondary/40 rounded-xl w-1/3" />
+                </div>
+              </div>
+              <div className="h-3 bg-secondary/40 rounded-xl w-full" />
+              <div className="h-3 bg-secondary/40 rounded-xl w-5/6" />
+              <div className="flex space-x-2">
+                <div className="h-8 bg-secondary/40 rounded-xl flex-1" />
+                <div className="h-8 bg-secondary/40 rounded-xl w-10" />
+              </div>
+            </div>
+          ))
+        ) : filteredProfiles.length === 0 ? (
           <div className="col-span-full text-center py-12 text-muted-foreground space-y-2">
             <Users className="w-10 h-10 mx-auto opacity-30 text-cyan-400" />
             <p className="font-bold text-sm">No profiles found matching your search!</p>

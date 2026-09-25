@@ -4,10 +4,33 @@ import { socialStore } from "@/lib/db/social-store";
 
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: Request) {
   try {
-    const posts = await socialStore.getPostsWithAuthors();
-    return NextResponse.json({ success: true, posts });
+    const { searchParams } = new URL(req.url);
+    const since = searchParams.get("since");
+    const nowIso = new Date().toISOString();
+
+    const allPosts = await socialStore.getPostsWithAuthors();
+
+    if (since) {
+      const sinceDate = new Date(since).getTime();
+      if (!isNaN(sinceDate)) {
+        const deltaPosts = allPosts.filter((p) => {
+          const postTime = new Date(p.created_at || 0).getTime();
+          return postTime > sinceDate;
+        });
+
+        return NextResponse.json(
+          { success: true, isDelta: true, posts: deltaPosts, timestamp: nowIso },
+          { headers: { "Cache-Control": "private, no-cache" } }
+        );
+      }
+    }
+
+    return NextResponse.json(
+      { success: true, isDelta: false, posts: allPosts, timestamp: nowIso },
+      { headers: { "Cache-Control": "public, s-maxage=15, stale-while-revalidate=30" } }
+    );
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });
   }

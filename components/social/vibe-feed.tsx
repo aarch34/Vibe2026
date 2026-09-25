@@ -25,8 +25,24 @@ interface VibeFeedProps {
   currentProfile: Profile;
 }
 
+const FEED_CACHE_KEY = "vibe_feed_posts_v1";
+const FEED_SYNC_KEY = "vibe_feed_last_sync_v1";
+
 export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: VibeFeedProps) {
-  const [posts, setPosts] = useState<(Post & { author: Profile })[]>(initialPosts);
+  const [posts, setPosts] = useState<(Post & { author: Profile })[]>(() => {
+    // Prioritize server-provided posts, then fall back to localStorage cache
+    if (initialPosts && initialPosts.length > 0) return initialPosts;
+    if (typeof window !== "undefined") {
+      try {
+        const raw = localStorage.getItem(FEED_CACHE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        }
+      } catch { /* ignore */ }
+    }
+    return [];
+  });
   const [newCaption, setNewCaption] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -45,16 +61,47 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
   const [xpFlyerPostId, setXpFlyerPostId] = useState<string | null>(null);
 
-  // Sync state whenever server revalidates or passes updated posts
+  // On mount: delta-sync only new posts from server (0 egress if nothing changed)
   useEffect(() => {
-    setPosts(initialPosts);
-  }, [initialPosts]);
+    let isMounted = true;
+    const savedSync = typeof window !== "undefined" ? localStorage.getItem(FEED_SYNC_KEY) || "" : "";
+    const deltaUrl = savedSync
+      ? `/api/posts?since=${encodeURIComponent(savedSync)}`
+      : `/api/posts`;
 
+    fetch(deltaUrl)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!isMounted || !data.success) return;
+        const incoming: (Post & { author: Profile })[] = data.posts || [];
+        if (data.timestamp) {
+          try { localStorage.setItem(FEED_SYNC_KEY, data.timestamp); } catch { /* ignore */ }
+        }
+        if (data.isDelta && incoming.length > 0) {
+          // Merge only new posts at the front, keep existing in place
+          setPosts((prev) => {
+            const existingIds = new Set(prev.map((p) => p.id));
+            const brand = incoming.filter((p) => !existingIds.has(p.id));
+            const merged = [...brand, ...prev];
+            try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(merged.slice(0, 60))); } catch { /* ignore */ }
+            return merged;
+          });
+        } else if (!data.isDelta && incoming.length > 0) {
+          // Full refresh (first load): cache result
+          setPosts(incoming);
+          try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(incoming.slice(0, 60))); } catch { /* ignore */ }
+        }
+      })
+      .catch(() => {});
+
+    return () => { isMounted = false; };
+  }, [currentProfile.id]);
+
+  // Sync liked IDs when server refreshes
   useEffect(() => {
-    if (initialLikedPostIds) {
-      setLikedPostIds(new Set(initialLikedPostIds));
-    }
+    if (initialLikedPostIds) setLikedPostIds(new Set(initialLikedPostIds));
   }, [initialLikedPostIds]);
+
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captionInputRef = useRef<HTMLTextAreaElement>(null);
@@ -149,25 +196,21 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
         const data = await res.json();
         if (data.post) {
           const author = data.post.author || currentProfile;
-          setPosts((prev) => [{ ...data.post, author }, ...prev]);
+          setPosts((prev) => {
+            const updated = [{ ...data.post, author }, ...prev];
+            // Update localStorage cache so next page load shows this post immediately
+            try {
+              localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(updated.slice(0, 60)));
+              // Clear the delta-sync timestamp so next full refresh gets all posts
+              localStorage.removeItem(FEED_SYNC_KEY);
+            } catch { /* ignore */ }
+            return updated;
+          });
           const bonusMsg = data.xpEarned > 0 ? ` +${data.xpEarned} XP Earned for your 1st post! ⭐` : "";
           setStatusMessage({ type: "success", text: `Post published! 🎉${bonusMsg}` });
         }
         setNewCaption("");
         removeImage();
-
-        // Refresh feed from server to ensure perfect synchronization
-        try {
-          const freshRes = await fetch("/api/posts");
-          if (freshRes.ok) {
-            const freshData = await freshRes.json();
-            if (freshData.posts && freshData.posts.length > 0) {
-              setPosts(freshData.posts);
-            }
-          }
-        } catch {
-          // Keep optimistic post
-        }
       } else {
         const errData = await res.json();
         setStatusMessage({ type: "error", text: errData.error || "Couldn't publish your post. Please try again." });

@@ -174,12 +174,16 @@ export async function updateAttendeeProfile(
         const extension = avatarFile.name ? avatarFile.name.split(".").pop()?.toLowerCase() || "jpg" : "jpg";
         const objectKey = `events/vibe-2026/avatars/${profileId}-${Date.now()}.${extension}`;
 
-        if (isUsingLiveSupabase() && supabaseAdmin) {
+        // Always try CDN upload first — never store raw base64 in the DB (causes massive payload bloat)
+        try {
           const uploadRes = await uploadMediaFile(objectKey, buffer, avatarFile.type);
           finalAvatarUrl = uploadRes.publicUrl;
-        } else {
-          // Local/mock environment: use data URL to guarantee persistent local display
+        } catch {
+          // uploadMediaFile has its own Supabase Storage fallback; if it throws,
+          // that means we are in a pure local environment with no storage configured.
+          // Use data URL only in this case.
           finalAvatarUrl = `data:${avatarFile.type};base64,${buffer.toString("base64")}`;
+          console.warn("[Avatar Upload] No storage backend available; using data URL (local dev only).");
         }
       } catch (uploadError: any) {
         console.error("Profile photo upload failed:", uploadError);

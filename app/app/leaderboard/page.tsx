@@ -13,7 +13,23 @@ export default function LeaderboardPage() {
   const [gameEntries, setGameEntries] = useState<GameLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [tabCache, setTabCache] = useState<Record<string, any>>({});
+  // Persist tab data across bottom-nav navigation via sessionStorage
+  const [tabCache, setTabCache] = useState<Record<string, any>>(() => {
+    if (typeof window === "undefined") return {};
+    try {
+      const raw = sessionStorage.getItem("vibe_leaderboard_cache_v1");
+      return raw ? JSON.parse(raw) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  // Persist tabCache to sessionStorage whenever it changes
+  useEffect(() => {
+    try {
+      sessionStorage.setItem("vibe_leaderboard_cache_v1", JSON.stringify(tabCache));
+    } catch { /* ignore quota errors */ }
+  }, [tabCache]);
 
   useEffect(() => {
     // If we have cached tab data, render it immediately without skeleton
