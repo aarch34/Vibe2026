@@ -45,6 +45,7 @@ export default async function AttendeeLayout({
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-pink-500 selection:text-white">
       <LiveStatsProvider initialXp={userXp} initialNotifications={notifications}>
         <TopHeader
+          profileId={profile?.id}
           vibeId={profile?.vibe_id || "VB2026-000"}
           levelName={levelInfo.level_name}
           badgeIcon={levelInfo.badge}

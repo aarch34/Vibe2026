@@ -10,7 +10,7 @@ export async function GET(req: Request) {
     const since = searchParams.get("since");
     const nowIso = new Date().toISOString();
 
-    const allPosts = await socialStore.getPostsWithAuthors();
+    const allPosts = await socialStore.getPostsWithAuthors(10);
 
     if (since) {
       const sinceDate = new Date(since).getTime();
@@ -18,7 +18,7 @@ export async function GET(req: Request) {
         const deltaPosts = allPosts.filter((p) => {
           const postTime = new Date(p.created_at || 0).getTime();
           return postTime > sinceDate;
-        });
+        }).slice(0, 10);
 
         return NextResponse.json(
           { success: true, isDelta: true, posts: deltaPosts, timestamp: nowIso },
@@ -28,7 +28,7 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json(
-      { success: true, isDelta: false, posts: allPosts, timestamp: nowIso },
+      { success: true, isDelta: false, posts: allPosts.slice(0, 10), timestamp: nowIso },
       { headers: { "Cache-Control": "public, s-maxage=15, stale-while-revalidate=30" } }
     );
   } catch (error) {

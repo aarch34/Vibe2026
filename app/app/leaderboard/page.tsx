@@ -110,11 +110,23 @@ export default function LeaderboardPage() {
           className={cn(
             "px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 border flex items-center space-x-1.5",
             activeTab === "flappy_rocco"
-              ? "bg-amber-500 text-black border-amber-400 shadow-md"
+              ? "bg-pink-500 text-white border-pink-400 shadow-md"
               : "bg-card text-muted-foreground border-border hover:bg-secondary"
           )}
         >
           <span>🐦 ROCO Flappie</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab("sanjay_run")}
+          className={cn(
+            "px-4 py-2 rounded-2xl text-xs font-black transition-all shrink-0 border flex items-center space-x-1.5",
+            activeTab === "sanjay_run"
+              ? "bg-emerald-500 text-black border-emerald-400 shadow-md"
+              : "bg-card text-muted-foreground border-border hover:bg-secondary"
+          )}
+        >
+          <span>🏃 Sanjay Run</span>
         </button>
 
         <button
@@ -255,7 +267,7 @@ export default function LeaderboardPage() {
                   </div>
 
                   <div className="w-28 text-right font-mono font-black text-cyan-400 text-sm shrink-0">
-                    {entry.high_score.toLocaleString()} PTS
+                    {entry.high_score.toLocaleString()} {activeTab === "sanjay_run" ? "M" : "PTS"}
                   </div>
                 </div>
               ))

@@ -30,8 +30,9 @@ import {
   Scale,
   Mail,
   AlertCircle,
+  Video,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, isVideoMedia } from "@/lib/utils";
 import { Profile, Post, Level } from "@/types/database";
 import { calculateLevel } from "@/lib/db/mock-store";
 import { EditProfileModal } from "@/components/attendee/edit-profile-modal";
@@ -562,11 +563,25 @@ export function ProfileView({
                 className="relative aspect-square group cursor-pointer overflow-hidden rounded-md sm:rounded-xl bg-secondary/50 border border-border/50"
               >
                 {post.image_url ? (
-                  <img
-                    src={post.image_url}
-                    alt="Post"
-                    className="w-full h-full object-cover"
-                  />
+                  isVideoMedia(post.image_url) ? (
+                    <div className="relative w-full h-full bg-black">
+                      <video
+                        src={post.image_url}
+                        className="w-full h-full object-cover"
+                        preload="metadata"
+                        muted
+                      />
+                      <div className="absolute top-1.5 right-1.5 p-1 rounded-md bg-black/70 text-white shadow pointer-events-none">
+                        <Video className="w-3 h-3" />
+                      </div>
+                    </div>
+                  ) : (
+                    <img
+                      src={post.image_url}
+                      alt="Post"
+                      className="w-full h-full object-cover"
+                    />
+                  )
                 ) : (
                   <div className="w-full h-full flex items-center justify-center p-2 bg-gradient-to-br from-purple-900/40 to-pink-900/40">
                     <p className="text-[10px] sm:text-xs text-foreground font-medium text-center line-clamp-4">
@@ -1031,10 +1046,19 @@ export function ProfileView({
             
             <div className="overflow-y-auto flex-1">
               {selectedPost.image_url ? (
-                <img src={selectedPost.image_url} alt="Post image" className="w-full object-cover max-h-96" />
+                isVideoMedia(selectedPost.image_url) ? (
+                  <video
+                    src={selectedPost.image_url}
+                    controls
+                    playsInline
+                    className="w-full object-contain max-h-96 bg-black"
+                  />
+                ) : (
+                  <img src={selectedPost.image_url} alt="Post image" className="w-full object-cover max-h-96" />
+                )
               ) : (
                 <div className="w-full h-48 flex items-center justify-center p-4 bg-gradient-to-br from-purple-900/40 to-pink-900/40">
-                  <p className="text-foreground text-center italic opacity-70">No image attached</p>
+                  <p className="text-foreground text-center italic opacity-70">No media attached</p>
                 </div>
               )}
               

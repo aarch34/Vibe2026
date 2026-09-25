@@ -146,19 +146,19 @@ class PersistentSocialStore {
 
   // --- POSTS ---
 
-  async getPostsWithAuthors(): Promise<(Post & { author: Profile })[]> {
+  async getPostsWithAuthors(limit: number = 10): Promise<(Post & { author: Profile })[]> {
     if (cachedFeedPosts && Date.now() - cachedFeedPosts.timestamp < FEED_CACHE_TTL_MS && !isTestEnv) {
-      return cachedFeedPosts.posts;
+      return cachedFeedPosts.posts.slice(0, limit);
     }
 
-    // 1. Fetch from live Supabase if connected
+    // 1. Fetch from live Supabase if connected (capped to limit to minimize database load)
     if (isUsingLiveSupabase() && supabaseAdmin) {
       try {
         const { data: supaPosts, error: postErr } = await (supabaseAdmin as any)
           .from("posts")
           .select("*")
           .order("created_at", { ascending: false })
-          .limit(50);
+          .limit(limit);
 
         if (!postErr && supaPosts) {
           const authorIds = Array.from(new Set<string>(supaPosts.map((p: any) => p.author_id)));
@@ -233,10 +233,11 @@ class PersistentSocialStore {
             finalPosts = [...realPosts, ...curatedToAdd];
           }
 
+          const capped = finalPosts.slice(0, limit);
           if (!isTestEnv) {
-            cachedFeedPosts = { posts: finalPosts, timestamp: Date.now() };
+            cachedFeedPosts = { posts: capped, timestamp: Date.now() };
           }
-          return finalPosts;
+          return capped;
         }
       } catch (err) {
         console.warn("[socialStore] Supabase getPostsWithAuthors error:", err);
@@ -250,7 +251,7 @@ class PersistentSocialStore {
     const authorIds = Array.from(new Set(this.data.posts.map((p) => p.author_id)));
     const authorMap: Map<string, Profile> = new Map();
 
-    return this.data.posts.map((p) => {
+    return this.data.posts.slice(0, limit).map((p) => {
       let author = authorMap.get(p.author_id) || mockDb.getProfile(p.author_id);
 
       if (!author && CURATED_PROFILES[p.author_id]) {
@@ -280,6 +281,15 @@ class PersistentSocialStore {
         author,
       };
     });
+  }
+
+  async getLatestPost(): Promise<(Post & { author: Profile }) | null> {
+    try {
+      const posts = await this.getPostsWithAuthors(1);
+      return posts && posts.length > 0 ? posts[0] : null;
+    } catch {
+      return null;
+    }
   }
 
   async createPost(

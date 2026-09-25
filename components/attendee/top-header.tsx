@@ -29,6 +29,7 @@ import { ConnectionRequest, Profile } from "@/types/database";
 import { useLiveStats } from "@/components/providers/live-stats-provider";
 
 interface TopHeaderProps {
+  profileId?: string;
   vibeId?: string;
   xp?: number;
   levelName?: string;
@@ -39,6 +40,7 @@ interface TopHeaderProps {
 }
 
 export function TopHeader({
+  profileId,
   vibeId = "VB2026-000",
   xp = 0,
   levelName = "VIBE NEWBIE",
@@ -55,6 +57,7 @@ export function TopHeader({
     setNotifications: setNotifsList,
     incomingRequests,
     setIncomingRequests,
+    latestPost,
   } = useLiveStats();
 
   const [isDark, setIsDark] = useState(true);
@@ -68,8 +71,41 @@ export function TopHeader({
   const [popupAcceptedSuccess, setPopupAcceptedSuccess] = useState(false);
   const seenRequestIdsRef = useRef<Set<string>>(new Set());
   const dismissedPopupIdsRef = useRef<Set<string>>(new Set());
-  const isFirstRunRef = useRef<boolean>(true);
   const acceptedRequestsRef = useRef<Set<string>>(new Set());
+
+  // Real-time new post toast notification state
+  const [activePostToast, setActivePostToast] = useState<{
+    id: string;
+    author_id: string;
+    author_name: string;
+    author_avatar?: string | null;
+    caption: string;
+    image_url?: string | null;
+    created_at: string;
+  } | null>(null);
+  const seenPostIdsRef = useRef<Set<string>>(new Set());
+  const dismissedPostIdsRef = useRef<Set<string>>(new Set());
+  const isInitialPostCheckRef = useRef<boolean>(true);
+
+  // Restore dismissed popups from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("vibe_dismissed_request_popups");
+      if (stored) {
+        const ids = JSON.parse(stored);
+        if (Array.isArray(ids)) {
+          ids.forEach((id: string) => dismissedPopupIdsRef.current.add(id));
+        }
+      }
+      const storedPosts = sessionStorage.getItem("vibe_dismissed_post_toasts");
+      if (storedPosts) {
+        const pids = JSON.parse(storedPosts);
+        if (Array.isArray(pids)) {
+          pids.forEach((pid: string) => dismissedPostIdsRef.current.add(pid));
+        }
+      }
+    } catch { /* ignore */ }
+  }, []);
 
   // Synthesize gentle notification chime via Web Audio API (zero external assets needed)
   const playChimeSound = () => {
@@ -77,12 +113,15 @@ export function TopHeader({
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (!AudioCtx) return;
       const ctx = new AudioCtx();
+      if (ctx.state === "suspended") {
+        ctx.resume().catch(() => {});
+      }
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "sine";
       osc.frequency.setValueAtTime(587.33, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.setValueAtTime(0.18, ctx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
       osc.connect(gain);
       gain.connect(ctx.destination);
@@ -94,34 +133,78 @@ export function TopHeader({
   };
 
   useEffect(() => {
-    if (isFirstRunRef.current) {
-      incomingRequests.forEach((r) => seenRequestIdsRef.current.add(r.request.id));
-      isFirstRunRef.current = false;
-    } else {
-      const newReq = incomingRequests.find(
-        (r) =>
-          !seenRequestIdsRef.current.has(r.request.id) &&
-          !dismissedPopupIdsRef.current.has(r.request.id) &&
-          !acceptedRequestsRef.current.has(r.request.id)
-      );
+    if (activePopupRequest) return;
 
-      if (newReq) {
-        seenRequestIdsRef.current.add(newReq.request.id);
-        setActivePopupRequest(newReq);
-        setPopupAcceptedSuccess(false);
-        playChimeSound();
-      }
+    const newReq = incomingRequests.find(
+      (r) =>
+        r?.request?.id &&
+        !seenRequestIdsRef.current.has(r.request.id) &&
+        !dismissedPopupIdsRef.current.has(r.request.id) &&
+        !acceptedRequestsRef.current.has(r.request.id)
+    );
+
+    if (newReq) {
+      seenRequestIdsRef.current.add(newReq.request.id);
+      setActivePopupRequest(newReq);
+      setPopupAcceptedSuccess(false);
+      playChimeSound();
     }
-  }, [incomingRequests]);
+  }, [incomingRequests, activePopupRequest]);
 
-  // Auto-dismiss the floating pop-up after 12 seconds if not interacted with
+  // Auto-dismiss the floating pop-up after 14 seconds if not interacted with
   useEffect(() => {
     if (!activePopupRequest || popupAcceptedSuccess) return;
     const timer = setTimeout(() => {
       setActivePopupRequest(null);
-    }, 12000);
+    }, 14000);
     return () => clearTimeout(timer);
   }, [activePopupRequest, popupAcceptedSuccess]);
+
+  // Trigger toast when someone creates a new post
+  useEffect(() => {
+    if (!latestPost || !latestPost.id) return;
+
+    // First load check
+    if (isInitialPostCheckRef.current) {
+      isInitialPostCheckRef.current = false;
+      seenPostIdsRef.current.add(latestPost.id);
+
+      const postAgeMs = Date.now() - new Date(latestPost.created_at).getTime();
+      const isVeryRecent = !isNaN(postAgeMs) && postAgeMs < 45000;
+
+      if (
+        isVeryRecent &&
+        latestPost.author_id !== profileId &&
+        !dismissedPostIdsRef.current.has(latestPost.id)
+      ) {
+        setActivePostToast(latestPost);
+        playChimeSound();
+      }
+      return;
+    }
+
+    // Subsequent updates: detect new post from another attendee
+    if (
+      !seenPostIdsRef.current.has(latestPost.id) &&
+      !dismissedPostIdsRef.current.has(latestPost.id)
+    ) {
+      seenPostIdsRef.current.add(latestPost.id);
+
+      if (latestPost.author_id !== profileId) {
+        setActivePostToast(latestPost);
+        playChimeSound();
+      }
+    }
+  }, [latestPost, profileId]);
+
+  // Auto-dismiss the post toast after 8 seconds
+  useEffect(() => {
+    if (!activePostToast) return;
+    const timer = setTimeout(() => {
+      setActivePostToast(null);
+    }, 8000);
+    return () => clearTimeout(timer);
+  }, [activePostToast]);
 
   const unreadNotifs = notifsList.filter((n) => !n.read).length;
   const unreadCount = unreadNotifs + incomingRequests.filter((r) => !acceptedRequests.has(r.request.id)).length;
@@ -466,9 +549,9 @@ export function TopHeader({
         </div>
       )}
 
-      {/* REAL-TIME CONNECTION REQUEST POP-UP BANNER (Updates every 10s without refreshing) */}
+      {/* REAL-TIME CONNECTION REQUEST POP-UP BANNER */}
       {activePopupRequest && (
-        <div className="fixed top-18 right-3 sm:right-6 z-50 max-w-sm w-[calc(100vw-1.5rem)] sm:w-96 animate-in slide-in-from-top-4 fade-in duration-300">
+        <div className="fixed top-20 right-3 sm:right-6 z-[999] max-w-sm w-[calc(100vw-1.5rem)] sm:w-96 animate-in slide-in-from-top-4 fade-in duration-300">
           <div className="p-4 sm:p-5 rounded-3xl bg-card/95 backdrop-blur-2xl border-2 border-pink-500 shadow-[0_12px_40px_rgba(255,27,122,0.45)] space-y-3 relative overflow-hidden">
             {/* Ambient colorful glow */}
             <div className="absolute top-0 right-0 w-28 h-28 bg-gradient-to-bl from-pink-500/25 via-purple-500/15 to-transparent pointer-events-none rounded-full blur-xl" />
@@ -488,6 +571,12 @@ export function TopHeader({
               <button
                 onClick={() => {
                   dismissedPopupIdsRef.current.add(activePopupRequest.request.id);
+                  try {
+                    sessionStorage.setItem(
+                      "vibe_dismissed_request_popups",
+                      JSON.stringify(Array.from(dismissedPopupIdsRef.current))
+                    );
+                  } catch { /* ignore */ }
                   setActivePopupRequest(null);
                 }}
                 className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer"
@@ -562,6 +651,111 @@ export function TopHeader({
               >
                 View
               </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Real-time New Post Toast Notification */}
+      {activePostToast && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="fixed bottom-20 md:bottom-8 right-3 sm:right-6 z-[998] max-w-sm w-[calc(100vw-1.5rem)] sm:w-96 bg-card/95 backdrop-blur-2xl border-2 border-purple-500/50 shadow-[0_10px_35px_rgba(168,85,247,0.35)] rounded-3xl p-4 transition-all duration-300 animate-in slide-in-from-bottom-5 fade-in"
+        >
+          {/* Subtle glowing accent line */}
+          <div className="absolute -top-1 left-6 right-6 h-[2px] bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 rounded-full blur-[1px]" />
+
+          <div className="flex flex-col space-y-2.5">
+            {/* Header: Badge & Close Button */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-pink-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-pink-500"></span>
+                </span>
+                <span className="text-[11px] font-black tracking-wider uppercase text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-pink-400 inline" />
+                  New Post on VIBE!
+                </span>
+              </div>
+
+              <button
+                onClick={() => {
+                  dismissedPostIdsRef.current.add(activePostToast.id);
+                  try {
+                    sessionStorage.setItem(
+                      "vibe_dismissed_post_toasts",
+                      JSON.stringify(Array.from(dismissedPostIdsRef.current))
+                    );
+                  } catch { /* ignore */ }
+                  setActivePostToast(null);
+                }}
+                className="p-1 rounded-full text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all cursor-pointer"
+                title="Dismiss"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Author info & caption snippet */}
+            <div className="flex items-start space-x-3 pt-0.5">
+              <img
+                src={
+                  activePostToast.author_avatar ||
+                  `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(
+                    activePostToast.author_name || "VIBE"
+                  )}`
+                }
+                alt={activePostToast.author_name}
+                className="w-10 h-10 rounded-full border-2 border-purple-500/60 object-cover shrink-0 shadow-md"
+              />
+              <div className="flex-1 min-w-0">
+                <h4 className="text-sm font-black text-foreground truncate">
+                  {activePostToast.author_name}
+                </h4>
+                <p className="text-xs text-foreground/80 line-clamp-2 mt-0.5 leading-snug">
+                  {activePostToast.caption || "Shared a new photo"}
+                </p>
+              </div>
+
+              {activePostToast.image_url && (
+                <div className="relative w-12 h-12 rounded-xl overflow-hidden border border-border/80 shrink-0 bg-black/40">
+                  <img
+                    src={activePostToast.image_url}
+                    alt="Post preview"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* Quick Action Button */}
+            <div className="flex items-center space-x-2 pt-1">
+              <Link
+                href="/app"
+                onClick={() => setActivePostToast(null)}
+                className="flex-1 py-2 px-3 rounded-2xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 text-white font-black text-xs uppercase tracking-wider shadow-md hover:shadow-neon-pink transition-all flex items-center justify-center space-x-1.5 cursor-pointer"
+              >
+                <Flame className="w-3.5 h-3.5" />
+                <span>View in Feed</span>
+              </Link>
+
+              <button
+                onClick={() => {
+                  dismissedPostIdsRef.current.add(activePostToast.id);
+                  try {
+                    sessionStorage.setItem(
+                      "vibe_dismissed_post_toasts",
+                      JSON.stringify(Array.from(dismissedPostIdsRef.current))
+                    );
+                  } catch { /* ignore */ }
+                  setActivePostToast(null);
+                }}
+                className="py-2 px-3 rounded-2xl bg-secondary/80 hover:bg-secondary text-muted-foreground hover:text-foreground text-xs font-semibold transition-all cursor-pointer"
+              >
+                Dismiss
+              </button>
             </div>
           </div>
         </div>

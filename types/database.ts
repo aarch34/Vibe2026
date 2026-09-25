@@ -162,10 +162,12 @@ export interface Notification {
 export interface AdminXpAdjustment {
   id: string;
   target_profile_id: string;
-  admin_profile_id: string;
+  admin_profile_id: string | null;
   admin_name: string;
   amount: number;
   reason: string;
+  xp_before?: number;
+  xp_after?: number;
   timestamp: string;
 }
 

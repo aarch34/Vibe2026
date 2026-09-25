@@ -61,9 +61,7 @@ export function DiscoverClient({
     }
     return "";
   });
-  const [newMembersCount, setNewMembersCount] = useState(0);
-  const newMemberTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
-
+  const [newProfileIds, setNewProfileIds] = useState<Set<string>>(new Set());
 
   // Automatic Cache Load & Delta-Sync on mount
   useEffect(() => {
@@ -108,12 +106,30 @@ export function DiscoverClient({
             setProfiles((prev) => {
               const prevIds = new Set(prev.map((p) => p.id));
               const map = new Map(prev.map((p) => [p.id, p]));
-              const brandNew: string[] = [];
+              const brandNewProfiles: Profile[] = [];
+              const brandNewIds: string[] = [];
+
               data.profiles.forEach((np: Profile) => {
-                if (!prevIds.has(np.id)) brandNew.push(np.id);
+                if (!prevIds.has(np.id)) {
+                  brandNewIds.push(np.id);
+                  brandNewProfiles.push(np);
+                }
                 map.set(np.id, np);
               });
-              const merged = Array.from(map.values()).sort((a, b) => b.xp - a.xp);
+
+              // Sort brand new arrivals among themselves by newest first
+              brandNewProfiles.sort((a, b) => {
+                const tA = new Date(a.created_at || a.updated_at || 0).getTime();
+                const tB = new Date(b.created_at || b.updated_at || 0).getTime();
+                return tB - tA;
+              });
+
+              // Keep existing profiles in current order with refreshed data
+              const updatedExisting = prev.map((p) => map.get(p.id) || p);
+
+              // Put newly joined attendees directly on top of the list!
+              const merged = [...brandNewProfiles, ...updatedExisting];
+
               try {
                 localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
                 if (data.timestamp) {
@@ -122,13 +138,19 @@ export function DiscoverClient({
                 }
               } catch { /* ignore */ }
 
-              // Fetch real connection states for genuinely new profiles
-              if (brandNew.length > 0) {
-                if (newMemberTimerRef.current) clearTimeout(newMemberTimerRef.current);
-                setNewMembersCount(brandNew.length);
-                newMemberTimerRef.current = setTimeout(() => setNewMembersCount(0), 6000);
+              // Fetch real connection states and mark new profiles
+              if (brandNewIds.length > 0) {
+                setNewProfileIds((prevSet) => {
+                  const next = new Set(prevSet);
+                  brandNewIds.forEach((id) => next.add(id));
+                  return next;
+                });
 
-                fetch(`/api/connections/states?ids=${encodeURIComponent(brandNew.join(","))}`)
+                if (typeof window !== "undefined") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                }
+
+                fetch(`/api/connections/states?ids=${encodeURIComponent(brandNewIds.join(","))}`)
                   .then((r) => r.json())
                   .then((stateData) => {
                     if (stateData.success && stateData.states) {
@@ -196,12 +218,30 @@ export function DiscoverClient({
           setProfiles((prev) => {
             const prevIds = new Set(prev.map((p) => p.id));
             const map = new Map(prev.map((p) => [p.id, p]));
-            const brandNew: string[] = [];
+            const brandNewProfiles: Profile[] = [];
+            const brandNewIds: string[] = [];
+
             data.profiles.forEach((np: Profile) => {
-              if (!prevIds.has(np.id)) brandNew.push(np.id);
+              if (!prevIds.has(np.id)) {
+                brandNewIds.push(np.id);
+                brandNewProfiles.push(np);
+              }
               map.set(np.id, np);
             });
-            const merged = Array.from(map.values()).sort((a, b) => b.xp - a.xp);
+
+            // Sort brand new arrivals among themselves by newest first
+            brandNewProfiles.sort((a, b) => {
+              const tA = new Date(a.created_at || a.updated_at || 0).getTime();
+              const tB = new Date(b.created_at || b.updated_at || 0).getTime();
+              return tB - tA;
+            });
+
+            // Keep existing profiles in current order with refreshed data
+            const updatedExisting = prev.map((p) => map.get(p.id) || p);
+
+            // Put newly joined attendees directly on top of the list!
+            const merged = [...brandNewProfiles, ...updatedExisting];
+
             try {
               localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
               if (data.timestamp) {
@@ -210,12 +250,18 @@ export function DiscoverClient({
               }
             } catch { /* ignore */ }
 
-            if (brandNew.length > 0) {
-              if (newMemberTimerRef.current) clearTimeout(newMemberTimerRef.current);
-              setNewMembersCount(brandNew.length);
-              newMemberTimerRef.current = setTimeout(() => setNewMembersCount(0), 6000);
+            if (brandNewIds.length > 0) {
+              setNewProfileIds((prevSet) => {
+                const next = new Set(prevSet);
+                brandNewIds.forEach((id) => next.add(id));
+                return next;
+              });
 
-              fetch(`/api/connections/states?ids=${encodeURIComponent(brandNew.join(","))}`)
+              if (typeof window !== "undefined") {
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
+
+              fetch(`/api/connections/states?ids=${encodeURIComponent(brandNewIds.join(","))}`)
                 .then((r) => r.json())
                 .then((stateData) => {
                   if (stateData.success && stateData.states) {
@@ -423,18 +469,6 @@ export function DiscoverClient({
         </div>
       )}
 
-      {/* New Members Banner — appears for 6s after delta sync finds new arrivals */}
-      {newMembersCount > 0 && (
-        <div className="flex items-center justify-center">
-          <div className="flex items-center space-x-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-sm font-bold shadow-lg animate-bounce-once">
-            <span>🎉</span>
-            <span>
-              {newMembersCount} new {newMembersCount === 1 ? "person" : "people"} just joined VIBE! Scroll to find them.
-            </span>
-          </div>
-        </div>
-      )}
-
       {/* Profile Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {isLoading && profiles.length === 0 ? (
@@ -491,12 +525,19 @@ export function DiscoverClient({
                         />
                       </Link>
                       <div>
-                        <Link
-                          href={`/app/profile?id=${person.id}`}
-                          className="font-black text-base text-foreground hover:text-cyan-400 transition-colors block"
-                        >
-                          {person.display_name}
-                        </Link>
+                        <div className="flex items-center space-x-2">
+                          <Link
+                            href={`/app/profile?id=${person.id}`}
+                            className="font-black text-base text-foreground hover:text-cyan-400 transition-colors block"
+                          >
+                            {person.display_name}
+                          </Link>
+                          {newProfileIds.has(person.id) && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black uppercase tracking-wider shrink-0">
+                              NEW
+                            </span>
+                          )}
+                        </div>
                         <span className="text-xs font-mono text-muted-foreground block">@{person.username}</span>
                         <div className="flex items-center space-x-1 text-[11px] font-bold text-amber-400 font-mono mt-0.5">
                           <span>⭐</span>

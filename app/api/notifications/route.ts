@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     const notifications = await socialStore.getNotifications(session.profile.id);
-    const { incoming } = socialStore.getConnectionRequests(session.profile.id);
+    const { incoming } = await socialStore.getConnectionRequestsAsync(session.profile.id);
     const unreadCount = notifications.filter((n) => !n.read).length + incoming.length;
     
     // Fetch fresh profile data to keep UI synced
@@ -31,12 +31,31 @@ export async function GET() {
       // fallback to session xp
     }
 
+    let latestPost = null;
+    try {
+      const lp = await socialStore.getLatestPost();
+      if (lp) {
+        latestPost = {
+          id: lp.id,
+          author_id: lp.author_id,
+          author_name: lp.author.display_name,
+          author_avatar: lp.author.avatar_url,
+          caption: lp.caption,
+          image_url: lp.image_url,
+          created_at: lp.created_at,
+        };
+      }
+    } catch {
+      // ignore
+    }
+
     return NextResponse.json({
       success: true,
       notifications,
       incomingRequests: incoming,
       unreadCount,
       currentXp,
+      latestPost,
     });
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });

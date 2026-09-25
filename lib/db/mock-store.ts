@@ -893,13 +893,16 @@ class VibeMemoryDatabase {
 
   adminAdjustXp(
     targetProfileId: string,
-    adminProfileId: string,
+    adminProfileId: string | null,
     adminName: string,
     amount: number,
     reason: string
   ) {
     const profile = this.getProfile(targetProfileId);
     if (!profile) return { success: false, message: "User profile not found" };
+
+    const xpBefore = profile.xp;
+    const newXp = Math.max(0, profile.xp + amount);
 
     const adjustment: AdminXpAdjustment = {
       id: `adj-${Date.now()}`,
@@ -908,12 +911,13 @@ class VibeMemoryDatabase {
       admin_name: adminName,
       amount,
       reason,
+      xp_before: xpBefore,
+      xp_after: newXp,
       timestamp: new Date().toISOString(),
     };
 
     this.adminXpAdjustments.unshift(adjustment);
 
-    const newXp = Math.max(0, profile.xp + amount);
     this.updateProfile(targetProfileId, { xp: newXp });
 
     this.notifications.unshift({

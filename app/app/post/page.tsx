@@ -1,21 +1,52 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Image as ImageIcon, Send, Sparkles, ArrowLeft, X, AlertCircle, Camera, Tag } from "lucide-react";
+import {
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Send,
+  Sparkles,
+  ArrowLeft,
+  X,
+  AlertCircle,
+  Camera,
+  Play,
+} from "lucide-react";
 
-const VIBE_TAGS = ["#VIBE2026", "#Rotaract3192", "#FresherFestival", "#DistrictCouncil", "#Bengaluru", "#MeetTheDistrict"];
+const VIBE_TAGS = [
+  "#VIBE2026",
+  "#Rotaract3192",
+  "#FresherFestival",
+  "#DistrictCouncil",
+  "#Bengaluru",
+  "#MeetTheDistrict",
+];
+
+const MAX_MEDIA_SIZE_BYTES = 50 * 1024 * 1024; // 50MB strictly enforced
 
 export default function CreatePostPage() {
   const router = useRouter();
   const [caption, setCaption] = useState("");
   const [imageUrl, setImageUrl] = useState("");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [isVideo, setIsVideo] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Clean up Object URL on unmount to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (mediaPreview && mediaPreview.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(mediaPreview);
+        } catch {}
+      }
+    };
+  }, [mediaPreview]);
 
   // Compress image on the client before upload for speed and reliability
   const compressImage = (file: File): Promise<{ dataUrl: string; file: File }> => {
@@ -78,29 +109,60 @@ export default function CreatePostPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setFileError("Only image files (JPEG, PNG, WebP, GIF) are allowed.");
+    const isVid = file.type.startsWith("video/") || /\.(mp4|webm|mov|m4v|ogg)$/i.test(file.name);
+    const isImg = file.type.startsWith("image/");
+
+    if (!isVid && !isImg) {
+      setFileError("Only photos (JPEG, PNG, WebP, GIF) and videos (MP4, WebM, MOV) are allowed.");
       return;
     }
 
-    if (file.size > 15 * 1024 * 1024) {
-      setFileError("Image size exceeds 15MB limit. Please select a smaller photo.");
+    // Strict 50MB check for all media, especially videos
+    if (file.size > MAX_MEDIA_SIZE_BYTES) {
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      setFileError(
+        isVid
+          ? `Video size exceeds the 50MB limit (${sizeMb}MB). Videos must be 50MB or less.`
+          : `Photo size exceeds the 50MB limit (${sizeMb}MB). Please select a file under 50MB.`
+      );
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
-    try {
-      const { dataUrl, file: compressedFile } = await compressImage(file);
-      setImagePreview(dataUrl);
-      setSelectedFile(compressedFile);
-    } catch {
-      setFileError("Could not process image file. Please try another image.");
+    if (isVid) {
+      setIsVideo(true);
+      const videoObjectUrl = URL.createObjectURL(file);
+      setMediaPreview(videoObjectUrl);
+      setSelectedFile(file);
+    } else {
+      setIsVideo(false);
+      try {
+        if (file.size > 2 * 1024 * 1024) {
+          const { dataUrl, file: compressedFile } = await compressImage(file);
+          setMediaPreview(dataUrl);
+          setSelectedFile(compressedFile);
+        } else {
+          const reader = new FileReader();
+          reader.onload = (re) => setMediaPreview(re.target?.result as string);
+          reader.readAsDataURL(file);
+          setSelectedFile(file);
+        }
+      } catch {
+        setFileError("Could not process photo file. Please try another image.");
+      }
     }
   };
 
-  const removeImage = () => {
-    setImagePreview(null);
+  const removeMedia = () => {
+    if (mediaPreview && mediaPreview.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(mediaPreview);
+      } catch {}
+    }
+    setMediaPreview(null);
     setImageUrl("");
     setSelectedFile(null);
+    setIsVideo(false);
     setFileError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -115,38 +177,47 @@ export default function CreatePostPage() {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!caption.trim() && !imageUrl.trim()) {
-      setErrorMsg("Please provide a caption or select a photo.");
+    if (!caption.trim() && !imageUrl.trim() && !selectedFile) {
+      setErrorMsg("Please provide a caption or attach a photo/video.");
       return;
     }
 
     setIsSubmitting(true);
     try {
-      let finalImageUrl = imageUrl.trim() || null;
+      let finalMediaUrl = imageUrl.trim() || null;
+
+      // Upload directly to Supabase Storage 'Vibe Bucket'
       if (selectedFile) {
         try {
           const form = new FormData();
           form.append("file", selectedFile);
           form.append("category", "posts");
+
           const upRes = await fetch("/api/media/upload", {
             method: "POST",
             body: form,
           });
-          if (upRes.ok) {
-            const upData = await upRes.json();
-            if (upData.url) {
-              finalImageUrl = upData.url;
-            }
+
+          if (!upRes.ok) {
+            const errData = await upRes.json().catch(() => ({}));
+            throw new Error(errData.error || "Media upload failed. Please try again.");
           }
-        } catch {
-          // Fallback to existing imageUrl if direct upload network fails
+
+          const upData = await upRes.json();
+          if (upData.url) {
+            finalMediaUrl = upData.url;
+          }
+        } catch (uploadErr: any) {
+          setErrorMsg(uploadErr.message || "Failed to upload your media file.");
+          setIsSubmitting(false);
+          return;
         }
       }
 
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caption: caption.trim(), imageUrl: finalImageUrl }),
+        body: JSON.stringify({ caption: caption.trim(), imageUrl: finalMediaUrl }),
       });
 
       if (res.ok) {
@@ -163,6 +234,10 @@ export default function CreatePostPage() {
     }
   };
 
+  const fileSizeMb = selectedFile
+    ? (selectedFile.size / (1024 * 1024)).toFixed(1)
+    : null;
+
   return (
     <div className="max-w-xl mx-auto space-y-6 py-4">
       {/* Header */}
@@ -173,7 +248,9 @@ export default function CreatePostPage() {
         >
           <ArrowLeft className="w-5 h-5" />
         </button>
-        <h1 className="text-xl font-black text-foreground font-mono uppercase tracking-tight">CREATE VIBE POST</h1>
+        <h1 className="text-xl font-black text-foreground font-mono uppercase tracking-tight">
+          CREATE VIBE POST
+        </h1>
         <div className="w-9" />
       </div>
 
@@ -197,7 +274,7 @@ export default function CreatePostPage() {
           </label>
           <textarea
             rows={4}
-            placeholder="Share your pre-VIBE moment with Rotaract District 3192! What are you most excited for?"
+            placeholder="Share your VIBE moment with Rotaract District 3192! What are you most excited for?"
             value={caption}
             onChange={(e) => setCaption(e.target.value)}
             className="w-full p-4 bg-secondary/50 border border-border rounded-2xl text-sm focus:outline-none focus:border-pink-500 transition-all text-foreground resize-none leading-relaxed"
@@ -221,41 +298,83 @@ export default function CreatePostPage() {
           </div>
         </div>
 
-        {/* Photo Upload Area */}
+        {/* Media Upload Area (Photo or Video up to 50MB) */}
         <div className="space-y-2">
-          <label className="text-xs font-black uppercase text-muted-foreground block flex items-center space-x-1">
-            <ImageIcon className="w-3.5 h-3.5 text-pink-400" />
-            <span>Upload Photo / Moment</span>
+          <label className="text-xs font-black uppercase text-muted-foreground block flex items-center justify-between">
+            <span className="flex items-center space-x-1.5">
+              <Camera className="w-3.5 h-3.5 text-pink-400" />
+              <span>Attach Photo or Video</span>
+            </span>
+            <span className="text-[10px] text-muted-foreground font-mono font-normal">
+              Max 50MB (Supabase Storage)
+            </span>
           </label>
 
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept="image/*,video/mp4,video/webm,video/quicktime,video/mov,video/x-m4v"
             onChange={handleFileChange}
             className="hidden"
             id="post-page-file-upload"
           />
 
-          {!imagePreview ? (
+          {!mediaPreview ? (
             <label
               htmlFor="post-page-file-upload"
               className="w-full py-8 px-4 bg-secondary/40 border-2 border-dashed border-border hover:border-pink-500/60 rounded-2xl text-xs font-bold text-muted-foreground hover:text-pink-400 transition-all flex flex-col items-center justify-center space-y-2 cursor-pointer block text-center"
             >
-              <div className="w-12 h-12 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400">
-                <Camera className="w-6 h-6" />
+              <div className="flex items-center space-x-2">
+                <div className="w-12 h-12 rounded-full bg-pink-500/10 flex items-center justify-center text-pink-400">
+                  <ImageIcon className="w-6 h-6" />
+                </div>
+                <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-400">
+                  <VideoIcon className="w-6 h-6" />
+                </div>
               </div>
-              <span className="font-extrabold text-foreground">Choose Photo from Gallery or Camera</span>
-              <span className="text-[10px] text-muted-foreground">JPEG, PNG, WebP, GIF (Auto-optimized)</span>
+              <span className="font-extrabold text-foreground">
+                Choose Photo or Video from Gallery
+              </span>
+              <span className="text-[10px] text-muted-foreground">
+                Photos (JPEG, PNG, WebP) &bull; Videos (MP4, WebM, MOV up to 50MB)
+              </span>
             </label>
           ) : (
-            <div className="relative rounded-2xl overflow-hidden border-2 border-pink-500/40 bg-black/60 shadow-lg">
-              <img src={imagePreview} alt="Preview" className="w-full max-h-72 object-contain mx-auto" />
+            <div className="relative rounded-2xl overflow-hidden border-2 border-pink-500/40 bg-black shadow-lg">
+              {isVideo ? (
+                <div className="relative bg-black flex items-center justify-center">
+                  <video
+                    src={mediaPreview}
+                    controls
+                    playsInline
+                    className="w-full max-h-72 object-contain mx-auto"
+                  />
+                  <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1 backdrop-blur-sm">
+                    <VideoIcon className="w-3 h-3" />
+                    <span>Video &bull; {fileSizeMb}MB / 50MB</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="relative bg-black flex items-center justify-center">
+                  <img
+                    src={mediaPreview}
+                    alt="Preview"
+                    className="w-full max-h-72 object-contain mx-auto"
+                  />
+                  {fileSizeMb && (
+                    <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-pink-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1 backdrop-blur-sm">
+                      <ImageIcon className="w-3 h-3" />
+                      <span>Photo &bull; {fileSizeMb}MB</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <button
                 type="button"
-                onClick={removeImage}
-                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 hover:bg-destructive text-white transition-all shadow-md cursor-pointer"
-                title="Remove photo"
+                onClick={removeMedia}
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 hover:bg-destructive text-white transition-all shadow-md cursor-pointer z-10"
+                title="Remove media"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -273,10 +392,16 @@ export default function CreatePostPage() {
         {/* Submit Button */}
         <button
           type="submit"
-          disabled={isSubmitting || (!caption.trim() && !imageUrl.trim())}
-          className="w-full py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+          disabled={isSubmitting || (!caption.trim() && !imageUrl.trim() && !selectedFile)}
+          className="w-full py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 active:scale-[0.99] text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
         >
-          <span>{isSubmitting ? "PUBLISHING TO VIBE..." : "SHARE POST ON VIBE 🚀"}</span>
+          <span>
+            {isSubmitting
+              ? isVideo
+                ? "UPLOADING VIDEO & POSTING..."
+                : "UPLOADING & POSTING..."
+              : "SHARE POST ON VIBE 🚀"}
+          </span>
           <Send className="w-4 h-4" />
         </button>
       </form>

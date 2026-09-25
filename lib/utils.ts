@@ -17,3 +17,14 @@ export function truncateAddress(id: string, startChars = 6, endChars = 4): strin
   if (!id || id.length <= startChars + endChars) return id;
   return `${id.slice(0, startChars)}...${id.slice(-endChars)}`;
 }
+
+export function isVideoMedia(url?: string | null): boolean {
+  if (!url) return false;
+  return (
+    /\.(mp4|webm|mov|m4v|ogg|3gp)(\?.*)?$/i.test(url) ||
+    url.startsWith("data:video/") ||
+    url.includes("/videos/") ||
+    url.includes("format=video")
+  );
+}
+

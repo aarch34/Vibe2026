@@ -58,12 +58,13 @@ export function FlappyRocco({
   // References for game loop
   const roccoImgRef = useRef<HTMLImageElement | null>(null);
   const animFrameIdRef = useRef<number | null>(null);
+  const lastFlapTimeRef = useRef<number>(0);
   const stateRef = useRef({
     gameState: "ready" as "ready" | "playing" | "gameover",
     birdY: 200,
     velocity: 0,
-    gravity: 0.32,
-    jump: -5.5,
+    gravity: 0.26, // Gentle, floaty gravity (reduced from 0.32 for smoother control)
+    jump: -4.8,    // Smooth, gentle flap impulse (reduced from -5.5 for lower sensitivity)
     pipes: [] as PipePair[],
     score: 0,
     frameCount: 0,
@@ -156,8 +157,12 @@ export function FlappyRocco({
     } catch (_) {}
   }
 
-  // Flap jump action
+  // Flap jump action with debounce guard to prevent double-firing / jitter
   function handleFlap() {
+    const now = Date.now();
+    if (now - lastFlapTimeRef.current < 90) return;
+    lastFlapTimeRef.current = now;
+
     getAudioContext();
     if (stateRef.current.gameState === "ready") {
       stateRef.current.gameState = "playing";
@@ -197,11 +202,11 @@ export function FlappyRocco({
     stateRef.current.height = height;
 
     const birdRadius = 15;
-    const pipeWidth = 52;
-    const pipeGap = 145; // Comfortable, fair vertical clearance
-    const minPipeDistance = 215; // Generous horizontal spacing so pillars NEVER overlap or bunch up
+    const pipeWidth = 50;
+    const pipeGap = 155; // Generous, comfortable vertical gap (increased from 145)
+    const minPipeDistance = 220; // Generous horizontal spacing so pillars NEVER overlap or bunch up
     const groundHeight = 36;
-    const speed = 2.2; // Smooth arcade scroll rate
+    const speed = 2.0; // Calmer, smoother arcade scroll rate (reduced from 2.2)
 
     let isRunning = true;
 
@@ -328,10 +333,10 @@ export function FlappyRocco({
 
           // Fair collision check with forgiving hitbox margins
           const birdBox = {
-            left: birdX - birdRadius + 3,
-            right: birdX + birdRadius - 3,
-            top: state.birdY - birdRadius + 3,
-            bottom: state.birdY + birdRadius - 3,
+            left: birdX - birdRadius + 5,
+            right: birdX + birdRadius - 5,
+            top: state.birdY - birdRadius + 5,
+            bottom: state.birdY + birdRadius - 5,
           };
 
           // Hit upper pipe

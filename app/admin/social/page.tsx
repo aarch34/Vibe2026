@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { MessageSquare, Trash2 } from "lucide-react";
 import { Post, Profile } from "@/types/database";
-import Image from "next/image";
+import { isVideoMedia } from "@/lib/utils";
 
 export default function AdminSocialPage() {
   const [postsList, setPostsList] = useState<(Post & { profile: Profile })[]>([]);
@@ -65,7 +65,7 @@ export default function AdminSocialPage() {
                 <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 rounded-full bg-secondary overflow-hidden shrink-0 relative">
                     {post.profile?.avatar_url ? (
-                      <Image src={post.profile.avatar_url} alt={post.profile.display_name} fill sizes="32px" className="object-cover" />
+                      <img src={post.profile.avatar_url} alt={post.profile.display_name} className="w-full h-full object-cover" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-xs font-bold bg-primary text-primary-foreground">
                         {post.profile?.display_name?.charAt(0) || "?"}
@@ -91,8 +91,17 @@ export default function AdminSocialPage() {
               </div>
               
               {post.image_url && (
-                <div className="w-full h-48 bg-secondary rounded-xl overflow-hidden relative mt-2">
-                  <Image src={post.image_url} alt="Post image" fill className="object-cover" />
+                <div className="w-full h-48 bg-black rounded-xl overflow-hidden relative mt-2 flex items-center justify-center">
+                  {isVideoMedia(post.image_url) ? (
+                    <video
+                      src={post.image_url}
+                      controls
+                      playsInline
+                      className="w-full h-full object-contain"
+                    />
+                  ) : (
+                    <img src={post.image_url} alt="Post image" className="w-full h-full object-cover" />
+                  )}
                 </div>
               )}
               

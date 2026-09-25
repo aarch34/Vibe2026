@@ -41,10 +41,21 @@ export async function POST(req: NextRequest) {
     }
 
     // Validate MIME types strictly to prevent arbitrary/malicious file uploads
-    const allowedMimeTypes = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif"];
+    const allowedMimeTypes = [
+      "image/jpeg",
+      "image/png",
+      "image/webp",
+      "image/avif",
+      "image/gif",
+      "video/mp4",
+      "video/webm",
+      "video/quicktime",
+      "video/mov",
+      "video/x-m4v",
+    ];
     if (!allowedMimeTypes.includes(mimeType)) {
       return NextResponse.json(
-        { error: "Invalid mime type: Only image uploads (JPEG, PNG, WebP, AVIF, GIF) are permitted." },
+        { error: "Invalid mime type: Only photo (JPEG, PNG, WebP, AVIF, GIF) and video (MP4, WebM, MOV) uploads up to 50MB are permitted." },
         { status: 400 }
       );
     }
@@ -53,7 +64,8 @@ export async function POST(req: NextRequest) {
       eventSlug,
       category,
       fileName,
-      mimeType
+      mimeType,
+      50 * 1024 * 1024 // 50MB limit
     );
 
     return NextResponse.json({ success: true, data: uploadInfo });

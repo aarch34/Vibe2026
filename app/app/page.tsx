@@ -22,7 +22,7 @@ export default async function AttendeeHomePage() {
   const totalLevelRange = Math.max(1, maxXp - minXp);
   const progressPercent = Math.min(100, Math.floor((currentLevelXp / totalLevelRange) * 100));
 
-  const posts = await socialStore.getPostsWithAuthors();
+  const posts = await socialStore.getPostsWithAuthors(10);
   const likedPostIds = await socialStore.getUserLikedPostIds(currentProfile.id);
   const suggestedPeople = (await getAllDiscoverableProfiles(currentProfile.id, 8)).slice(0, 4);
 

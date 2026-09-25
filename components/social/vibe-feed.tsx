@@ -18,6 +18,7 @@ import {
   Check,
 } from "lucide-react";
 import { Post, Profile } from "@/types/database";
+import { isVideoMedia } from "@/lib/utils";
 
 interface VibeFeedProps {
   initialPosts: (Post & { author: Profile })[];
@@ -30,14 +31,14 @@ const FEED_SYNC_KEY = "vibe_feed_last_sync_v1";
 
 export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: VibeFeedProps) {
   const [posts, setPosts] = useState<(Post & { author: Profile })[]>(() => {
-    // Prioritize server-provided posts, then fall back to localStorage cache
-    if (initialPosts && initialPosts.length > 0) return initialPosts;
+    // Prioritize server-provided posts, then fall back to localStorage cache (capped at 10 to keep database & client load light)
+    if (initialPosts && initialPosts.length > 0) return initialPosts.slice(0, 10);
     if (typeof window !== "undefined") {
       try {
         const raw = localStorage.getItem(FEED_CACHE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed.slice(0, 10);
         }
       } catch { /* ignore */ }
     }
@@ -78,18 +79,19 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
           try { localStorage.setItem(FEED_SYNC_KEY, data.timestamp); } catch { /* ignore */ }
         }
         if (data.isDelta && incoming.length > 0) {
-          // Merge only new posts at the front, keep existing in place
+          // Merge only new posts at the front, keep capped at 10 to minimize DB and client load
           setPosts((prev) => {
             const existingIds = new Set(prev.map((p) => p.id));
             const brand = incoming.filter((p) => !existingIds.has(p.id));
-            const merged = [...brand, ...prev];
-            try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(merged.slice(0, 60))); } catch { /* ignore */ }
+            const merged = [...brand, ...prev].slice(0, 10);
+            try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(merged)); } catch { /* ignore */ }
             return merged;
           });
         } else if (!data.isDelta && incoming.length > 0) {
-          // Full refresh (first load): cache result
-          setPosts(incoming);
-          try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(incoming.slice(0, 60))); } catch { /* ignore */ }
+          // Full refresh: cap to 10
+          const capped = incoming.slice(0, 10);
+          setPosts(capped);
+          try { localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(capped)); } catch { /* ignore */ }
         }
       })
       .catch(() => {});
@@ -197,10 +199,10 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
         if (data.post) {
           const author = data.post.author || currentProfile;
           setPosts((prev) => {
-            const updated = [{ ...data.post, author }, ...prev];
+            const updated = [{ ...data.post, author }, ...prev].slice(0, 10);
             // Update localStorage cache so next page load shows this post immediately
             try {
-              localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(updated.slice(0, 60)));
+              localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(updated));
               // Clear the delta-sync timestamp so next full refresh gets all posts
               localStorage.removeItem(FEED_SYNC_KEY);
             } catch { /* ignore */ }
@@ -588,19 +590,29 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
                 </div>
               </div>
 
-              {/* Attached Photo (with Instagram Double-Tap to Like) */}
+              {/* Attached Photo or Video (with Instagram Double-Tap to Like) */}
               {post.image_url && (
                 <div
-                  className="relative overflow-hidden bg-black/60 flex items-center justify-center cursor-pointer select-none group"
+                  className="relative overflow-hidden bg-black/90 flex items-center justify-center select-none group"
                   onDoubleClick={() => handleDoubleTapPhoto(post.id)}
                 >
-                  <img
-                    src={post.image_url}
-                    alt="Post photo"
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full max-h-[500px] object-cover transition-transform duration-300 group-hover:scale-[1.01]"
-                  />
+                  {isVideoMedia(post.image_url) ? (
+                    <video
+                      src={post.image_url}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="w-full max-h-[500px] object-contain bg-black"
+                    />
+                  ) : (
+                    <img
+                      src={post.image_url}
+                      alt="Post photo"
+                      loading="lazy"
+                      decoding="async"
+                      className="w-full max-h-[500px] object-cover transition-transform duration-300 group-hover:scale-[1.01]"
+                    />
+                  )}
 
                   {/* Double-Tap Heart Burst Animation */}
                   {isShowingHeartAnim && (
@@ -745,6 +757,40 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
             </div>
           );
         })}
+
+        {/* End of Feed — Capped at 10 to minimize database load on event day */}
+        {posts.length > 0 && (
+          <div className="p-6 rounded-3xl bg-card/70 backdrop-blur-md border border-border/80 text-center space-y-3 mt-4 shadow-sm">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-pink-500/20 via-purple-500/20 to-cyan-500/20 border border-pink-500/30 flex items-center justify-center mx-auto text-pink-400 shadow-inner">
+              <CheckCircle2 className="w-6 h-6 text-pink-400" />
+            </div>
+            <div>
+              <h4 className="font-black text-sm text-foreground">You're All Caught Up! ✨</h4>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto leading-relaxed">
+                Showing the latest {posts.length} {posts.length === 1 ? "post" : "posts"} to keep VIBE 2026 super fast and prevent database strain during the event.
+              </p>
+            </div>
+            <div className="pt-1 flex items-center justify-center space-x-2">
+              <button
+                onClick={() => {
+                  if (typeof window !== "undefined") {
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }
+                }}
+                className="px-4 py-2 rounded-xl bg-secondary/80 hover:bg-secondary text-foreground text-xs font-bold transition-all cursor-pointer"
+              >
+                Back to Top ↑
+              </button>
+              <Link
+                href="/app/post"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-pink-500 via-purple-600 to-cyan-500 text-white text-xs font-bold shadow-md hover:shadow-neon-pink transition-all cursor-pointer flex items-center space-x-1"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Share a Vibe</span>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

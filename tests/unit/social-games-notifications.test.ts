@@ -78,6 +78,20 @@ describe("Social Feed, Instagram-like Interactions, Connections & Games XP", () 
     const created = posts.find((p) => p.id === post.id);
     expect(created).toBeDefined();
     expect(created?.author.display_name).toBe("Alice Delegator");
+
+    // Verify getLatestPost() accurately returns the newly created post
+    const latest = await socialStore.getLatestPost();
+    expect(latest).toBeDefined();
+    expect(latest?.id).toBe(post.id);
+    expect(latest?.author.display_name).toBe("Alice Delegator");
+
+    // When Bob posts shortly after, getLatestPost() should immediately reflect Bob's post
+    const { post: bobPost } = await socialStore.createPost(testUserB, "Bob's brand new post!");
+    const updatedLatest = await socialStore.getLatestPost();
+    expect(updatedLatest).toBeDefined();
+    expect(updatedLatest?.id).toBe(bobPost.id);
+    expect(updatedLatest?.author.display_name).toBe("Bob Rotaractor");
+    expect(updatedLatest?.caption).toBe("Bob's brand new post!");
   });
 
   it("should support liking posts, toggling likes, awarding 5 XP, and double-tap like", async () => {
@@ -197,6 +211,19 @@ describe("Social Feed, Instagram-like Interactions, Connections & Games XP", () 
 
     const bobConnections = await socialStore.getConnectionsAsync(testUserB);
     expect(bobConnections.some((c) => c.id === testUserA)).toBe(true);
+  });
+
+  it("should enforce a maximum of 10 posts in the feed to protect database load during the event", async () => {
+    // Create 15 posts
+    for (let i = 1; i <= 15; i++) {
+      await socialStore.createPost(testUserA, `Post #${i} at VIBE 2026`);
+    }
+
+    const posts = await socialStore.getPostsWithAuthors(10);
+    expect(posts.length).toBeLessThanOrEqual(10);
+    expect(posts.length).toBe(10);
+    // Verify the most recent post is at the top
+    expect(posts[0].caption).toBe("Post #15 at VIBE 2026");
   });
 
   it("should calculate progressive level milestones correctly", () => {
