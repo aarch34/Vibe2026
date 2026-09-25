@@ -129,7 +129,7 @@ export function ProfileView({
   }, [profile, initialConnectionStatus]);
 
   // Use global live XP if this is the user's own profile, otherwise use the static profile XP
-  const displayXp = isSelf ? liveStats.xp : currentProfile.xp;
+  const displayXp = isSelf ? (liveStats?.xp ?? currentProfile.xp) : currentProfile.xp;
   const levelInfo = calculateLevel(displayXp);
   const minXp = levelInfo.min_xp;
   const maxXp = levelInfo.max_xp || 3000;
