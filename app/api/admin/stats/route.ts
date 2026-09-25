@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin, isUsingLiveSupabase, mockDb } from "@/lib/db/supabase";
 
+export const dynamic = "force-dynamic";
+
 export async function GET() {
   if (!isUsingLiveSupabase()) {
     const stats = mockDb.getAdminStats();

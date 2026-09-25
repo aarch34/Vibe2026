@@ -14,6 +14,8 @@ import {
   ArrowLeft,
   LogOut,
   UserCheck,
+  Trophy,
+  MessageSquare
 } from "lucide-react";
 import { getAdminSession, logoutAdminAction } from "@/actions/admin/auth";
 
@@ -39,13 +41,10 @@ export default async function AdminLayout({
 
   const navItems = [
     { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { label: "Staff Delegation", href: "/admin/staff", icon: UserCheck },
-    { label: "Zones", href: "/admin/zones", icon: MapPin },
-    { label: "Experiences", href: "/admin/experiences", icon: Sparkles },
-    { label: "QR Codes", href: "/admin/qr", icon: QrCode },
-    { label: "Attendees", href: "/admin/attendees", icon: Users },
-    { label: "Rewards", href: "/admin/rewards", icon: Gift },
-    { label: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
+    { label: "Attendees & Moderation", href: "/admin/attendees", icon: Users },
+    { label: "Global Leaderboard", href: "/admin/leaderboard", icon: Trophy },
+    { label: "Social Feed", href: "/admin/social", icon: MessageSquare },
+    { label: "XP & Audit Logs", href: "/admin/audit-logs", icon: FileText },
   ];
 
 
