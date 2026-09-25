@@ -23,6 +23,7 @@ export function SanjayRun({
   const [gameState, setGameState] = useState<"ready" | "playing" | "gameover">("ready");
   const [score, setScore] = useState(0);
   const [bestScore, setBestScore] = useState(0);
+  const [xpEarned, setXpEarned] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // References for game loop to avoid dependency closures
@@ -178,6 +179,7 @@ export function SanjayRun({
       if (xpPayout > 0) {
         confetti({ particleCount: xpPayout * 2, spread: 80, origin: { y: 0.6 } });
       }
+      setXpEarned(xpPayout);
 
       setIsSubmitting(true);
       if (onScoreSubmitted) {
@@ -272,11 +274,25 @@ export function SanjayRun({
     }
 
     function drawObstacle(ctx: CanvasRenderingContext2D, obs: any) {
-      if (obs.type === "bird") {
-        drawPixel(ctx, obs.x + 10, obs.y + 8, 31, 17, "#1f2937"); // body
-        drawPixel(ctx, obs.x, obs.y + 14, 17, 7, "#111827"); // wing
-        drawPixel(ctx, obs.x + 39, obs.y + 13, 12, 6, "#f59e0b"); // beak
-        drawPixel(ctx, obs.x + 34, obs.y + 9, 4, 4, "#ef4444"); // eye
+      if (obs.type === "missile") {
+        // Exhaust Flame (animated randomly for flicker)
+        const flameLength = 10 + Math.random() * 8;
+        drawPixel(ctx, obs.x + obs.width, obs.y + 4, flameLength, 6, "#ef4444"); // Red flame
+        drawPixel(ctx, obs.x + obs.width, obs.y + 5, flameLength - 4, 4, "#eab308"); // Yellow core
+        
+        // Main Body
+        drawPixel(ctx, obs.x + 8, obs.y + 2, obs.width - 8, 10, "#94a3b8");
+        
+        // Nose Cone (left side)
+        drawPixel(ctx, obs.x, obs.y + 4, 8, 6, "#ef4444");
+        drawPixel(ctx, obs.x + 4, obs.y + 2, 4, 10, "#ef4444");
+        
+        // Fins
+        drawPixel(ctx, obs.x + obs.width - 12, obs.y - 2, 8, 4, "#64748b"); // Top fin
+        drawPixel(ctx, obs.x + obs.width - 12, obs.y + 12, 8, 4, "#64748b"); // Bottom fin
+        
+        // Window / Detail
+        drawPixel(ctx, obs.x + 15, obs.y + 5, 4, 4, "#0ea5e9");
       } else {
         // Cactus
         drawPixel(ctx, obs.x + 8, obs.y, 16, obs.height, "#22c55e");
@@ -297,18 +313,18 @@ export function SanjayRun({
         const frameScale = deltaTime / 16.67;
 
         st.score += st.speed * frameScale * 0.09;
-        st.speed = Math.min(13, st.speed + 0.001 * frameScale);
+        st.speed = Math.min(14, st.speed + 0.0015 * frameScale);
         st.groundOffset = (st.groundOffset + st.speed * frameScale) % 48;
         st.spawnTimer -= deltaTime;
 
         if (st.spawnTimer <= 0) {
-          const type = Math.random() > 0.75 && st.speed > 8 ? "bird" : Math.random() > 0.5 ? "double" : "cactus";
-          if (type === "bird") {
-            const birdY = Math.random() > 0.5 ? 285 : 320;
-            st.obstacles.push({ type, x: canvas!.width + 20, y: birdY, width: 50, height: 30 });
+          const type = Math.random() > 0.75 && st.speed > 8 ? "missile" : Math.random() > 0.5 ? "double" : "cactus";
+          if (type === "missile") {
+            const missileY = Math.random() > 0.5 ? 335 : 370;
+            st.obstacles.push({ type, x: canvas!.width + 20, y: missileY, width: 45, height: 14 });
           } else {
             const h = 42 + Math.random() * 24;
-            st.obstacles.push({ type, x: canvas!.width + 20, y: 350 - h, width: type === "double" ? 54 : 31, height: h });
+            st.obstacles.push({ type, x: canvas!.width + 20, y: 400 - h, width: type === "double" ? 54 : 31, height: h });
           }
           st.spawnTimer = Math.max(430, ((700 + Math.random() * 450) / st.speed) * 16.67);
         }
@@ -503,6 +519,13 @@ export function SanjayRun({
               <p className="text-4xl font-black font-mono text-yellow-400">{score}</p>
               <p className="text-[10px] font-bold text-slate-300 uppercase">Metres</p>
             </div>
+            
+            {xpEarned > 0 && (
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-400/20 text-yellow-400 rounded-full border border-yellow-400/30">
+                <Sparkles className="w-4 h-4" />
+                <span className="text-xs font-black">+{xpEarned} XP EARNED</span>
+              </div>
+            )}
             
             <div className="flex flex-col items-center justify-center gap-2 pt-2 w-full max-w-xs">
               <button
