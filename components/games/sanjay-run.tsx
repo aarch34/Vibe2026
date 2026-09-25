@@ -18,6 +18,7 @@ export function SanjayRun({
   onFinished,
 }: SanjayRunProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const pointerStart = useRef<{x: number, y: number} | null>(null);
   
   const [gameState, setGameState] = useState<"ready" | "playing" | "gameover">("ready");
   const [score, setScore] = useState(0);
@@ -69,6 +70,11 @@ export function SanjayRun({
 
   function handleDuck(isDucking: boolean) {
     stateRef.current.ducking = isDucking;
+    const p = stateRef.current.player;
+    // If we trigger a duck while in the air, do a fast-fall to instantly get back to the ground
+    if (isDucking && !p.onGround) {
+      p.velocityY += 15; 
+    }
   }
 
   function startGame() {
@@ -181,12 +187,23 @@ export function SanjayRun({
     }
 
     function checkCollision(obstacle: any, player: any, ducking: boolean) {
-      const playerHeight = ducking && player.onGround ? 48 : player.height;
+      const isSliding = ducking && player.onGround;
+      
+      const px1 = player.x + (isSliding ? -40 : 15);
+      const px2 = player.x + (isSliding ? 35 : player.width - 15);
+      const py1 = player.y + (isSliding ? 40 : 10);
+      const py2 = player.y + (isSliding ? 84 : player.height - 8);
+
+      const ox1 = obstacle.x + 5;
+      const ox2 = obstacle.x + obstacle.width - 5;
+      const oy1 = obstacle.y + 4;
+      const oy2 = obstacle.y + obstacle.height - 4;
+
       return (
-        player.x + 15 < obstacle.x + obstacle.width - 5 &&
-        player.x + player.width - 15 > obstacle.x + 5 &&
-        player.y + 10 < obstacle.y + obstacle.height - 4 &&
-        player.y + playerHeight - 8 > obstacle.y + 4
+        px1 < ox2 &&
+        px2 > ox1 &&
+        py1 < oy2 &&
+        py2 > oy1
       );
     }
 
@@ -197,10 +214,15 @@ export function SanjayRun({
 
     // High quality vector-like drawing of Sanjay based on the sprite
     function drawSanjayVector(ctx: CanvasRenderingContext2D, x: number, y: number, p: any, ducking: boolean) {
-      if (ducking && p.onGround) y += 25;
-      const swing = [-5, 5, -5, 5][p.frame] || 0;
+      const isSliding = ducking && p.onGround;
+      const swing = isSliding ? 0 : ([-5, 5, -5, 5][p.frame] || 0);
       
       ctx.save();
+      if (isSliding) {
+         ctx.translate(x + 29, y + 64);
+         ctx.rotate(-Math.PI / 2);
+         ctx.translate(-(x + 29), -(y + 84));
+      }
       // Suit Base
       drawPixel(ctx, x+16, y+38, 42, 31, "#1e293b"); // dark blue suit
       // White shirt
@@ -282,7 +304,8 @@ export function SanjayRun({
         if (st.spawnTimer <= 0) {
           const type = Math.random() > 0.75 && st.speed > 8 ? "bird" : Math.random() > 0.5 ? "double" : "cactus";
           if (type === "bird") {
-            st.obstacles.push({ type, x: canvas!.width + 20, y: 270, width: 50, height: 30 });
+            const birdY = Math.random() > 0.5 ? 285 : 320;
+            st.obstacles.push({ type, x: canvas!.width + 20, y: birdY, width: 50, height: 30 });
           } else {
             const h = 42 + Math.random() * 24;
             st.obstacles.push({ type, x: canvas!.width + 20, y: 350 - h, width: type === "double" ? 54 : 31, height: h });
@@ -410,24 +433,43 @@ export function SanjayRun({
         className="block w-full h-auto aspect-[960/430] bg-sky-400 cursor-pointer touch-none"
         onPointerDown={(e) => {
           if ((e.target as HTMLElement).closest('button')) return;
+          pointerStart.current = { x: e.clientX, y: e.clientY };
           if (gameState === "playing") handleJump();
+          else if (gameState === "ready") startGame();
+        }}
+        onPointerMove={(e) => {
+          if (!pointerStart.current) return;
+          const dy = e.clientY - pointerStart.current.y;
+          if (dy > 30) {
+            if (gameState === "playing") handleDuck(true);
+          }
+        }}
+        onPointerUp={() => {
+          if (gameState === "playing") handleDuck(false);
+          pointerStart.current = null;
+        }}
+        onPointerCancel={() => {
+          if (gameState === "playing") handleDuck(false);
+          pointerStart.current = null;
         }}
         style={{ imageRendering: "pixelated" }}
       />
 
       {/* Start Screen */}
       {gameState === "ready" && (
-        <div className="absolute inset-0 z-20 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center">
+        <div 
+          className="absolute inset-0 z-20 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center cursor-pointer"
+          onClick={startGame}
+        >
           <div className="text-center space-y-6 animate-in zoom-in-95 fade-in duration-300">
             <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-white drop-shadow-[0_4px_0_rgba(234,179,8,1)]">
               SANJAY RUN
             </h1>
             <p className="text-sm font-bold text-slate-300">READY TO RUN?</p>
             <button
-              onClick={startGame}
-              className="px-8 py-4 bg-yellow-400 hover:bg-yellow-300 border-4 border-slate-800 shadow-[4px_4px_0_#1e293b] active:shadow-[0_0_0_#1e293b] active:translate-y-1 active:translate-x-1 text-slate-900 font-black text-xl transition-all"
+              className="px-8 py-4 bg-yellow-400 hover:bg-yellow-300 border-4 border-slate-800 shadow-[4px_4px_0_#1e293b] active:shadow-[0_0_0_#1e293b] active:translate-y-1 active:translate-x-1 text-slate-900 font-black text-xl transition-all pointer-events-none"
             >
-              START GAME
+              TAP TO START
             </button>
             <div className="text-xs font-bold text-slate-400 pt-8">
               SPACE / ↑ / TAP = JUMP • ↓ = DUCK
@@ -438,8 +480,15 @@ export function SanjayRun({
 
       {/* Game Over Screen */}
       {gameState === "gameover" && (
-        <div className="absolute inset-0 z-20 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center">
-          <div className="text-center space-y-6 animate-in zoom-in-95 fade-in duration-300 bg-slate-800/80 p-8 border-2 border-slate-700 rounded-3xl">
+        <div 
+          className="absolute inset-0 z-20 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center cursor-pointer"
+          onClick={(e) => {
+            if ((e.target as HTMLElement).closest('button')) return;
+            resetGame(); 
+            startGame();
+          }}
+        >
+          <div className="text-center space-y-6 animate-in zoom-in-95 fade-in duration-300 bg-slate-800/80 p-8 border-2 border-slate-700 rounded-3xl" onClick={(e) => e.stopPropagation()}>
             <h2 className="text-4xl sm:text-6xl font-black text-white drop-shadow-[0_4px_0_rgba(239,68,68,1)]">
               BONK! 💥
             </h2>
@@ -468,26 +517,6 @@ export function SanjayRun({
               )}
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Mobile Controls */}
-      {gameState === "playing" && (
-        <div className="absolute bottom-4 left-4 right-4 flex justify-between sm:hidden z-10">
-           <button 
-             onPointerDown={() => handleDuck(true)}
-             onPointerUp={() => handleDuck(false)}
-             onPointerCancel={() => handleDuck(false)}
-             className="w-24 h-24 bg-white/20 active:bg-white/40 border-2 border-white/50 rounded-full flex items-center justify-center backdrop-blur-md"
-           >
-             <span className="text-white font-black text-xs">DUCK</span>
-           </button>
-           <button 
-             onPointerDown={handleJump}
-             className="w-24 h-24 bg-white/20 active:bg-white/40 border-2 border-white/50 rounded-full flex items-center justify-center backdrop-blur-md"
-           >
-             <span className="text-white font-black text-xs">JUMP</span>
-           </button>
         </div>
       )}
 

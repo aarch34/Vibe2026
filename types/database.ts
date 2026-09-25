@@ -59,11 +59,11 @@ export interface Level {
 
 export const VIBE_LEVELS: Level[] = [
   { id: "lvl-1", level_number: 1, name: "VIBE NEWBIE", min_xp: 0, max_xp: 249, badge_icon: "🌱" },
-  { id: "lvl-2", level_number: 2, name: "VIBE EXPLORER", min_xp: 250, max_xp: 499, badge_icon: "✨" },
-  { id: "lvl-3", level_number: 3, name: "VIBE SEEKER", min_xp: 500, max_xp: 999, badge_icon: "🔥" },
-  { id: "lvl-4", level_number: 4, name: "VIBE RIDER", min_xp: 1000, max_xp: 1499, badge_icon: "⚡" },
-  { id: "lvl-5", level_number: 5, name: "VIBE ICON", min_xp: 1500, max_xp: 2499, badge_icon: "💫" },
-  { id: "lvl-6", level_number: 6, name: "VIBE LEGEND", min_xp: 2500, max_xp: null, badge_icon: "👑" },
+  { id: "lvl-2", level_number: 2, name: "VIBE EXPLORER", min_xp: 250, max_xp: 749, badge_icon: "✨" },
+  { id: "lvl-3", level_number: 3, name: "VIBE SEEKER", min_xp: 750, max_xp: 1499, badge_icon: "🔥" },
+  { id: "lvl-4", level_number: 4, name: "VIBE RIDER", min_xp: 1500, max_xp: 2499, badge_icon: "⚡" },
+  { id: "lvl-5", level_number: 5, name: "VIBE ICON", min_xp: 2500, max_xp: 3999, badge_icon: "💫" },
+  { id: "lvl-6", level_number: 6, name: "VIBE LEGEND", min_xp: 4000, max_xp: null, badge_icon: "👑" },
 ];
 
 export interface ConnectionRequest {

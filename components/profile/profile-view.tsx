@@ -515,6 +515,25 @@ export function ProfileView({
         </div>
       </div>
 
+      {/* Prominent Leaderboard Link */}
+      {isSelf && (
+        <Link
+          href="/app/leaderboard"
+          className="w-full p-4 rounded-3xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-yellow-500/10 border border-amber-500/30 flex items-center justify-between group hover:bg-amber-500/20 transition-all cursor-pointer shadow-lg"
+        >
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/40">
+              <Trophy className="w-6 h-6 text-amber-400 group-hover:scale-110 transition-transform" />
+            </div>
+            <div>
+              <h3 className="text-lg font-black text-amber-400 tracking-tight">GLOBAL LEADERBOARD</h3>
+              <p className="text-xs text-muted-foreground font-medium">See where you rank among all attendees!</p>
+            </div>
+          </div>
+          <ExternalLink className="w-5 h-5 text-amber-400/50 group-hover:text-amber-400 transition-colors" />
+        </Link>
+      )}
+
       {/* User Posts Section */}
       <div className="space-y-4">
         <h3 className="text-base font-black text-foreground flex items-center space-x-2">

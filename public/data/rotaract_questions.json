@@ -1,0 +1,5002 @@
+[
+  {
+    "q": "In what year was the first Rotaract club certified by Rotary?",
+    "options": [
+      "1965",
+      "1968",
+      "1972",
+      "1975"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Where was the first Rotaract club certified?",
+    "options": [
+      "University of North Carolina at Charlotte",
+      "University of Chicago",
+      "Stanford University",
+      "University of Toronto"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "What minimum age does Rotary International's current Rotaract page give for Rotaract?",
+    "options": [
+      "16",
+      "17",
+      "18",
+      "21"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Who decides how a Rotaract club is organized and run?",
+    "options": [
+      "Only the sponsor Rotary club",
+      "Rotaract members",
+      "Only the district governor",
+      "Only Rotary International staff"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Who manages a Rotaract club's funds?",
+    "options": [
+      "Rotary International",
+      "The sponsor Rotary club only",
+      "The Rotaract club",
+      "The district treasurer only"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "What can Rotary club sponsors provide to Rotaract clubs?",
+    "options": [
+      "Guidance and support",
+      "Only fundraising",
+      "Only meeting rooms",
+      "Mandatory project approval"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Beginning 1 July 2022, what annual RI dues were set for university-based Rotaract clubs?",
+    "options": [
+      "$2",
+      "$5",
+      "$8",
+      "$10"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Beginning 1 July 2022, what annual RI dues were set for community-based Rotaract clubs?",
+    "options": [
+      "$5",
+      "$6",
+      "$8",
+      "$12"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "What happened to the $50 one-time chartering fee for new Rotaract clubs beginning 1 July 2022?",
+    "options": [
+      "It doubled",
+      "It was eliminated",
+      "It became $25",
+      "It became mandatory per year"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "From 1 July 2020, could Rotaract clubs establish a new club without a sponsor?",
+    "options": [
+      "Yes",
+      "No",
+      "Only university clubs",
+      "Only community clubs"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "From 1 July 2020, could Rotaract clubs choose another Rotaract club as a sponsor?",
+    "options": [
+      "Yes",
+      "No",
+      "Only with presidential approval",
+      "Only outside the district"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "When was Rotaract approved by Rotary?",
+    "options": [
+      "January 1968",
+      "March 1970",
+      "January 1975",
+      "June 1965"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Who founded Rotary?",
+    "options": [
+      "Paul Harris",
+      "Herbert J. Taylor",
+      "Arch Klumph",
+      "Ben Collins"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In what year was Rotary founded?",
+    "options": [
+      "1900",
+      "1905",
+      "1910",
+      "1915"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Where was the first Rotary club formed?",
+    "options": [
+      "Chicago",
+      "New York",
+      "Boston",
+      "San Francisco"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which city became Rotary's second city in November 1908?",
+    "options": [
+      "Seattle",
+      "San Francisco",
+      "New York",
+      "London"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "In what year did representatives of 16 Rotary clubs gather for the first Rotary Convention?",
+    "options": [
+      "1905",
+      "1908",
+      "1910",
+      "1912"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "What organization did the 1910 convention create?",
+    "options": [
+      "National Association of Rotary Clubs of America",
+      "Rotary Foundation",
+      "Rotaract International",
+      "International Association of Rotarians"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "When was the first issue of The Rotarian published?",
+    "options": [
+      "January 1905",
+      "January 1911",
+      "June 1915",
+      "March 1920"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "What was The Rotarian originally called?",
+    "options": [
+      "The Rotary Review",
+      "The National Rotarian",
+      "Rotary World",
+      "The Service Journal"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "What is Rotary's principal motto?",
+    "options": [
+      "Service Above Self",
+      "Service Before Business",
+      "One Club, One Goal",
+      "Leadership Through Service"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "What is Rotary's secondary official motto?",
+    "options": [
+      "One Profits Most Who Serves Best",
+      "Service Is Success",
+      "People of Action",
+      "Doing Good, Doing More"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Who drafted The Four-Way Test in 1932?",
+    "options": [
+      "Paul Harris",
+      "Herbert J. Taylor",
+      "Arch Klumph",
+      "Ben Collins"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "How many questions are in The Four-Way Test?",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which question comes first in The Four-Way Test?",
+    "options": [
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which Four-Way Test question concerns fairness?",
+    "options": [
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which Four-Way Test question concerns goodwill and better friendships?",
+    "options": [
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Which Four-Way Test question concerns benefit to everyone concerned?",
+    "options": [
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 3
+  },
+  {
+    "q": "How many Areas of Focus does Rotary International currently list?",
+    "options": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "Which is a Rotary Area of Focus?",
+    "options": [
+      "Promoting peace",
+      "Competitive gaming",
+      "Space exploration",
+      "Luxury tourism"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which is a Rotary Area of Focus?",
+    "options": [
+      "Fighting disease",
+      "Professional sports",
+      "Film production",
+      "Fashion design"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which is a Rotary Area of Focus?",
+    "options": [
+      "Providing clean water",
+      "Shopping malls",
+      "Sports broadcasting",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which is a Rotary Area of Focus?",
+    "options": [
+      "Saving mothers and children",
+      "Urban racing",
+      "Music production",
+      "Automotive design"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which is a Rotary Area of Focus?",
+    "options": [
+      "Supporting education",
+      "Luxury housing",
+      "Space travel",
+      "Entertainment"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which is a Rotary Area of Focus?",
+    "options": [
+      "Growing local economies",
+      "Professional football",
+      "Film awards",
+      "Fashion retail"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which is a Rotary Area of Focus?",
+    "options": [
+      "Protecting the environment",
+      "Esports",
+      "Airline management",
+      "Restaurant franchising"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which is a stated Rotary guiding value?",
+    "options": [
+      "Integrity",
+      "Competition above all",
+      "Political campaigning",
+      "Commercial profit"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which is a stated Rotary guiding principle?",
+    "options": [
+      "Fellowship",
+      "Celebrity status",
+      "Partisan campaigning",
+      "Commercial advertising"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In what year did Rotary begin its fight against polio with a project in the Philippines?",
+    "options": [
+      "1968",
+      "1979",
+      "1988",
+      "1995"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "How many children did the 1979 Philippines project aim to immunize?",
+    "options": [
+      "600,000",
+      "6 million",
+      "60 million",
+      "600 million"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "How many countries had polio endemic in 1988 according to Rotary's history page?",
+    "options": [
+      "25",
+      "50",
+      "125",
+      "200"
+    ],
+    "correct": 2
+  },
+  {
+    "q": "What age range does Rotary International currently give for Interact?",
+    "options": [
+      "10–14",
+      "12–18",
+      "15–21",
+      "18–30"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "How many projects does an Interact club organize at minimum each year?",
+    "options": [
+      "One",
+      "Two",
+      "Three",
+      "Four"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "What are the two minimum types of Interact projects?",
+    "options": [
+      "One helping the school/community and one promoting international understanding",
+      "One fundraising and one sports event",
+      "One conference and one election",
+      "One social event and one trip"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "What does RYLA stand for?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "What does Rotary International describe as its biggest event of the year?",
+    "options": [
+      "Rotary International Convention",
+      "World Rotaract Day",
+      "Rotary Foundation Gala",
+      "District Assembly"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "What do Rotary Fellowships bring together?",
+    "options": [
+      "People who share interests, hobbies, or vocations",
+      "Only district governors",
+      "Only Rotaract presidents",
+      "Only Rotary staff"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "What do Rotary Action Groups help clubs and districts do?",
+    "options": [
+      "Plan and carry out service projects using specialized expertise",
+      "Run national elections",
+      "Set government policy",
+      "Manage university admissions"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Rotaract clubs bring together people primarily to do what?",
+    "options": [
+      "Exchange ideas, develop skills, and serve communities",
+      "Run political campaigns",
+      "Operate commercial franchises",
+      "Manage government departments"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: In what year was the first Rotaract club certified by Rotary?",
+    "options": [
+      "1965",
+      "1968",
+      "1972",
+      "1975"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Where was the first Rotaract club certified?",
+    "options": [
+      "University of North Carolina at Charlotte",
+      "University of Chicago",
+      "Stanford University",
+      "University of Toronto"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What minimum age does Rotary International's current Rotaract page give for Rotaract?",
+    "options": [
+      "16",
+      "17",
+      "18",
+      "21"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Who decides how a Rotaract club is organized and run?",
+    "options": [
+      "Only the sponsor Rotary club",
+      "Rotaract members",
+      "Only the district governor",
+      "Only Rotary International staff"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Who manages a Rotaract club's funds?",
+    "options": [
+      "Rotary International",
+      "The sponsor Rotary club only",
+      "The Rotaract club",
+      "The district treasurer only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What can Rotary club sponsors provide to Rotaract clubs?",
+    "options": [
+      "Guidance and support",
+      "Only fundraising",
+      "Only meeting rooms",
+      "Mandatory project approval"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Beginning 1 July 2022, what annual RI dues were set for university-based Rotaract clubs?",
+    "options": [
+      "$2",
+      "$5",
+      "$8",
+      "$10"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Beginning 1 July 2022, what annual RI dues were set for community-based Rotaract clubs?",
+    "options": [
+      "$5",
+      "$6",
+      "$8",
+      "$12"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What happened to the $50 one-time chartering fee for new Rotaract clubs beginning 1 July 2022?",
+    "options": [
+      "It doubled",
+      "It was eliminated",
+      "It became $25",
+      "It became mandatory per year"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: From 1 July 2020, could Rotaract clubs establish a new club without a sponsor?",
+    "options": [
+      "Yes",
+      "No",
+      "Only university clubs",
+      "Only community clubs"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: From 1 July 2020, could Rotaract clubs choose another Rotaract club as a sponsor?",
+    "options": [
+      "Yes",
+      "No",
+      "Only with presidential approval",
+      "Only outside the district"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: When was Rotaract approved by Rotary?",
+    "options": [
+      "January 1968",
+      "March 1970",
+      "January 1975",
+      "June 1965"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Who founded Rotary?",
+    "options": [
+      "Paul Harris",
+      "Herbert J. Taylor",
+      "Arch Klumph",
+      "Ben Collins"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: In what year was Rotary founded?",
+    "options": [
+      "1900",
+      "1905",
+      "1910",
+      "1915"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Where was the first Rotary club formed?",
+    "options": [
+      "Chicago",
+      "New York",
+      "Boston",
+      "San Francisco"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which city became Rotary's second city in November 1908?",
+    "options": [
+      "Seattle",
+      "San Francisco",
+      "New York",
+      "London"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: In what year did representatives of 16 Rotary clubs gather for the first Rotary Convention?",
+    "options": [
+      "1905",
+      "1908",
+      "1910",
+      "1912"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What organization did the 1910 convention create?",
+    "options": [
+      "National Association of Rotary Clubs of America",
+      "Rotary Foundation",
+      "Rotaract International",
+      "International Association of Rotarians"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: When was the first issue of The Rotarian published?",
+    "options": [
+      "January 1905",
+      "January 1911",
+      "June 1915",
+      "March 1920"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What was The Rotarian originally called?",
+    "options": [
+      "The Rotary Review",
+      "The National Rotarian",
+      "Rotary World",
+      "The Service Journal"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What is Rotary's principal motto?",
+    "options": [
+      "Service Above Self",
+      "Service Before Business",
+      "One Club, One Goal",
+      "Leadership Through Service"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What is Rotary's secondary official motto?",
+    "options": [
+      "One Profits Most Who Serves Best",
+      "Service Is Success",
+      "People of Action",
+      "Doing Good, Doing More"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Who drafted The Four-Way Test in 1932?",
+    "options": [
+      "Paul Harris",
+      "Herbert J. Taylor",
+      "Arch Klumph",
+      "Ben Collins"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: How many questions are in The Four-Way Test?",
+    "options": [
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which question comes first in The Four-Way Test?",
+    "options": [
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which Four-Way Test question concerns fairness?",
+    "options": [
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which Four-Way Test question concerns goodwill and better friendships?",
+    "options": [
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which Four-Way Test question concerns benefit to everyone concerned?",
+    "options": [
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: How many Areas of Focus does Rotary International currently list?",
+    "options": [
+      "5",
+      "6",
+      "7",
+      "8"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which is a Rotary Area of Focus?",
+    "options": [
+      "Promoting peace",
+      "Competitive gaming",
+      "Space exploration",
+      "Luxury tourism"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which is a Rotary Area of Focus?",
+    "options": [
+      "Fighting disease",
+      "Professional sports",
+      "Film production",
+      "Fashion design"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which is a Rotary Area of Focus?",
+    "options": [
+      "Providing clean water",
+      "Shopping malls",
+      "Sports broadcasting",
+      "Aviation"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which is a Rotary Area of Focus?",
+    "options": [
+      "Saving mothers and children",
+      "Urban racing",
+      "Music production",
+      "Automotive design"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which is a Rotary Area of Focus?",
+    "options": [
+      "Supporting education",
+      "Luxury housing",
+      "Space travel",
+      "Entertainment"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which is a Rotary Area of Focus?",
+    "options": [
+      "Growing local economies",
+      "Professional football",
+      "Film awards",
+      "Fashion retail"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which is a Rotary Area of Focus?",
+    "options": [
+      "Protecting the environment",
+      "Esports",
+      "Airline management",
+      "Restaurant franchising"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which is a stated Rotary guiding value?",
+    "options": [
+      "Integrity",
+      "Competition above all",
+      "Political campaigning",
+      "Commercial profit"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Which is a stated Rotary guiding principle?",
+    "options": [
+      "Fellowship",
+      "Celebrity status",
+      "Partisan campaigning",
+      "Commercial advertising"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: In what year did Rotary begin its fight against polio with a project in the Philippines?",
+    "options": [
+      "1968",
+      "1979",
+      "1988",
+      "1995"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: How many children did the 1979 Philippines project aim to immunize?",
+    "options": [
+      "600,000",
+      "6 million",
+      "60 million",
+      "600 million"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: How many countries had polio endemic in 1988 according to Rotary's history page?",
+    "options": [
+      "25",
+      "50",
+      "125",
+      "200"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What age range does Rotary International currently give for Interact?",
+    "options": [
+      "10–14",
+      "12–18",
+      "15–21",
+      "18–30"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: How many projects does an Interact club organize at minimum each year?",
+    "options": [
+      "One",
+      "Two",
+      "Three",
+      "Four"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What are the two minimum types of Interact projects?",
+    "options": [
+      "One helping the school/community and one promoting international understanding",
+      "One fundraising and one sports event",
+      "One conference and one election",
+      "One social event and one trip"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What does RYLA stand for?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What does Rotary International describe as its biggest event of the year?",
+    "options": [
+      "Rotary International Convention",
+      "World Rotaract Day",
+      "Rotary Foundation Gala",
+      "District Assembly"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What do Rotary Fellowships bring together?",
+    "options": [
+      "People who share interests, hobbies, or vocations",
+      "Only district governors",
+      "Only Rotaract presidents",
+      "Only Rotary staff"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: What do Rotary Action Groups help clubs and districts do?",
+    "options": [
+      "Plan and carry out service projects using specialized expertise",
+      "Run national elections",
+      "Set government policy",
+      "Manage university admissions"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "Which option is NOT the answer to this Rotary/Rotaract question: Rotaract clubs bring together people primarily to do what?",
+    "options": [
+      "Exchange ideas, develop skills, and serve communities",
+      "Run political campaigns",
+      "Operate commercial franchises",
+      "Manage government departments"
+    ],
+    "correct": 1
+  },
+  {
+    "q": "A Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "A club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "A club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "A team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "A team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "A Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "A 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "A young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "A club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "A club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 2, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 3, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 4, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 5, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 6, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 7, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 8, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 9, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 10, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 11, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 12, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 13, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 14, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 15, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 16, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 17, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 18, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 19, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 20, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 21, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 22, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 23, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 24, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 25, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 26, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 27, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 28, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 29, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 30, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 31, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 32, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 33, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 34, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 35, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 36, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 37, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 38, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 39, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a club wants to evaluate fairness to everyone affected. Which Four-Way Test question applies?",
+    "options": [
+      "Is it fair to all concerned?",
+      "Is it the truth?",
+      "Will it build goodwill and better friendships?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a team wants to assess goodwill and relationships. Which Four-Way Test question applies?",
+    "options": [
+      "Will it build goodwill and better friendships?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it be beneficial to all concerned?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a team wants to check whether everyone concerned benefits. Which question applies?",
+    "options": [
+      "Will it be beneficial to all concerned?",
+      "Is it the truth?",
+      "Is it fair to all concerned?",
+      "Will it build goodwill and better friendships?"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a Rotaract club is working with its Rotary sponsor. Which description matches Rotary guidance?",
+    "options": [
+      "They can work as partners in service",
+      "The Rotary club must run every Rotaract meeting",
+      "Rotaract cannot manage its own funds",
+      "The Rotary club owns every Rotaract project"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "options": [
+      "Interact",
+      "Rotaract",
+      "Rotary Youth Exchange",
+      "Rotary club"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a young person wants a Rotary leadership program. Which program is RYLA?",
+    "options": [
+      "Rotary Youth Leadership Awards",
+      "Rotary Young Leaders Association",
+      "Rotary Youth Learning Academy",
+      "Rotary Young Leaders Awards"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a club is designing a clean-drinking-water project. Which Area of Focus fits?",
+    "options": [
+      "Providing clean water",
+      "Protecting the environment only",
+      "Growing local economies only",
+      "Promoting peace only"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 40, a club wants a project focused on children's schooling. Which Area of Focus fits?",
+    "options": [
+      "Supporting education",
+      "Professional sports",
+      "Commercial development",
+      "Aviation"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 41, a Rotaract club wants to plan and finance its own service project. Which principle supports this?",
+    "options": [
+      "Rotaractors can plan and finance their own activities",
+      "Only RI can finance club activities",
+      "Only a sponsor can plan every project",
+      "Rotaract clubs cannot run service projects"
+    ],
+    "correct": 0
+  },
+  {
+    "q": "In scenario 41, a club is checking the first question of The Four-Way Test. What should it examine?",
+    "options": [
+      "Whether it is the truth",
+      "Whether it is profitable",
+      "Whether it is popular",
+      "Whether it is entertaining"
+    ],
+    "correct": 0
+  }
+]

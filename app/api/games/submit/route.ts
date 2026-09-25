@@ -30,22 +30,23 @@ export async function POST(req: Request) {
 
     // Use frontend-calculated XP to match the UI perfectly,
     // otherwise fallback to backend conservative calculation
-    xpAwarded = typeof xp === "number" ? xp : 25;
+    let parsedXp: number | undefined;
+    if (xp !== undefined && xp !== null && !isNaN(Number(xp))) {
+      parsedXp = Number(xp);
+    }
     
-    if (typeof xp !== "number") {
+    if (parsedXp !== undefined) {
+      xpAwarded = parsedXp;
+    } else {
       if (gameType === "rotaract_quiz") {
         const pct = numMax > 0 ? (numScore / numMax) * 100 : 0;
-        if (pct >= 90) xpAwarded = 150;
-        else if (pct >= 70) xpAwarded = 100;
-        else if (pct >= 40) xpAwarded = 75;
-        else if (pct >= 20) xpAwarded = 50;
+        if (pct >= 81) xpAwarded = 150;
+        else if (pct >= 61) xpAwarded = 100;
+        else if (pct >= 31) xpAwarded = 50;
         else xpAwarded = 25;
       } else if (gameType === "flappy_rocco") {
-        if (numScore >= 1000) xpAwarded = 125;
-        else if (numScore >= 600) xpAwarded = 100;
-        else if (numScore >= 300) xpAwarded = 75;
-        else if (numScore >= 100) xpAwarded = 50;
-        else if (numScore >= 5) xpAwarded = 25;
+        if (numScore >= 10) xpAwarded = 25;
+        else if (numScore >= 5) xpAwarded = 15;
         else xpAwarded = 0;
       } else if (gameType === "sanjay_run") {
         if (numScore >= 1000) xpAwarded = 50;
