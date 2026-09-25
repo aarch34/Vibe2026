@@ -32,14 +32,36 @@ export default async function RegisterPage() {
         redirect("/sign-up?redirect_url=/register");
       }
 
+      const user = await currentUser();
+      if (user) {
+        fullName = user.firstName
+          ? `${user.firstName} ${user.lastName || ""}`.trim()
+          : user.username || "";
+        email = user.emailAddresses?.[0]?.emailAddress || "";
+        avatarUrl = user.imageUrl || "";
+      }
+
       // Check if user has already completed registration in Supabase
       let isAlreadyRegistered = false;
       if (isUsingLiveSupabase() && supabaseAdmin) {
-        const { data: existingProfile } = await supabaseAdmin
+        let { data: existingProfile } = await supabaseAdmin
           .from("profiles")
           .select("id, profile_completed, rotaract_club, phone")
           .eq("clerk_user_id", clerkUserId)
+          .order("profile_completed", { ascending: false })
+          .limit(1)
           .maybeSingle();
+
+        if (!existingProfile && email) {
+          const { data: byEmail } = await supabaseAdmin
+            .from("profiles")
+            .select("id, profile_completed, rotaract_club, phone")
+            .ilike("email", email)
+            .order("profile_completed", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          existingProfile = byEmail;
+        }
 
         if (existingProfile && (existingProfile.profile_completed || (existingProfile.rotaract_club && existingProfile.phone))) {
           isAlreadyRegistered = true;
@@ -48,15 +70,6 @@ export default async function RegisterPage() {
 
       if (isAlreadyRegistered) {
         redirect("/app");
-      }
-
-      const user = await currentUser();
-      if (user) {
-        fullName = user.firstName
-          ? `${user.firstName} ${user.lastName || ""}`.trim()
-          : user.username || "";
-        email = user.emailAddresses?.[0]?.emailAddress || "";
-        avatarUrl = user.imageUrl || "";
       }
     } catch (err: any) {
       if (err?.message === "NEXT_REDIRECT" || err?.digest?.startsWith?.("NEXT_REDIRECT")) {

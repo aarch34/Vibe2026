@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { supabase } from "@/lib/db/supabase";
 
@@ -9,6 +10,8 @@ interface RealtimeNotifierProps {
 }
 
 export function RealtimeNotifier({ currentProfileId }: RealtimeNotifierProps) {
+  const router = useRouter();
+
   useEffect(() => {
     if (!supabase || !currentProfileId) return;
 
@@ -26,7 +29,7 @@ export function RealtimeNotifier({ currentProfileId }: RealtimeNotifierProps) {
               description: "Check it out on the discover feed.",
               action: {
                 label: "View Feed",
-                onClick: () => window.location.href = "/app",
+                onClick: () => router.push("/app"),
               },
             });
           }
@@ -52,7 +55,7 @@ export function RealtimeNotifier({ currentProfileId }: RealtimeNotifierProps) {
               description: "Someone wants to connect with you.",
               action: {
                 label: "View Friends",
-                onClick: () => window.location.href = "/app/friends",
+                onClick: () => router.push("/app/friends"),
               },
             });
           }
