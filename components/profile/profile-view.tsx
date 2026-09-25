@@ -117,7 +117,7 @@ export function ProfileView({
   const [grievanceResult, setGrievanceResult] = useState<{ id: string; message: string } | null>(null);
   const [grievanceLoading, setGrievanceLoading] = useState(false);
 
-  const liveStats = useLiveStats();
+
   
   // Sync internal state when server-passed profile prop updates
   useEffect(() => {
