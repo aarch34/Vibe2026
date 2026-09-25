@@ -159,6 +159,13 @@ export async function POST(req: Request) {
     invalidateSessionCache(profileId);
     invalidateSessionCache();
 
+    try {
+      const { invalidateUserGameSummary, invalidateLeaderboardCache } = await import("@/lib/cache/app-cache");
+      invalidateUserGameSummary(profileId);
+      invalidateLeaderboardCache(gameType);
+      invalidateLeaderboardCache("overall");
+    } catch { /* ignore */ }
+
     return NextResponse.json({
       success: true,
       xpEarned: xpAwarded,

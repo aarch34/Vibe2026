@@ -6,6 +6,7 @@ import { mockDb } from "@/lib/db/mock-store";
 import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { uploadMediaFile } from "@/lib/storage/storage-client";
 import { Profile } from "@/types/database";
+import { invalidateDiscoverProfilesCache } from "@/lib/db/profiles";
 
 export interface UpdateProfileResult {
   success: boolean;
@@ -278,6 +279,7 @@ export async function updateAttendeeProfile(
     // 9. Invalidate Session Cache and Next.js Paths
     invalidateSessionCache(session.clerkUserId);
     invalidateSessionCache();
+    invalidateDiscoverProfilesCache();
 
     try {
       revalidatePath("/app/profile");

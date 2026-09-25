@@ -1,7 +1,8 @@
 "use server";
 
-import { getCurrentUserSession } from "@/lib/auth/session";
+import { getCurrentUserSession, invalidateSessionCache } from "@/lib/auth/session";
 import { mockDb } from "@/lib/db/mock-store";
+import { socialStore } from "@/lib/db/social-store";
 
 export async function sendConnectionRequestAction(receiverId: string) {
   const session = await getCurrentUserSession();
@@ -10,8 +11,16 @@ export async function sendConnectionRequestAction(receiverId: string) {
 
 export async function respondConnectionRequestAction(requestId: string, action: "accept" | "decline") {
   const session = await getCurrentUserSession();
-  if (action === "accept") {
-    return mockDb.acceptConnectionRequest(requestId, session.profile.id);
+  const res = await socialStore.respondConnectionRequest(
+    requestId,
+    session.profile.id,
+    action,
+    session.profile.display_name
+  );
+  invalidateSessionCache(session.clerkUserId);
+  invalidateSessionCache(session.profile.id);
+  if ((res as any).senderId) {
+    invalidateSessionCache((res as any).senderId);
   }
-  return mockDb.declineConnectionRequest(requestId, session.profile.id);
+  return res;
 }

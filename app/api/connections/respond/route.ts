@@ -24,6 +24,9 @@ export async function POST(req: Request) {
 
     invalidateSessionCache(session.clerkUserId);
     invalidateSessionCache(session.profile.id);
+    if ((result as any).senderId) {
+      invalidateSessionCache((result as any).senderId);
+    }
 
     return NextResponse.json(result);
   } catch (error) {

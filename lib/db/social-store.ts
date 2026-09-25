@@ -59,6 +59,14 @@ const CURATED_PROFILES: Record<string, Profile> = {};
 
 const isTestEnv = process.env.NODE_ENV === "test" || Boolean(process.env.VITEST);
 
+// Feed in-memory cache for ultra-fast repeated loads (20s TTL)
+let cachedFeedPosts: { posts: (Post & { author: Profile })[]; timestamp: number } | null = null;
+const FEED_CACHE_TTL_MS = 20_000;
+
+export function invalidateFeedCache() {
+  cachedFeedPosts = null;
+}
+
 class PersistentSocialStore {
   private data: SocialStoreData;
 
@@ -139,6 +147,10 @@ class PersistentSocialStore {
   // --- POSTS ---
 
   async getPostsWithAuthors(): Promise<(Post & { author: Profile })[]> {
+    if (cachedFeedPosts && Date.now() - cachedFeedPosts.timestamp < FEED_CACHE_TTL_MS && !isTestEnv) {
+      return cachedFeedPosts.posts;
+    }
+
     // 1. Fetch from live Supabase if connected
     if (isUsingLiveSupabase() && supabaseAdmin) {
       try {
@@ -207,6 +219,7 @@ class PersistentSocialStore {
             }
           }
 
+          let finalPosts = realPosts;
           // If fewer than 2 real posts, append curated posts so the feed feels active
           if (realPosts.length < 2) {
             const curatedToAdd = INITIAL_CURATED_POSTS.filter((cp) => !existingIds.has(cp.id)).map((cp) => ({
@@ -217,10 +230,13 @@ class PersistentSocialStore {
                 username: "rotaract3192",
               }),
             }));
-            return [...realPosts, ...curatedToAdd];
+            finalPosts = [...realPosts, ...curatedToAdd];
           }
 
-          return realPosts;
+          if (!isTestEnv) {
+            cachedFeedPosts = { posts: finalPosts, timestamp: Date.now() };
+          }
+          return finalPosts;
         }
       } catch (err) {
         console.warn("[socialStore] Supabase getPostsWithAuthors error:", err);
@@ -406,11 +422,13 @@ class PersistentSocialStore {
     this.data.posts.unshift(post);
     this.saveToDisk();
     this.syncToMockDb();
+    cachedFeedPosts = null;
 
     return { post, xpEarned };
   }
 
   async deletePost(postId: string, authorId: string): Promise<boolean> {
+    cachedFeedPosts = null;
     if (isUsingLiveSupabase() && supabaseAdmin && isUUID(authorId)) {
       try {
         await (supabaseAdmin as any)
@@ -989,13 +1007,37 @@ class PersistentSocialStore {
               } catch { /* ignore */ }
             }
 
-            // 7. Notify sender
+            // 7. Notify sender with clear XP message
+            const responderDisplayName = responderName || "An attendee";
             await this.createNotification({
               profile_id: req.sender_id,
               type: "connection_accepted",
               title: "Connection Accepted! 🎉",
-              message: `${responderName || "User"} accepted your connection request!`,
+              message: `${responderDisplayName} accepted your connection request! (+25 XP Earned ⭐)`,
               link: `/app/profile?id=${req.receiver_id}`,
+            });
+
+            // 8. Explicit XP notifications for both sender & receiver
+            await this.createNotification({
+              profile_id: req.sender_id,
+              type: "xp_earned",
+              title: "+25 XP Earned! 🤝",
+              message: `Connected with ${responderDisplayName}! +25 XP`,
+              link: `/app/profile?id=${req.receiver_id}`,
+            });
+
+            let senderDisplayName = "an attendee";
+            try {
+              const { data: sProf } = await supabaseAdmin.from("profiles").select("display_name").eq("id", req.sender_id).maybeSingle();
+              if (sProf?.display_name) senderDisplayName = sProf.display_name;
+            } catch { /* ignore */ }
+
+            await this.createNotification({
+              profile_id: req.receiver_id,
+              type: "xp_earned",
+              title: "+25 XP Earned! 🤝",
+              message: `Connected with ${senderDisplayName}! +25 XP`,
+              link: `/app/profile?id=${req.sender_id}`,
             });
           }
 
@@ -1008,7 +1050,12 @@ class PersistentSocialStore {
 
           this.saveToDisk();
           this.syncToMockDb();
-          return { success: true, status: action === "accept" ? "accepted" : "declined" };
+          return {
+            success: true,
+            status: action === "accept" ? "accepted" : "declined",
+            senderId: req.sender_id,
+            receiverId: req.receiver_id,
+          };
         }
       } catch (err) {
         console.warn("[respondConnection] Supabase error, falling back to in-memory:", err);
@@ -1036,12 +1083,31 @@ class PersistentSocialStore {
       await this.addXp(req.sender_id, 25, "Connected with a new attendee! +25 XP");
       await this.addXp(req.receiver_id, 25, "Connected with a new attendee! +25 XP");
 
+      const responderDisplayName = responderName || mockDb.getProfile(currentUserId)?.display_name || "User";
+      const senderDisplayName = mockDb.getProfile(req.sender_id)?.display_name || "an attendee";
+
       await this.createNotification({
         profile_id: req.sender_id,
         type: "connection_accepted",
         title: "Connection Accepted! 🎉",
-        message: `${responderName || "User"} accepted your connection request!`,
+        message: `${responderDisplayName} accepted your connection request! (+25 XP Earned ⭐)`,
         link: `/app/profile?id=${req.receiver_id}`,
+      });
+
+      await this.createNotification({
+        profile_id: req.sender_id,
+        type: "xp_earned",
+        title: "+25 XP Earned! 🤝",
+        message: `Connected with ${responderDisplayName}! +25 XP`,
+        link: `/app/profile?id=${req.receiver_id}`,
+      });
+
+      await this.createNotification({
+        profile_id: req.receiver_id,
+        type: "xp_earned",
+        title: "+25 XP Earned! 🤝",
+        message: `Connected with ${senderDisplayName}! +25 XP`,
+        link: `/app/profile?id=${req.sender_id}`,
       });
 
       // Update connections_count in Supabase if live
@@ -1062,7 +1128,12 @@ class PersistentSocialStore {
     this.saveToDisk();
     this.syncToMockDb();
 
-    return { success: true, status: req.status };
+    return {
+      success: true,
+      status: req.status,
+      senderId: req.sender_id,
+      receiverId: req.receiver_id,
+    };
   }
 
   getConnectionRequests(profileId: string): {

@@ -177,10 +177,19 @@ describe("Social Feed, Instagram-like Interactions, Connections & Games XP", () 
     expect(newAliceXp).toBe(prevAliceXp + 25);
     expect(newBobXp).toBe(prevBobXp + 25);
 
-    // 6. Alice receives "Connection Accepted! 🎉" notification
+    // 6. Alice receives "Connection Accepted! 🎉" notification with +25 XP mention
     const aliceNotifs = await socialStore.getNotifications(testUserA);
     const acceptNotif = aliceNotifs.find((n) => n.type === "connection_accepted");
     expect(acceptNotif).toBeDefined();
+    expect(acceptNotif?.message).toContain("+25 XP");
+
+    const aliceXpNotif = aliceNotifs.find((n) => n.type === "xp_earned" && n.title.includes("+25 XP"));
+    expect(aliceXpNotif).toBeDefined();
+
+    // 7. Bob (the receiver) also receives +25 XP notification
+    const bobUpdatedNotifs = await socialStore.getNotifications(testUserB);
+    const bobXpNotif = bobUpdatedNotifs.find((n) => n.type === "xp_earned" && n.title.includes("+25 XP"));
+    expect(bobXpNotif).toBeDefined();
 
     // 7. They are now officially connected in Friends list
     const aliceConnections = await socialStore.getConnectionsAsync(testUserA);

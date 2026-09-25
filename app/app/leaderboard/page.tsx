@@ -13,20 +13,36 @@ export default function LeaderboardPage() {
   const [gameEntries, setGameEntries] = useState<GameLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
+  const [tabCache, setTabCache] = useState<Record<string, any>>({});
+
   useEffect(() => {
-    fetchLeaderboard();
+    // If we have cached tab data, render it immediately without skeleton
+    if (tabCache[activeTab]) {
+      if (activeTab === "overall") {
+        setOverallEntries(tabCache[activeTab]);
+      } else {
+        setGameEntries(tabCache[activeTab]);
+      }
+      setLoading(false);
+      // Background revalidation
+      fetchLeaderboard(false);
+    } else {
+      fetchLeaderboard(true);
+    }
   }, [activeTab]);
 
-  const fetchLeaderboard = async () => {
-    setLoading(true);
+  const fetchLeaderboard = async (showSkeleton = true) => {
+    if (showSkeleton) setLoading(true);
     try {
       const res = await fetch(`/api/leaderboard?type=${activeTab}`);
       if (res.ok) {
         const data = await res.json();
+        const entries = data.entries || [];
+        setTabCache((prev) => ({ ...prev, [activeTab]: entries }));
         if (activeTab === "overall") {
-          setOverallEntries(data.entries || []);
+          setOverallEntries(entries);
         } else {
-          setGameEntries(data.entries || []);
+          setGameEntries(entries);
         }
       }
     } catch {

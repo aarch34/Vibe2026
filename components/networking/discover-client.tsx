@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Search, Filter, Users, UserPlus, CheckCircle, Clock, Instagram, Sparkles, MapPin } from "lucide-react";
+import { Search, Filter, Users, UserPlus, CheckCircle, Clock, Instagram, Sparkles, MapPin, RefreshCw } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Profile, ConnectionRequest } from "@/types/database";
 
@@ -28,6 +28,46 @@ export function DiscoverClient({
   const [connectionStates, setConnectionStates] = useState<Record<string, "none" | "pending" | "connected">>(
     initialConnectionStates
   );
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [lastSyncTime, setLastSyncTime] = useState<string>(() => new Date().toISOString());
+
+  // Restore cached optimistic connection states from sessionStorage if available
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem(`vibe_discover_states_${currentProfile.id}`);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        setConnectionStates((prev) => ({ ...prev, ...parsed }));
+      }
+    } catch { /* ignore */ }
+  }, [currentProfile.id]);
+
+  const handleDeltaSync = useCallback(async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    try {
+      const res = await fetch(`/api/discover?since=${encodeURIComponent(lastSyncTime)}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.profiles && data.profiles.length > 0) {
+          setProfiles((prev) => {
+            const map = new Map(prev.map((p) => [p.id, p]));
+            data.profiles.forEach((np: Profile) => {
+              map.set(np.id, np);
+            });
+            return Array.from(map.values()).sort((a, b) => b.xp - a.xp);
+          });
+        }
+        if (data.timestamp) {
+          setLastSyncTime(data.timestamp);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isSyncing, lastSyncTime]);
 
   const filteredProfiles = profiles.filter((p) => {
     if (p.id === currentProfile.id) return false;
@@ -46,7 +86,13 @@ export function DiscoverClient({
   });
 
   const handleSendRequest = async (receiverId: string) => {
-    setConnectionStates((prev) => ({ ...prev, [receiverId]: "pending" }));
+    setConnectionStates((prev) => {
+      const updated = { ...prev, [receiverId]: "pending" as const };
+      try {
+        sessionStorage.setItem(`vibe_discover_states_${currentProfile.id}`, JSON.stringify(updated));
+      } catch { /* ignore */ }
+      return updated;
+    });
 
     try {
       await fetch("/api/connections/request", {
@@ -93,9 +139,21 @@ export function DiscoverClient({
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 text-xs font-bold text-cyan-400 bg-card px-3 py-1.5 rounded-full border border-border">
-            <span>Your Connections:</span>
-            <span className="font-mono text-foreground font-black text-sm">{currentProfile.connections_count}</span>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={handleDeltaSync}
+              disabled={isSyncing}
+              title="Sync newly registered attendees without reloading whole page"
+              className="flex items-center space-x-1.5 text-xs font-bold text-muted-foreground hover:text-cyan-400 bg-card px-3 py-1.5 rounded-full border border-border transition-all active:scale-95 disabled:opacity-50"
+            >
+              <RefreshCw className={cn("w-3.5 h-3.5", isSyncing && "animate-spin text-cyan-400")} />
+              <span>{isSyncing ? "Checking..." : "Sync New"}</span>
+            </button>
+
+            <div className="flex items-center space-x-2 text-xs font-bold text-cyan-400 bg-card px-3 py-1.5 rounded-full border border-border">
+              <span>Your Connections:</span>
+              <span className="font-mono text-foreground font-black text-sm">{currentProfile.connections_count}</span>
+            </div>
           </div>
         </div>
 

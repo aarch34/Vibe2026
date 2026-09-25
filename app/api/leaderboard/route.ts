@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { mockDb, calculateLevel } from "@/lib/db/mock-store";
 import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { GameType, LeaderboardEntry, GameLeaderboardEntry } from "@/types/database";
+import { getCachedLeaderboard, setCachedLeaderboard } from "@/lib/cache/app-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -9,6 +10,14 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type") || "overall";
+
+    // Return from shared cache if fresh (<30s)
+    const cached = getCachedLeaderboard(type);
+    if (cached) {
+      return NextResponse.json(cached, {
+        headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+      });
+    }
 
     if (type === "overall") {
       if (isUsingLiveSupabase() && supabaseAdmin) {
@@ -36,7 +45,11 @@ export async function GET(req: Request) {
                 connections_count: p.connections_count || 0,
               };
             });
-            return NextResponse.json({ success: true, entries });
+            const payload = { success: true, entries };
+            setCachedLeaderboard("overall", payload);
+            return NextResponse.json(payload, {
+              headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+            });
           }
         } catch (err) {
           console.warn("Supabase leaderboard query fallback:", err);
@@ -44,7 +57,11 @@ export async function GET(req: Request) {
       }
 
       const entries = mockDb.getLeaderboard();
-      return NextResponse.json({ success: true, entries });
+      const payload = { success: true, entries };
+      setCachedLeaderboard("overall", payload);
+      return NextResponse.json(payload, {
+        headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+      });
     } else {
       if (isUsingLiveSupabase() && supabaseAdmin) {
         try {
@@ -96,7 +113,11 @@ export async function GET(req: Request) {
               entry.rank = idx + 1;
             });
 
-            return NextResponse.json({ success: true, entries });
+            const payload = { success: true, entries };
+            setCachedLeaderboard(type, payload);
+            return NextResponse.json(payload, {
+              headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+            });
           }
         } catch (err) {
           console.warn("Supabase game leaderboard query fallback:", err);
@@ -104,7 +125,11 @@ export async function GET(req: Request) {
       }
 
       const entries = mockDb.getGameLeaderboard(type as GameType);
-      return NextResponse.json({ success: true, entries });
+      const payload = { success: true, entries };
+      setCachedLeaderboard(type, payload);
+      return NextResponse.json(payload, {
+        headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+      });
     }
   } catch (error) {
     return NextResponse.json({ success: false, error: String(error) }, { status: 500 });

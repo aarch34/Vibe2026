@@ -104,37 +104,50 @@ export async function getProfileByIdOrClerkId(idOrClerkId: string): Promise<Prof
   return null;
 }
 
+// Shared in-memory cache for discoverable profiles (60s TTL)
+interface DiscoverCache {
+  profiles: Profile[];
+  timestamp: number;
+}
+
+let discoverCache: DiscoverCache | null = null;
+const DISCOVER_CACHE_TTL_MS = 60_000;
+
+export function invalidateDiscoverProfilesCache() {
+  discoverCache = null;
+}
+
 /**
  * Fetch all discoverable profiles for attendees to browse, connect, and view.
- * Pulls from Supabase to ensure all registered attendees are discoverable.
+ * Uses a 60-second shared server cache to prevent repeated Supabase egress.
  */
 export async function getAllDiscoverableProfiles(excludeProfileId?: string, limitCount = 60): Promise<Profile[]> {
+  const isTest = process.env.NODE_ENV === "test";
+
+  // Check cache first (shared across all attendees)
+  if (!isTest && discoverCache && Date.now() - discoverCache.timestamp < DISCOVER_CACHE_TTL_MS) {
+    return discoverCache.profiles
+      .filter((p) => p.id !== excludeProfileId && p.clerk_user_id !== excludeProfileId)
+      .slice(0, limitCount);
+  }
+
   const profileMap = new Map<string, Profile>();
 
   // 1. Pull from Supabase first
   if (isUsingLiveSupabase() && supabaseAdmin) {
     try {
-      let query = supabaseAdmin
+      // Fetch up to 100 top profiles for the shared pool
+      const query = supabaseAdmin
         .from("profiles")
         .select("id, clerk_user_id, vibe_id, display_name, username, avatar_url, avatar_media_id, email, phone, club, rotaract_club, college, course_year, instagram_username, bio, interests, skills, hobbies, city, is_discoverable, xp, level_number, level_name, connections_count, posts_count, games_played_count, registration_id, profile_completed, created_at, updated_at")
         .order("xp", { ascending: false })
-        .limit(limitCount);
-
-      if (excludeProfileId) {
-        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(excludeProfileId);
-        if (isUuid) {
-          query = query.neq("id", excludeProfileId);
-        }
-      }
+        .limit(Math.max(100, limitCount));
 
       const { data: dbRows, error } = await query;
       if (dbRows && !error) {
         for (const row of dbRows) {
           // Exclude blank placeholder profiles with no name or details
           if (!row.display_name || (row.display_name === "VIBE Attendee" && !row.email && !row.phone && !row.club)) {
-            continue;
-          }
-          if (row.id === excludeProfileId || row.clerk_user_id === excludeProfileId) {
             continue;
           }
 
@@ -159,7 +172,7 @@ export async function getAllDiscoverableProfiles(excludeProfileId?: string, limi
 
   // 2. Merge with any in-memory profiles, strictly deduplicating
   for (const p of Array.from(mockDb.profiles.values())) {
-    if (p.id !== excludeProfileId && p.clerk_user_id !== excludeProfileId && p.is_discoverable) {
+    if (p.is_discoverable) {
       if (profileMap.has(p.id)) continue;
       if (p.clerk_user_id && seenClerkIds.has(p.clerk_user_id)) continue;
       if (p.email && seenEmails.has(p.email.toLowerCase())) continue;
@@ -170,5 +183,13 @@ export async function getAllDiscoverableProfiles(excludeProfileId?: string, limi
     }
   }
 
-  return Array.from(profileMap.values()).sort((a, b) => b.xp - a.xp);
+  const allSorted = Array.from(profileMap.values()).sort((a, b) => b.xp - a.xp);
+
+  if (!isTest) {
+    discoverCache = { profiles: allSorted, timestamp: Date.now() };
+  }
+
+  return allSorted
+    .filter((p) => p.id !== excludeProfileId && p.clerk_user_id !== excludeProfileId)
+    .slice(0, limitCount);
 }

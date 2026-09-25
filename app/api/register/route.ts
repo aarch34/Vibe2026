@@ -3,7 +3,7 @@ import { mockDb } from "@/lib/db/mock-store";
 import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { invalidateSessionCache } from "@/lib/auth/session";
 import { cleanInstagramUsername } from "@/lib/profile/utils";
-import { normalizeSupabaseProfile } from "@/lib/db/profiles";
+import { normalizeSupabaseProfile, invalidateDiscoverProfilesCache } from "@/lib/db/profiles";
 
 export async function POST(req: Request) {
   try {
@@ -211,8 +211,9 @@ export async function POST(req: Request) {
       }
     }
 
-    // Invalidate session cache for this user
+    // Invalidate session cache for this user and discover directory pool
     invalidateSessionCache(validClerkUserId);
+    invalidateDiscoverProfilesCache();
 
     const response = NextResponse.json({ success: true, profile });
     response.cookies.set("vibe_user_id", validClerkUserId, {
