@@ -29,10 +29,13 @@ export function FriendsClient({
   const [searchQuery, setSearchQuery] = useState("");
   const [acceptedNotice, setAcceptedNotice] = useState<string | null>(null);
 
-  // Background sync every 10 seconds without manual refresh
+  // Background sync every 45s without manual refresh, paused when tab is hidden
   React.useEffect(() => {
     let isMounted = true;
     const syncRequests = async () => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") {
+        return; // Skip poll if user is on another tab to save bandwidth and egress
+      }
       try {
         const res = await fetch("/api/notifications");
         if (res.ok) {
@@ -47,9 +50,18 @@ export function FriendsClient({
     };
 
     const interval = setInterval(syncRequests, 45000);
+
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        syncRequests();
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibility);
+
     return () => {
       isMounted = false;
       clearInterval(interval);
+      document.removeEventListener("visibilitychange", handleVisibility);
     };
   }, []);
 

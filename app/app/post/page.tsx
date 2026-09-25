@@ -18,7 +18,7 @@ export default function CreatePostPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Compress image on the client before upload for speed and reliability
-  const compressImage = (file: File): Promise<string> => {
+  const compressImage = (file: File): Promise<{ dataUrl: string; file: File }> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -41,9 +41,27 @@ export default function CreatePostPage() {
           const ctx = canvas.getContext("2d");
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL("image/jpeg", 0.85));
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  const compressedFile = new File(
+                    [blob],
+                    file.name.replace(/\.[^/.]+$/, ".jpg"),
+                    { type: "image/jpeg", lastModified: Date.now() }
+                  );
+                  resolve({
+                    dataUrl: canvas.toDataURL("image/jpeg", 0.85),
+                    file: compressedFile,
+                  });
+                } else {
+                  resolve({ dataUrl: e.target?.result as string, file });
+                }
+              },
+              "image/jpeg",
+              0.85
+            );
           } else {
-            resolve(e.target?.result as string);
+            resolve({ dataUrl: e.target?.result as string, file });
           }
         };
         img.onerror = reject;
@@ -71,9 +89,9 @@ export default function CreatePostPage() {
     }
 
     try {
-      const optimizedDataUrl = await compressImage(file);
-      setImagePreview(optimizedDataUrl);
-      setSelectedFile(file);
+      const { dataUrl, file: compressedFile } = await compressImage(file);
+      setImagePreview(dataUrl);
+      setSelectedFile(compressedFile);
     } catch {
       setFileError("Could not process image file. Please try another image.");
     }

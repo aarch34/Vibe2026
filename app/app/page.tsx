@@ -24,7 +24,7 @@ export default async function AttendeeHomePage() {
 
   const posts = await socialStore.getPostsWithAuthors();
   const likedPostIds = await socialStore.getUserLikedPostIds(currentProfile.id);
-  const suggestedPeople = (await getAllDiscoverableProfiles(currentProfile.id)).slice(0, 4);
+  const suggestedPeople = (await getAllDiscoverableProfiles(currentProfile.id, 8)).slice(0, 4);
 
   return (
     <div className="space-y-6">

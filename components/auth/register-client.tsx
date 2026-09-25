@@ -20,6 +20,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { compressImage } from "@/lib/utils/image-compressor";
 
 const AVATAR_SEEDS = ["Aarav", "Ananya", "Rohan", "Maya", "Kabir", "Zara", "Dev", "Priya"];
 
@@ -102,18 +103,29 @@ export function RegisterClient({ initialData }: RegisterClientProps) {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setPhotoError("Photo exceeds 5MB size limit. Please pick a smaller image.");
+    if (file.size > 8 * 1024 * 1024) {
+      setPhotoError("Photo exceeds 8MB size limit. Please pick a smaller image.");
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setFormData((prev) => ({ ...prev, avatarUrl: event.target!.result as string }));
-      }
-    };
-    reader.readAsDataURL(file);
+    // Automatically compress to web-optimized 400x400 avatar before saving
+    compressImage(file, { maxWidth: 400, maxHeight: 400, quality: 0.85 }).then((compressed) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setFormData((prev) => ({ ...prev, avatarUrl: event.target!.result as string }));
+        }
+      };
+      reader.readAsDataURL(compressed);
+    }).catch(() => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setFormData((prev) => ({ ...prev, avatarUrl: event.target!.result as string }));
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const toggleInterest = (tag: string) => {

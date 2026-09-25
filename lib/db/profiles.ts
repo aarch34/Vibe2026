@@ -108,7 +108,7 @@ export async function getProfileByIdOrClerkId(idOrClerkId: string): Promise<Prof
  * Fetch all discoverable profiles for attendees to browse, connect, and view.
  * Pulls from Supabase to ensure all registered attendees are discoverable.
  */
-export async function getAllDiscoverableProfiles(excludeProfileId?: string): Promise<Profile[]> {
+export async function getAllDiscoverableProfiles(excludeProfileId?: string, limitCount = 60): Promise<Profile[]> {
   const profileMap = new Map<string, Profile>();
 
   // 1. Pull from Supabase first
@@ -116,8 +116,9 @@ export async function getAllDiscoverableProfiles(excludeProfileId?: string): Pro
     try {
       let query = supabaseAdmin
         .from("profiles")
-        .select("*")
-        .order("xp", { ascending: false });
+        .select("id, clerk_user_id, vibe_id, display_name, username, avatar_url, avatar_media_id, email, phone, club, rotaract_club, college, course_year, instagram_username, bio, interests, skills, hobbies, city, is_discoverable, xp, level_number, level_name, connections_count, posts_count, games_played_count, registration_id, profile_completed, created_at, updated_at")
+        .order("xp", { ascending: false })
+        .limit(limitCount);
 
       if (excludeProfileId) {
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(excludeProfileId);

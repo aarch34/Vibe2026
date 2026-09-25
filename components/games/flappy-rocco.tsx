@@ -49,6 +49,11 @@ export function FlappyRocco({
 
   // Sound effects toggle
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const soundEnabledRef = useRef(true);
+
+  useEffect(() => {
+    soundEnabledRef.current = soundEnabled;
+  }, [soundEnabled]);
 
   // References for game loop
   const roccoImgRef = useRef<HTMLImageElement | null>(null);
@@ -86,54 +91,74 @@ export function FlappyRocco({
     };
   }, []);
 
-  // Simple web audio synth for jump & score beeps
-  function playBeep(type: "jump" | "score" | "hit") {
-    if (!soundEnabled) return;
+  // Safe AudioContext unlock and synth for jump, score, and hit beeps
+  function getAudioContext(): AudioContext | null {
+    if (typeof window === "undefined") return null;
     try {
-      if (typeof window !== "undefined" && !sharedAudioCtx) {
+      if (!sharedAudioCtx) {
         const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
         if (AudioCtx) sharedAudioCtx = new AudioCtx();
       }
-      if (!sharedAudioCtx) return;
-      const ctx = sharedAudioCtx;
-      
-      if (ctx.state === "suspended") {
-        ctx.resume();
+      if (sharedAudioCtx && sharedAudioCtx.state === "suspended") {
+        sharedAudioCtx.resume().catch(() => {});
       }
+      return sharedAudioCtx;
+    } catch {
+      return null;
+    }
+  }
+
+  function playBeep(type: "jump" | "score" | "hit") {
+    if (!soundEnabledRef.current) return;
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const now = ctx.currentTime;
 
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.connect(gain);
       gain.connect(ctx.destination);
 
+      // Clean up audio nodes from memory when playback finishes
+      osc.onended = () => {
+        try {
+          osc.disconnect();
+          gain.disconnect();
+        } catch (_) {}
+      };
+
       if (type === "jump") {
-        osc.frequency.setValueAtTime(320, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(520, ctx.currentTime + 0.1);
-        gain.gain.setValueAtTime(0.7, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.1);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.1);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(520, now + 0.08);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
+        osc.start(now);
+        osc.stop(now + 0.09);
       } else if (type === "score") {
-        osc.frequency.setValueAtTime(580, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.15);
-        gain.gain.setValueAtTime(0.9, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.15);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.15);
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(580, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+        gain.gain.setValueAtTime(0.4, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+        osc.start(now);
+        osc.stop(now + 0.12);
       } else if (type === "hit") {
         osc.type = "sawtooth";
-        osc.frequency.setValueAtTime(220, ctx.currentTime);
-        osc.frequency.linearRampToValueAtTime(80, ctx.currentTime + 0.2);
-        gain.gain.setValueAtTime(1.0, ctx.currentTime);
-        gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2);
-        osc.start();
-        osc.stop(ctx.currentTime + 0.2);
+        osc.frequency.setValueAtTime(220, now);
+        osc.frequency.linearRampToValueAtTime(60, now + 0.18);
+        gain.gain.setValueAtTime(0.5, now);
+        gain.gain.linearRampToValueAtTime(0.01, now + 0.18);
+        osc.start(now);
+        osc.stop(now + 0.18);
       }
     } catch (_) {}
   }
 
   // Flap jump action
   function handleFlap() {
+    getAudioContext();
     if (stateRef.current.gameState === "ready") {
       stateRef.current.gameState = "playing";
       setGameState("playing");
@@ -155,7 +180,7 @@ export function FlappyRocco({
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [soundEnabled]);
+  }, []);
 
   // Main game loop
   useEffect(() => {
@@ -501,7 +526,7 @@ export function FlappyRocco({
         cancelAnimationFrame(animFrameIdRef.current);
       }
     };
-  }, [soundEnabled]);
+  }, []);
 
   function handlePlayAgain() {
     setGameState("ready");
@@ -564,6 +589,10 @@ export function FlappyRocco({
       <div
         className="relative bg-black border-2 border-border shadow-neo overflow-hidden select-none cursor-pointer flex justify-center items-center"
         onClick={handleFlap}
+        onTouchStart={(e) => {
+          e.preventDefault();
+          handleFlap();
+        }}
         style={{ touchAction: "manipulation" }}
       >
         <canvas ref={canvasRef} className="block w-full max-w-[380px] h-[500px]" />

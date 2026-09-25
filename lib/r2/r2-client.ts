@@ -143,6 +143,7 @@ export async function uploadMediaFile(
         .upload(cleanKey, buffer, {
           upsert: true,
           contentType: contentType || "image/jpeg",
+          cacheControl: "31536000",
         });
 
       if (data && !error) {

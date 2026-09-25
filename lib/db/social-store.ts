@@ -288,6 +288,7 @@ class PersistentSocialStore {
             .upload(fileName, buffer, {
               contentType,
               upsert: true,
+              cacheControl: "31536000",
             });
 
           if (!uploadErr && uploadData?.path) {

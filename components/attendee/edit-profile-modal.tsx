@@ -21,6 +21,7 @@ import {
 import { Profile } from "@/types/database";
 import { updateAttendeeProfile } from "@/actions/profile/update-profile";
 import { useRouter } from "next/navigation";
+import { compressImage } from "@/lib/utils/image-compressor";
 
 interface EditProfileModalProps {
   isOpen: boolean;
@@ -107,19 +108,31 @@ export function EditProfileModal({
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) {
-      setPhotoError("Photo exceeds 5MB size limit. Please choose a smaller photo.");
+    if (file.size > 8 * 1024 * 1024) {
+      setPhotoError("Photo exceeds 8MB size limit. Please choose a smaller photo.");
       return;
     }
 
-    setAvatarFile(file);
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      if (event.target?.result) {
-        setAvatarPreview(event.target.result as string);
-      }
-    };
-    reader.readAsDataURL(file);
+    // Automatically compress high-res camera photos to web-optimized 400x400 avatar
+    compressImage(file, { maxWidth: 400, maxHeight: 400, quality: 0.85 }).then((compressed) => {
+      setAvatarFile(compressed);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setAvatarPreview(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(compressed);
+    }).catch(() => {
+      setAvatarFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setAvatarPreview(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleRemovePhoto = () => {
