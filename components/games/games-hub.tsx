@@ -169,12 +169,10 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-amber-400 shadow-md bg-black/40 relative">
-                  <Image
+                  <img
                     src="/images/games/roco.png"
                     alt="ROCO Mascot"
-                    fill
-                    className="object-cover"
-                    priority
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 <span className="text-xs font-black text-amber-400 bg-amber-500/10 px-3 py-1 rounded-full border border-amber-500/30">
@@ -253,12 +251,10 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-md bg-black/40 relative">
-                  <Image
+                  <img
                     src="/images/games/sanjay-logo.png"
                     alt="Sanjay Mascot"
-                    fill
-                    className="object-cover"
-                    priority
+                    className="w-full h-full object-cover"
                   />
                 </div>
                 <span className="text-xs font-black text-yellow-400 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/30">

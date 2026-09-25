@@ -25,7 +25,7 @@ function playSanjayBeep(type: "jump" | "hit" | "rocket") {
     if (type === "jump") {
       osc.frequency.setValueAtTime(300, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.1);
-      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.setValueAtTime(0.7, ctx.currentTime);
       gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.1);
       osc.start();
       osc.stop(ctx.currentTime + 0.1);
@@ -33,7 +33,7 @@ function playSanjayBeep(type: "jump" | "hit" | "rocket") {
       osc.type = "square";
       osc.frequency.setValueAtTime(150, ctx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.3);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.setValueAtTime(0.6, ctx.currentTime);
       gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.3);
       osc.start();
       osc.stop(ctx.currentTime + 0.3);
@@ -41,7 +41,7 @@ function playSanjayBeep(type: "jump" | "hit" | "rocket") {
       osc.type = "sawtooth";
       osc.frequency.setValueAtTime(200, ctx.currentTime);
       osc.frequency.linearRampToValueAtTime(50, ctx.currentTime + 0.2);
-      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.setValueAtTime(1.0, ctx.currentTime);
       gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2);
       osc.start();
       osc.stop(ctx.currentTime + 0.2);
