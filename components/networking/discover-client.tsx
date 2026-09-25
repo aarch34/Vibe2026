@@ -61,6 +61,9 @@ export function DiscoverClient({
     }
     return "";
   });
+  const [newMembersCount, setNewMembersCount] = useState(0);
+  const newMemberTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
+
 
   // Automatic Cache Load & Delta-Sync on mount
   useEffect(() => {
@@ -99,12 +102,17 @@ export function DiscoverClient({
       setIsSyncing(true);
       fetch(deltaUrl)
         .then((r) => r.json())
-        .then((data) => {
+        .then(async (data) => {
           if (!isMounted || !data.success) return;
           if (data.profiles && data.profiles.length > 0) {
             setProfiles((prev) => {
+              const prevIds = new Set(prev.map((p) => p.id));
               const map = new Map(prev.map((p) => [p.id, p]));
-              data.profiles.forEach((np: Profile) => map.set(np.id, np));
+              const brandNew: string[] = [];
+              data.profiles.forEach((np: Profile) => {
+                if (!prevIds.has(np.id)) brandNew.push(np.id);
+                map.set(np.id, np);
+              });
               const merged = Array.from(map.values()).sort((a, b) => b.xp - a.xp);
               try {
                 localStorage.setItem(CACHE_KEY, JSON.stringify(merged));
@@ -113,6 +121,23 @@ export function DiscoverClient({
                   setLastSyncTime(data.timestamp);
                 }
               } catch { /* ignore */ }
+
+              // Fetch real connection states for genuinely new profiles
+              if (brandNew.length > 0) {
+                if (newMemberTimerRef.current) clearTimeout(newMemberTimerRef.current);
+                setNewMembersCount(brandNew.length);
+                newMemberTimerRef.current = setTimeout(() => setNewMembersCount(0), 6000);
+
+                fetch(`/api/connections/states?ids=${encodeURIComponent(brandNew.join(","))}`)
+                  .then((r) => r.json())
+                  .then((stateData) => {
+                    if (stateData.success && stateData.states) {
+                      setConnectionStates((prev) => ({ ...prev, ...stateData.states }));
+                    }
+                  })
+                  .catch(() => {});
+              }
+
               return merged;
             });
           } else if (data.timestamp) {
@@ -124,6 +149,7 @@ export function DiscoverClient({
         .finally(() => {
           if (isMounted) setIsSyncing(false);
         });
+
     } else {
       // FIRST VISIT: Cache is empty, do a single full fetch and store in localStorage
       setIsLoading(true);
@@ -168,8 +194,11 @@ export function DiscoverClient({
         const data = await res.json();
         if (data.profiles && data.profiles.length > 0) {
           setProfiles((prev) => {
+            const prevIds = new Set(prev.map((p) => p.id));
             const map = new Map(prev.map((p) => [p.id, p]));
+            const brandNew: string[] = [];
             data.profiles.forEach((np: Profile) => {
+              if (!prevIds.has(np.id)) brandNew.push(np.id);
               map.set(np.id, np);
             });
             const merged = Array.from(map.values()).sort((a, b) => b.xp - a.xp);
@@ -180,6 +209,22 @@ export function DiscoverClient({
                 setLastSyncTime(data.timestamp);
               }
             } catch { /* ignore */ }
+
+            if (brandNew.length > 0) {
+              if (newMemberTimerRef.current) clearTimeout(newMemberTimerRef.current);
+              setNewMembersCount(brandNew.length);
+              newMemberTimerRef.current = setTimeout(() => setNewMembersCount(0), 6000);
+
+              fetch(`/api/connections/states?ids=${encodeURIComponent(brandNew.join(","))}`)
+                .then((r) => r.json())
+                .then((stateData) => {
+                  if (stateData.success && stateData.states) {
+                    setConnectionStates((prev) => ({ ...prev, ...stateData.states }));
+                  }
+                })
+                .catch(() => {});
+            }
+
             return merged;
           });
         } else if (data.timestamp) {
@@ -193,6 +238,7 @@ export function DiscoverClient({
       setIsSyncing(false);
     }
   }, [isSyncing, lastSyncTime]);
+
 
   const filteredProfiles = profiles.filter((p) => {
     if (p.id === currentProfile.id) return false;
@@ -373,6 +419,18 @@ export function DiscoverClient({
                 </div>
               );
             })}
+          </div>
+        </div>
+      )}
+
+      {/* New Members Banner — appears for 6s after delta sync finds new arrivals */}
+      {newMembersCount > 0 && (
+        <div className="flex items-center justify-center">
+          <div className="flex items-center space-x-2 px-4 py-2 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-sm font-bold shadow-lg animate-bounce-once">
+            <span>🎉</span>
+            <span>
+              {newMembersCount} new {newMembersCount === 1 ? "person" : "people"} just joined VIBE! Scroll to find them.
+            </span>
           </div>
         </div>
       )}
