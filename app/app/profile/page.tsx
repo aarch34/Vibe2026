@@ -67,6 +67,14 @@ export default async function ProfilePage({
 
   const friends = await socialStore.getConnectionsAsync(targetProfile.id);
 
+  let outgoingCount = 0;
+  let incomingCount = 0;
+  if (isSelf) {
+    const reqs = await socialStore.getConnectionRequestsAsync(currentProfile.id);
+    outgoingCount = reqs.outgoing.length;
+    incomingCount = reqs.incoming.length;
+  }
+
   return (
     <ProfileView
       profile={targetProfile}
@@ -75,6 +83,8 @@ export default async function ProfilePage({
       highScores={highScores}
       initialConnectionStatus={initialConnectionStatus}
       friends={friends}
+      outgoingCount={outgoingCount}
+      incomingCount={incomingCount}
     />
   );
 }

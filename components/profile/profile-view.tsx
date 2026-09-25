@@ -23,6 +23,7 @@ import {
   ShieldCheck,
   Trash2,
   UserCheck,
+  Clock,
   FileText,
   AlertTriangle,
   Loader2,
@@ -36,7 +37,7 @@ import { cn, isVideoMedia } from "@/lib/utils";
 import { Profile, Post, Level } from "@/types/database";
 import { calculateLevel } from "@/lib/db/mock-store";
 import { EditProfileModal } from "@/components/attendee/edit-profile-modal";
-import { useLiveStats } from "@/components/providers/live-stats-provider";
+import { useOptionalLiveStats } from "@/components/providers/live-stats-provider";
 
 interface ProfileViewProps {
   profile: Profile;
@@ -45,6 +46,8 @@ interface ProfileViewProps {
   highScores: Record<string, number>;
   initialConnectionStatus?: "connected" | "pending" | "none";
   friends?: Profile[];
+  outgoingCount?: number;
+  incomingCount?: number;
 }
 
 export function ProfileView({
@@ -54,8 +57,12 @@ export function ProfileView({
   highScores,
   initialConnectionStatus = "none",
   friends = [],
+  outgoingCount = 0,
+  incomingCount = 0,
 }: ProfileViewProps) {
   const router = useRouter();
+  const liveStats = useOptionalLiveStats();
+  const effectiveIncomingCount = liveStats?.incomingRequests?.length ?? incomingCount;
   const [currentProfile, setCurrentProfile] = useState<Profile>(profile);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDiscoverable, setIsDiscoverable] = useState(currentProfile.is_discoverable);
@@ -329,6 +336,18 @@ export function ProfileView({
                 {isSelf && (
                   <>
                     <Link
+                      href="/app/friends"
+                      className="px-4 py-2 rounded-xl bg-purple-500/15 hover:bg-purple-500/25 border border-purple-500/30 text-purple-300 font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all cursor-pointer relative"
+                    >
+                      <Users className="w-3.5 h-3.5 text-purple-400" />
+                      <span>FRIENDS</span>
+                      {effectiveIncomingCount > 0 && (
+                        <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] font-black bg-pink-500 text-white animate-pulse">
+                          {effectiveIncomingCount}
+                        </span>
+                      )}
+                    </Link>
+                    <Link
                       href="/app/leaderboard"
                       className="px-4 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-amber-400 font-extrabold text-xs shadow-md inline-flex items-center justify-center space-x-1.5 transition-all cursor-pointer"
                     >
@@ -483,13 +502,31 @@ export function ProfileView({
 
       {/* Profile Statistics Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-4 rounded-2xl bg-card border border-border text-center space-y-1">
-          <Users className="w-5 h-5 mx-auto text-cyan-400" />
-          <span className="text-xs font-bold text-muted-foreground block">Connections</span>
-          <span className="text-xl font-black text-foreground font-mono">
-            {currentProfile.connections_count}
-          </span>
-        </div>
+        {isSelf ? (
+          <Link
+            href="/app/friends?tab=friends"
+            className="p-4 rounded-2xl bg-card border border-border hover:border-purple-500/50 hover:bg-purple-500/5 text-center space-y-1 transition-all group block cursor-pointer"
+          >
+            <Users className="w-5 h-5 mx-auto text-cyan-400 group-hover:scale-110 transition-transform" />
+            <span className="text-xs font-bold text-muted-foreground group-hover:text-foreground block">
+              Connections
+            </span>
+            <span className="text-xl font-black text-foreground font-mono">
+              {currentProfile.connections_count}
+            </span>
+            <span className="text-[10px] font-bold text-purple-400 block opacity-80 group-hover:opacity-100">
+              View All & Sent →
+            </span>
+          </Link>
+        ) : (
+          <div className="p-4 rounded-2xl bg-card border border-border text-center space-y-1">
+            <Users className="w-5 h-5 mx-auto text-cyan-400" />
+            <span className="text-xs font-bold text-muted-foreground block">Connections</span>
+            <span className="text-xl font-black text-foreground font-mono">
+              {currentProfile.connections_count}
+            </span>
+          </div>
+        )}
 
         <div className="p-4 rounded-2xl bg-card border border-border text-center space-y-1">
           <MessageSquare className="w-5 h-5 mx-auto text-pink-400" />
@@ -507,32 +544,126 @@ export function ProfileView({
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-card border border-border text-center space-y-1">
-          <Trophy className="w-5 h-5 mx-auto text-amber-400" />
-          <span className="text-xs font-bold text-muted-foreground block">Total XP</span>
+        <Link
+          href="/app/leaderboard"
+          className={cn(
+            "p-4 rounded-2xl bg-card border border-border text-center space-y-1 transition-all block",
+            isSelf && "hover:border-amber-500/50 hover:bg-amber-500/5 cursor-pointer group"
+          )}
+        >
+          <Trophy className={cn("w-5 h-5 mx-auto text-amber-400", isSelf && "group-hover:scale-110 transition-transform")} />
+          <span className={cn("text-xs font-bold text-muted-foreground block", isSelf && "group-hover:text-foreground")}>
+            Total XP
+          </span>
           <span className="text-xl font-black text-amber-400 font-mono">
             ⭐ {displayXp}
           </span>
-        </div>
+          {isSelf && (
+            <span className="text-[10px] font-bold text-amber-400/80 block">
+              Rankings →
+            </span>
+          )}
+        </Link>
       </div>
 
-      {/* Prominent Leaderboard Link */}
+      {/* Prominent Friends Hub, Sent Requests & Leaderboard Banner */}
       {isSelf && (
-        <Link
-          href="/app/leaderboard"
-          className="w-full p-4 rounded-3xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-yellow-500/10 border border-amber-500/30 flex items-center justify-between group hover:bg-amber-500/20 transition-all cursor-pointer shadow-lg"
-        >
-          <div className="flex items-center space-x-4">
-            <div className="w-12 h-12 rounded-full bg-amber-500/20 flex items-center justify-center border border-amber-500/40">
-              <Trophy className="w-6 h-6 text-amber-400 group-hover:scale-110 transition-transform" />
+        <div className="space-y-3">
+          <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-purple-900/20 via-pink-900/15 to-indigo-900/20 border border-purple-500/30 shadow-xl space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-3.5">
+                <div className="w-12 h-12 rounded-2xl bg-purple-500/20 border border-purple-500/40 flex items-center justify-center text-purple-300 shrink-0">
+                  <Users className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-base sm:text-lg font-black text-foreground tracking-tight">
+                      MY CONNECTIONS & REQUESTS
+                    </h3>
+                    {effectiveIncomingCount > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-black bg-pink-500 text-white animate-pulse">
+                        {effectiveIncomingCount} NEW
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">
+                    See who you're connected with, review received requests, and track who you sent requests to.
+                  </p>
+                </div>
+              </div>
+
+              <Link
+                href="/app/friends"
+                className="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-lg inline-flex items-center justify-center space-x-2 transition-all shrink-0 self-stretch sm:self-auto"
+              >
+                <Users className="w-4 h-4" />
+                <span>OPEN FRIENDS HUB</span>
+              </Link>
             </div>
-            <div>
-              <h3 className="text-lg font-black text-amber-400 tracking-tight">GLOBAL LEADERBOARD</h3>
-              <p className="text-xs text-muted-foreground font-medium">See where you rank among all attendees!</p>
+
+            {/* Quick 3-Tab Shortcuts for Mobile & Desktop */}
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border/40">
+              <Link
+                href="/app/friends?tab=friends"
+                className="p-3 rounded-2xl bg-card/70 hover:bg-purple-500/15 border border-border/80 hover:border-purple-500/40 text-center transition-all group flex flex-col items-center justify-center"
+              >
+                <span className="text-base sm:text-lg font-black text-foreground font-mono group-hover:text-purple-400">
+                  {currentProfile.connections_count}
+                </span>
+                <span className="text-[11px] font-bold text-muted-foreground flex items-center space-x-1 mt-0.5 group-hover:text-foreground">
+                  <UserCheck className="w-3.5 h-3.5 text-cyan-400 inline shrink-0" />
+                  <span>Connections</span>
+                </span>
+              </Link>
+
+              <Link
+                href="/app/friends?tab=requests"
+                className="p-3 rounded-2xl bg-card/70 hover:bg-pink-500/15 border border-border/80 hover:border-pink-500/40 text-center transition-all group flex flex-col items-center justify-center relative"
+              >
+                <span className="text-base sm:text-lg font-black text-foreground font-mono group-hover:text-pink-400">
+                  {effectiveIncomingCount}
+                </span>
+                <span className="text-[11px] font-bold text-muted-foreground flex items-center space-x-1 mt-0.5 group-hover:text-foreground">
+                  <Clock className="w-3.5 h-3.5 text-pink-400 inline shrink-0" />
+                  <span>Received</span>
+                </span>
+                {effectiveIncomingCount > 0 && (
+                  <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-pink-500 animate-ping" />
+                )}
+              </Link>
+
+              <Link
+                href="/app/friends?tab=sent"
+                className="p-3 rounded-2xl bg-card/70 hover:bg-amber-500/15 border border-border/80 hover:border-amber-500/40 text-center transition-all group flex flex-col items-center justify-center"
+              >
+                <span className="text-base sm:text-lg font-black text-foreground font-mono group-hover:text-amber-400">
+                  {outgoingCount}
+                </span>
+                <span className="text-[11px] font-bold text-muted-foreground flex items-center space-x-1 mt-0.5 group-hover:text-foreground">
+                  <UserPlus className="w-3.5 h-3.5 text-amber-400 inline shrink-0" />
+                  <span>Sent Requests</span>
+                </span>
+              </Link>
             </div>
           </div>
-          <ExternalLink className="w-5 h-5 text-amber-400/50 group-hover:text-amber-400 transition-colors" />
-        </Link>
+
+          {/* Prominent Leaderboard Link */}
+          <Link
+            href="/app/leaderboard"
+            className="w-full p-4 rounded-3xl bg-gradient-to-r from-amber-500/10 via-orange-500/10 to-yellow-500/10 border border-amber-500/30 flex items-center justify-between group hover:bg-amber-500/20 transition-all cursor-pointer shadow-lg"
+          >
+            <div className="flex items-center space-x-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center border border-amber-500/40 text-amber-400 group-hover:scale-105 transition-transform shrink-0">
+                <Trophy className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base sm:text-lg font-black text-amber-400 tracking-tight">GLOBAL LEADERBOARD</h3>
+                <p className="text-xs text-muted-foreground font-medium">⭐ {displayXp} XP • Check where you rank among all attendees!</p>
+              </div>
+            </div>
+            <ExternalLink className="w-5 h-5 text-amber-400/50 group-hover:text-amber-400 transition-colors shrink-0" />
+          </Link>
+        </div>
       )}
 
       {/* User Posts Section */}

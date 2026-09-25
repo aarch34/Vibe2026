@@ -121,3 +121,8 @@ export function useLiveStats() {
   }
   return context;
 }
+
+export function useOptionalLiveStats() {
+  return useContext(LiveStatsContext);
+}
+

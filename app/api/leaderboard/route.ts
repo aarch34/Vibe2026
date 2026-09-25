@@ -3,6 +3,7 @@ import { mockDb, calculateLevel } from "@/lib/db/mock-store";
 import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { GameType, LeaderboardEntry, GameLeaderboardEntry } from "@/types/database";
 import { getCachedLeaderboard, setCachedLeaderboard } from "@/lib/cache/app-cache";
+import { getCurrentUserSession } from "@/lib/auth/session";
 
 export const dynamic = "force-dynamic";
 
@@ -10,13 +11,25 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type") || "overall";
+    const bypassCache = searchParams.get("nocache") === "true" || searchParams.has("_t");
 
-    // Return from shared cache if fresh (<30s)
-    const cached = getCachedLeaderboard(type);
-    if (cached) {
-      return NextResponse.json(cached, {
-        headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
-      });
+    let currentUserId: string | null = null;
+    try {
+      const session = await getCurrentUserSession();
+      currentUserId = session?.profile?.id || null;
+    } catch {
+      // unauthenticated or background
+    }
+
+    // Return from shared cache if fresh (<5s) and not explicitly bypassing cache
+    if (!bypassCache) {
+      const cached = getCachedLeaderboard(type);
+      if (cached) {
+        return NextResponse.json(
+          { ...cached, currentUserId },
+          { headers: { "Cache-Control": "private, no-cache, no-store, must-revalidate" } }
+        );
+      }
     }
 
     if (type === "overall") {
@@ -40,15 +53,57 @@ export async function GET(req: Request) {
                 college: p.college || "Rotaract District 3192",
                 rotaract_club: p.rotaract_club || "District 3192",
                 total_xp: p.xp || 0,
-                level_name: p.level_name || lvl.level_name,
-                level_number: p.level_number || lvl.level_number,
+                level_name: lvl.level_name,
+                level_number: lvl.level_number,
                 connections_count: p.connections_count || 0,
               };
             });
-            const payload = { success: true, entries };
+
+            // Find or compute current user rank & summary
+            let currentUserSummary: any = null;
+            if (currentUserId) {
+              const inList = entries.find((e) => e.profile_id === currentUserId);
+              if (inList) {
+                currentUserSummary = { ...inList };
+              } else {
+                try {
+                  const { data: myProf } = await supabaseAdmin
+                    .from("profiles")
+                    .select("id, display_name, username, avatar_url, college, rotaract_club, xp")
+                    .eq("id", currentUserId)
+                    .single();
+
+                  if (myProf) {
+                    const { count } = await supabaseAdmin
+                      .from("profiles")
+                      .select("id", { count: "exact", head: true })
+                      .gt("xp", myProf.xp || 0);
+
+                    const lvl = calculateLevel(myProf.xp || 0);
+                    currentUserSummary = {
+                      rank: (count || 0) + 1,
+                      profile_id: myProf.id,
+                      display_name: myProf.display_name,
+                      username: myProf.username,
+                      avatar_url: myProf.avatar_url,
+                      college: myProf.college,
+                      rotaract_club: myProf.rotaract_club,
+                      total_xp: myProf.xp || 0,
+                      level_name: lvl.level_name,
+                      level_number: lvl.level_number,
+                      connections_count: 0,
+                    };
+                  }
+                } catch {
+                  // ignore
+                }
+              }
+            }
+
+            const payload = { success: true, entries, currentUserId, currentUserSummary };
             setCachedLeaderboard("overall", payload);
             return NextResponse.json(payload, {
-              headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+              headers: { "Cache-Control": "private, no-cache, no-store, must-revalidate" },
             });
           }
         } catch (err) {
@@ -56,11 +111,25 @@ export async function GET(req: Request) {
         }
       }
 
-      const entries = mockDb.getLeaderboard();
-      const payload = { success: true, entries };
+      const entries = mockDb.getLeaderboard().map((e) => {
+        const lvl = calculateLevel(e.total_xp || 0);
+        return {
+          ...e,
+          level_name: lvl.level_name,
+          level_number: lvl.level_number,
+        };
+      });
+
+      let currentUserSummary: any = null;
+      if (currentUserId) {
+        const inList = entries.find((e) => e.profile_id === currentUserId);
+        if (inList) currentUserSummary = { ...inList };
+      }
+
+      const payload = { success: true, entries, currentUserId, currentUserSummary };
       setCachedLeaderboard("overall", payload);
       return NextResponse.json(payload, {
-        headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+        headers: { "Cache-Control": "private, no-cache, no-store, must-revalidate" },
       });
     } else {
       if (isUsingLiveSupabase() && supabaseAdmin) {
@@ -113,10 +182,10 @@ export async function GET(req: Request) {
               entry.rank = idx + 1;
             });
 
-            const payload = { success: true, entries };
+            const payload = { success: true, entries, currentUserId };
             setCachedLeaderboard(type, payload);
             return NextResponse.json(payload, {
-              headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+              headers: { "Cache-Control": "private, no-cache, no-store, must-revalidate" },
             });
           }
         } catch (err) {
@@ -125,10 +194,10 @@ export async function GET(req: Request) {
       }
 
       const entries = mockDb.getGameLeaderboard(type as GameType);
-      const payload = { success: true, entries };
+      const payload = { success: true, entries, currentUserId };
       setCachedLeaderboard(type, payload);
       return NextResponse.json(payload, {
-        headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" },
+        headers: { "Cache-Control": "private, no-cache, no-store, must-revalidate" },
       });
     }
   } catch (error) {

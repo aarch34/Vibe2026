@@ -11,6 +11,7 @@ interface FriendsClientProps {
   incomingRequests: { request: ConnectionRequest; sender?: Profile }[];
   outgoingRequests: { request: ConnectionRequest; receiver?: Profile }[];
   initialFriends: Profile[];
+  defaultTab?: "requests" | "friends" | "sent";
 }
 
 export function FriendsClient({
@@ -18,9 +19,10 @@ export function FriendsClient({
   incomingRequests: initialIncoming,
   outgoingRequests: initialOutgoing,
   initialFriends,
+  defaultTab,
 }: FriendsClientProps) {
   const [activeTab, setActiveTab] = useState<"requests" | "friends" | "sent">(
-    initialIncoming.length > 0 ? "requests" : "friends"
+    defaultTab || (initialIncoming.length > 0 ? "requests" : "friends")
   );
   const [incoming, setIncoming] = useState(initialIncoming);
   const [outgoing, setOutgoing] = useState(initialOutgoing);
@@ -28,6 +30,17 @@ export function FriendsClient({
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [acceptedNotice, setAcceptedNotice] = useState<string | null>(null);
+
+  // Sync tab if URL changes or when component mounts with query param
+  React.useEffect(() => {
+    if (typeof window !== "undefined") {
+      const sp = new URLSearchParams(window.location.search);
+      const tab = sp.get("tab");
+      if (tab === "sent" || tab === "requests" || tab === "friends") {
+        setActiveTab(tab);
+      }
+    }
+  }, [defaultTab]);
 
   // Background sync every 45s without manual refresh, paused when tab is hidden
   React.useEffect(() => {

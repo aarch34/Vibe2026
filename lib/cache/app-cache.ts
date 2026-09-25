@@ -7,7 +7,7 @@ interface CachedLeaderboard {
 }
 
 const leaderboardCache = new Map<string, CachedLeaderboard>();
-export const LEADERBOARD_CACHE_TTL_MS = 30_000;
+export const LEADERBOARD_CACHE_TTL_MS = 5_000; // 5s burst throttle, near real-time
 
 export function getCachedLeaderboard(type: string): any | null {
   if (process.env.NODE_ENV === "test") return null;

@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import { getAdminSession } from "@/actions/admin/auth";
-import { mockDb } from "@/lib/db/mock-store";
+import { mockDb, calculateLevel } from "@/lib/db/mock-store";
 import { isUsingLiveSupabase, supabaseAdmin } from "@/lib/db/supabase";
 import { invalidateSessionCache } from "@/lib/auth/session";
+import { invalidateLeaderboardCache } from "@/lib/cache/app-cache";
 
 export const dynamic = "force-dynamic";
 
@@ -57,11 +58,14 @@ export async function POST(req: Request) {
       const xpBefore = targetProfile.xp ?? 0;
       const xpAfter = Math.max(0, xpBefore + numAmount); // XP can't go below 0
 
-      // 2. Update XP on the profile
+      // 2. Update XP and synchronized level on the profile
+      const lvl = calculateLevel(xpAfter);
       const { error: updateErr } = await supabaseAdmin
         .from("profiles")
         .update({
           xp: xpAfter,
+          level_name: lvl.level_name,
+          level_number: lvl.level_number,
           updated_at: new Date().toISOString(),
         })
         .eq("id", targetUserId);
@@ -89,9 +93,10 @@ export async function POST(req: Request) {
         console.warn("[XP Adjust] Audit log insert failed:", auditErr?.message || auditErr);
       }
 
-      // 4. Invalidate the session cache for the affected user so they see their new XP
+      // 4. Invalidate the session cache for the affected user and the overall leaderboard cache
       try {
         invalidateSessionCache(targetUserId);
+        invalidateLeaderboardCache("overall");
       } catch {}
 
       return NextResponse.json({
