@@ -369,18 +369,18 @@ export function SanjayRun({
       // City Silhouette
       for (let x = 0; x < w; x += 100) {
         const bh = 25 + (x * 13 % 50);
-        drawPixel(ctx!, x, 350 - bh, 62, bh, isNight ? "#1e293b" : "#7dd3fc");
+        drawPixel(ctx!, x, 400 - bh, 62, bh, isNight ? "#1e293b" : "#7dd3fc");
       }
 
       // Ground
-      drawPixel(ctx!, 0, 350, w, h - 350, "#1c1917"); // dirt brown
-      drawPixel(ctx!, 0, 350, w, 5, "#15803d"); // grass top
+      drawPixel(ctx!, 0, 400, w, h - 400, "#1c1917"); // dirt brown
+      drawPixel(ctx!, 0, 400, w, 5, "#15803d"); // grass top
 
       for (let x = -st.groundOffset; x < w; x += 48) {
-        drawPixel(ctx!, x, 370, 28, 5, "#292524");
+        drawPixel(ctx!, x, 420, 28, 5, "#292524");
       }
       for (let x = 20 - st.groundOffset * 0.6; x < w; x += 92) {
-        drawPixel(ctx!, x, 391, 38, 3, "#292524");
+        drawPixel(ctx!, x, 441, 38, 3, "#292524");
       }
 
       st.obstacles.forEach(o => drawObstacle(ctx!, o));
@@ -413,122 +413,120 @@ export function SanjayRun({
   }, []);
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center select-none touch-none overflow-hidden">
-      {/* Rotate Device Prompt for Portrait */}
-      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-900 text-white sm:hidden portrait:flex landscape:hidden">
-        <span className="text-6xl mb-4">🔄</span>
-        <h2 className="text-2xl font-black mb-2 text-yellow-400">ROTATE DEVICE</h2>
-        <p className="text-sm text-slate-300 px-8 text-center font-bold">Please rotate your phone to landscape mode to play Sanjay Run.</p>
-        <button onClick={onClose} className="mt-8 px-6 py-2 bg-slate-800 rounded-xl font-bold border-2 border-slate-700">Go Back</button>
+    <div className="max-w-md mx-auto space-y-4">
+      {/* Arcade Header Bar */}
+      <div className="p-3 bg-card border-2 border-border shadow-neo flex items-center justify-between">
+        <div className="flex items-center space-x-2">
+          <span className="text-xl">🏃</span>
+          <div>
+            <h2 className="text-xs font-black text-foreground uppercase tracking-wider font-mono flex items-center gap-1.5">
+              <span>Sanjay Run</span>
+              <span className="text-[9px] px-1.5 py-0.2 bg-primary text-primary-foreground border border-border">
+                ENDLESS
+              </span>
+            </h2>
+            <span className="text-[10px] text-muted-foreground font-mono">
+              Best Score: <strong>{String(bestScore).padStart(5, '0')}</strong>
+            </span>
+          </div>
+        </div>
+
+        <div className="flex items-center space-x-2">
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="p-1.5 bg-muted text-foreground border border-border hover:bg-destructive hover:text-white active:scale-95 transition-all cursor-pointer text-[10px] font-mono font-bold px-2.5"
+            >
+              EXIT
+            </button>
+          )}
+        </div>
       </div>
 
-      <div className="relative w-full max-w-[960px] mx-auto sm:rounded-3xl overflow-hidden sm:border-4 border-slate-800 shadow-2xl bg-black select-none landscape:flex landscape:flex-col landscape:justify-center h-full sm:h-auto">
-      {/* HUD */}
-      <div className="absolute top-4 left-4 right-4 flex justify-between z-10 pointer-events-none">
-        <div className="bg-white/90 backdrop-blur border-2 border-slate-800 px-3 py-1.5 rounded-lg shadow-lg flex items-center space-x-2">
-          <span className="font-black text-xs uppercase text-slate-800">👑 SANJAY RUN</span>
-        </div>
-        <div className="bg-white/90 backdrop-blur border-2 border-slate-800 px-3 py-1.5 rounded-lg shadow-lg flex space-x-3 text-xs font-black font-mono text-slate-800">
-          <span>SCORE {String(score).padStart(5, '0')}</span>
-          <span className="text-slate-400">BEST {String(bestScore).padStart(5, '0')}</span>
-        </div>
-      </div>
+      <div className="relative bg-black border-2 border-border shadow-neo overflow-hidden select-none cursor-pointer flex justify-center items-center">
+        <canvas 
+          ref={canvasRef} 
+          width={380}
+          height={500}
+          className="block w-full max-w-[380px] h-auto aspect-[380/500] bg-sky-400 touch-none"
+          onPointerDown={(e) => {
+            if ((e.target as HTMLElement).closest('button')) return;
+            pointerStart.current = { x: e.clientX, y: e.clientY };
+            if (gameState === "playing") handleJump();
+            else if (gameState === "ready") startGame();
+          }}
+          onPointerMove={(e) => {
+            if (!pointerStart.current) return;
+            const dy = e.clientY - pointerStart.current.y;
+            if (dy > 30) {
+              if (gameState === "playing") handleDuck(true);
+            }
+          }}
+          onPointerUp={() => {
+            if (gameState === "playing") handleDuck(false);
+            pointerStart.current = null;
+          }}
+          onPointerCancel={() => {
+            if (gameState === "playing") handleDuck(false);
+            pointerStart.current = null;
+          }}
+          style={{ imageRendering: "pixelated" }}
+        />
 
-      <canvas 
-        ref={canvasRef} 
-        width={960}
-        height={430}
-        className="block w-full h-auto aspect-[960/430] bg-sky-400 cursor-pointer touch-none landscape:max-h-screen landscape:object-contain"
-        onPointerDown={(e) => {
-          if ((e.target as HTMLElement).closest('button')) return;
-          pointerStart.current = { x: e.clientX, y: e.clientY };
-          if (gameState === "playing") handleJump();
-          else if (gameState === "ready") startGame();
-        }}
-        onPointerMove={(e) => {
-          if (!pointerStart.current) return;
-          const dy = e.clientY - pointerStart.current.y;
-          if (dy > 30) {
-            if (gameState === "playing") handleDuck(true);
-          }
-        }}
-        onPointerUp={() => {
-          if (gameState === "playing") handleDuck(false);
-          pointerStart.current = null;
-        }}
-        onPointerCancel={() => {
-          if (gameState === "playing") handleDuck(false);
-          pointerStart.current = null;
-        }}
-        style={{ imageRendering: "pixelated" }}
-      />
-
-      {/* Start Screen */}
-      {gameState === "ready" && (
-        <div 
-          className="absolute inset-0 z-20 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center cursor-pointer"
-          onClick={startGame}
-        >
-          <div className="text-center space-y-6 animate-in zoom-in-95 fade-in duration-300">
-            <h1 className="text-5xl sm:text-7xl font-black tracking-tighter text-white drop-shadow-[0_4px_0_rgba(234,179,8,1)]">
+        {/* Start Screen */}
+        {gameState === "ready" && (
+          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm z-30 p-5 flex flex-col justify-center items-center text-center space-y-3">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-tighter text-white drop-shadow-[0_4px_0_rgba(234,179,8,1)]">
               SANJAY RUN
             </h1>
-            <p className="text-sm font-bold text-slate-300">READY TO RUN?</p>
+            <p className="text-[10px] font-bold text-slate-300">READY TO RUN?</p>
             <button
-              className="px-8 py-4 bg-yellow-400 hover:bg-yellow-300 border-4 border-slate-800 shadow-[4px_4px_0_#1e293b] active:shadow-[0_0_0_#1e293b] active:translate-y-1 active:translate-x-1 text-slate-900 font-black text-xl transition-all pointer-events-none"
+              onClick={startGame}
+              className="px-6 py-3 bg-yellow-400 hover:bg-yellow-300 border-2 border-slate-800 shadow-[4px_4px_0_#1e293b] active:shadow-[0_0_0_#1e293b] active:translate-y-1 active:translate-x-1 text-slate-900 font-black text-sm transition-all"
             >
               TAP TO START
             </button>
-            <div className="text-xs font-bold text-slate-400 pt-8">
+            <div className="text-[9px] font-bold text-slate-400 pt-4">
               SPACE / ↑ / TAP = JUMP • ↓ = DUCK
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Game Over Screen */}
-      {gameState === "gameover" && (
-        <div 
-          className="absolute inset-0 z-20 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center cursor-pointer"
-          onClick={(e) => {
-            if ((e.target as HTMLElement).closest('button')) return;
-            resetGame(); 
-            startGame();
-          }}
-        >
-          <div className="text-center space-y-6 animate-in zoom-in-95 fade-in duration-300 bg-slate-800/80 p-8 border-2 border-slate-700 rounded-3xl" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-4xl sm:text-6xl font-black text-white drop-shadow-[0_4px_0_rgba(239,68,68,1)]">
+        {/* Game Over Screen */}
+        {gameState === "gameover" && (
+          <div className="absolute inset-0 bg-black/85 backdrop-blur-sm z-30 p-5 flex flex-col justify-center items-center text-center space-y-3">
+            <h2 className="text-3xl font-black text-white drop-shadow-[0_4px_0_rgba(239,68,68,1)]">
               BONK! 💥
             </h2>
             <div className="space-y-1">
-              <p className="text-sm font-bold text-slate-300 uppercase">Sanjay ran</p>
-              <p className="text-5xl font-black font-mono text-yellow-400">{score}</p>
-              <p className="text-sm font-bold text-slate-300 uppercase">Metres</p>
+              <p className="text-[10px] font-bold text-slate-300 uppercase">Sanjay ran</p>
+              <p className="text-4xl font-black font-mono text-yellow-400">{score}</p>
+              <p className="text-[10px] font-bold text-slate-300 uppercase">Metres</p>
             </div>
             
-            <div className="flex items-center justify-center gap-3 pt-2">
+            <div className="flex flex-col items-center justify-center gap-2 pt-2 w-full max-w-xs">
               <button
-                onClick={() => { resetGame(); startGame(); }}
+                onClick={(e) => { e.stopPropagation(); resetGame(); startGame(); }}
                 disabled={isSubmitting}
-                className="px-6 py-3 bg-yellow-400 hover:bg-yellow-300 border-2 border-slate-800 shadow-[4px_4px_0_#1e293b] active:shadow-[0_0_0_#1e293b] active:translate-y-1 active:translate-x-1 text-slate-900 font-black transition-all flex items-center gap-2"
+                className="w-full py-3 bg-yellow-400 hover:bg-yellow-300 border-2 border-slate-800 shadow-[4px_4px_0_#1e293b] active:shadow-[0_0_0_#1e293b] active:translate-y-1 active:translate-x-1 text-slate-900 font-black text-xs transition-all flex items-center justify-center gap-2"
               >
-                <RefreshCw className="w-5 h-5" />
+                <RefreshCw className="w-4 h-4" />
                 <span>RUN IT BACK</span>
               </button>
-              {onClose && (
-                <button
-                  onClick={onClose}
-                  className="px-4 py-3 bg-slate-600 hover:bg-slate-500 text-white font-black border-2 border-slate-800 rounded-xl transition-all"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              )}
             </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
-    </div>
+      <div className="p-3 bg-card border-2 border-border shadow-neo space-y-1.5 text-[10px] text-muted-foreground font-mono">
+        <div className="flex items-center justify-between font-bold text-foreground">
+          <span className="text-emerald-400 font-black">Entry: FREE</span>
+        </div>
+        <p className="leading-relaxed">
+          <span className="text-yellow-400 font-black">5 - 25 XP</span>. 
+          Jump and duck over obstacles in this fast-paced infinite runner!
+        </p>
+      </div>
     </div>
   );
 }

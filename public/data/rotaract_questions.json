@@ -412,10 +412,10 @@
   {
     "q": "What age range does Rotary International currently give for Interact?",
     "options": [
-      "10–14",
-      "12–18",
-      "15–21",
-      "18–30"
+      "10\u201314",
+      "12\u201318",
+      "15\u201321",
+      "18\u201330"
     ],
     "correct": 1
   },
@@ -902,10 +902,10 @@
   {
     "q": "Which option is NOT the answer to this Rotary/Rotaract question: What age range does Rotary International currently give for Interact?",
     "options": [
-      "10–14",
-      "12–18",
-      "15–21",
-      "18–30"
+      "10\u201314",
+      "12\u201318",
+      "15\u201321",
+      "18\u201330"
     ],
     "correct": 0
   },
@@ -1040,7 +1040,7 @@
     "correct": 0
   },
   {
-    "q": "A 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "A 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -1140,7 +1140,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 2, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 2, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -1240,7 +1240,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 3, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 3, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -1340,7 +1340,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 4, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 4, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -1440,7 +1440,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 5, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 5, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -1540,7 +1540,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 6, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 6, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -1640,7 +1640,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 7, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 7, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -1740,7 +1740,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 8, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 8, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -1840,7 +1840,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 9, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 9, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -1940,7 +1940,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 10, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 10, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2040,7 +2040,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 11, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 11, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2140,7 +2140,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 12, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 12, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2240,7 +2240,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 13, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 13, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2340,7 +2340,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 14, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 14, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2440,7 +2440,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 15, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 15, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2540,7 +2540,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 16, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 16, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2640,7 +2640,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 17, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 17, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2740,7 +2740,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 18, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 18, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2840,7 +2840,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 19, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 19, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -2940,7 +2940,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 20, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 20, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3040,7 +3040,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 21, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 21, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3140,7 +3140,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 22, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 22, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3240,7 +3240,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 23, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 23, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3340,7 +3340,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 24, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 24, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3440,7 +3440,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 25, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 25, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3540,7 +3540,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 26, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 26, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3640,7 +3640,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 27, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 27, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3740,7 +3740,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 28, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 28, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3840,7 +3840,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 29, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 29, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -3940,7 +3940,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 30, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 30, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4040,7 +4040,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 31, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 31, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4140,7 +4140,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 32, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 32, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4240,7 +4240,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 33, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 33, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4340,7 +4340,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 34, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 34, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4440,7 +4440,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 35, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 35, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4540,7 +4540,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 36, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 36, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4640,7 +4640,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 37, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 37, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4740,7 +4740,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 38, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 38, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4840,7 +4840,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 39, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 39, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
@@ -4940,7 +4940,7 @@
     "correct": 0
   },
   {
-    "q": "In scenario 40, a 15-year-old asks which Rotary youth club is designed for ages 12–18. Which is it?",
+    "q": "In scenario 40, a 15-year-old asks which Rotary youth club is designed for ages 12\u201318. Which is it?",
     "options": [
       "Interact",
       "Rotaract",
