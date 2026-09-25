@@ -297,8 +297,11 @@ export function SanjayRun({
         // Cactus
         drawPixel(ctx, obs.x + 8, obs.y, 16, obs.height, "#22c55e");
         drawPixel(ctx, obs.x, obs.y + 15, 16, 12, "#16a34a");
-        if (obs.type === "double") {
+        if (obs.type === "double" || obs.type === "triple") {
           drawPixel(ctx, obs.x + 30, obs.y + 12, 16, obs.height - 12, "#15803d");
+        }
+        if (obs.type === "triple") {
+          drawPixel(ctx, obs.x + 53, obs.y + 20, 16, obs.height - 20, "#166534");
         }
       }
     }
@@ -318,13 +321,19 @@ export function SanjayRun({
         st.spawnTimer -= deltaTime;
 
         if (st.spawnTimer <= 0) {
-          const type = Math.random() > 0.75 && st.speed > 8 ? "missile" : Math.random() > 0.5 ? "double" : "cactus";
+          const type = Math.random() > 0.75 && st.speed > 8 ? "missile" : 
+                       Math.random() > 0.65 ? "triple" :
+                       Math.random() > 0.35 ? "double" : "cactus";
+          
           if (type === "missile") {
             const missileY = Math.random() > 0.5 ? 335 : 370;
             st.obstacles.push({ type, x: canvas!.width + 20, y: missileY, width: 45, height: 14 });
           } else {
             const h = 42 + Math.random() * 24;
-            st.obstacles.push({ type, x: canvas!.width + 20, y: 400 - h, width: type === "double" ? 54 : 31, height: h });
+            let w = 31;
+            if (type === "double") w = 54;
+            if (type === "triple") w = 77;
+            st.obstacles.push({ type, x: canvas!.width + 20, y: 400 - h, width: w, height: h });
           }
           st.spawnTimer = Math.max(430, ((700 + Math.random() * 450) / st.speed) * 16.67);
         }
@@ -416,6 +425,14 @@ export function SanjayRun({
       
       if (!drawnFromSprite) {
          drawSanjayVector(ctx!, st.player.x, st.player.y, st.player, st.ducking);
+      }
+      
+      // HUD (Score)
+      if (st.gameState === "playing") {
+        ctx!.fillStyle = isNight ? "#ffffff" : "#1e293b";
+        ctx!.font = "900 24px monospace";
+        ctx!.textAlign = "right";
+        ctx!.fillText(`${Math.floor(st.score).toString().padStart(5, '0')}`, w - 20, 35);
       }
 
       animFrameId = requestAnimationFrame(gameLoop);
