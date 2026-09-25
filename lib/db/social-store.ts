@@ -299,15 +299,23 @@ class PersistentSocialStore {
   ): Promise<{ post: Post; xpEarned: number }> {
     let finalImageUrl = imageUrl || null;
 
-    // Handle base64 image upload to Supabase Storage if live
-    if (finalImageUrl && finalImageUrl.startsWith("data:image/") && isUsingLiveSupabase() && supabaseAdmin) {
+    // Handle base64 image or video upload to Supabase Storage if live
+    if (
+      finalImageUrl &&
+      (finalImageUrl.startsWith("data:image/") || finalImageUrl.startsWith("data:video/")) &&
+      isUsingLiveSupabase() &&
+      supabaseAdmin
+    ) {
       try {
         const matches = finalImageUrl.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
         if (matches && matches.length === 3) {
           const contentType = matches[1];
-          const ext = contentType.split("/")[1]?.split(";")[0] || "jpeg";
+          let ext = contentType.split("/")[1]?.split(";")[0] || "bin";
+          if (ext === "jpeg") ext = "jpg";
+          else if (ext === "quicktime") ext = "mov";
           const buffer = Buffer.from(matches[2], "base64");
-          const fileName = `posts/${authorId}-${Date.now()}.${ext}`;
+          const folder = contentType.startsWith("video/") ? "videos" : "photos";
+          const fileName = `posts/${folder}/${authorId}-${Date.now()}.${ext}`;
 
           const { data: uploadData, error: uploadErr } = await supabaseAdmin.storage
             .from("Vibe Bucket")
@@ -327,7 +335,7 @@ class PersistentSocialStore {
           }
         }
       } catch (uploadEx) {
-        console.warn("[socialStore] Image storage upload failed, keeping base64 data URL:", uploadEx);
+        console.warn("[socialStore] Media storage upload failed, keeping base64 data URL:", uploadEx);
       }
     }
 

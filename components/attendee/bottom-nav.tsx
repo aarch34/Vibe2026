@@ -3,14 +3,14 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Compass, PlusSquare, Gamepad2, User } from "lucide-react";
+import { Home, Compass, PlusSquare, Gamepad2, User, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const BOTTOM_NAV_ITEMS = [
   { label: "Home", href: "/app", icon: Home },
   { label: "Discover", href: "/app/discover", icon: Compass },
   { label: "Post", href: "/app/post", icon: PlusSquare, isPrimary: true },
-  { label: "Games", href: "/app/games", icon: Gamepad2 },
+  { label: "Friends", href: "/app/friends", icon: Users },
   { label: "Profile", href: "/app/profile", icon: User },
 ];
 

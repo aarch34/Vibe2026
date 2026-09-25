@@ -6,8 +6,11 @@ import { Trophy, Award, Gamepad2, Sparkles, Users, Crown, Zap } from "lucide-rea
 import { cn } from "@/lib/utils";
 import { LeaderboardEntry, GameLeaderboardEntry, GameType } from "@/types/database";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useOptionalLiveStats } from "@/components/providers/live-stats-provider";
+import { calculateLevel } from "@/lib/db/mock-store";
 
 export default function LeaderboardPage() {
+  const liveStats = useOptionalLiveStats();
   const [activeTab, setActiveTab] = useState<"overall" | GameType>("overall");
   const [overallEntries, setOverallEntries] = useState<LeaderboardEntry[]>([]);
   const [gameEntries, setGameEntries] = useState<GameLeaderboardEntry[]>([]);
@@ -60,6 +63,9 @@ export default function LeaderboardPage() {
     return <span className="font-mono text-sm font-black text-muted-foreground">#{rank}</span>;
   };
 
+  const displayUserXp = liveStats?.xp ?? currentUserSummary?.total_xp ?? 0;
+  const userLevel = calculateLevel(displayUserXp);
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -95,7 +101,7 @@ export default function LeaderboardPage() {
                   {currentUserSummary.display_name}
                 </h3>
                 <span className="text-[10px] font-black font-mono px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 shrink-0">
-                  {currentUserSummary.level_name}
+                  {userLevel.level_name}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
@@ -107,7 +113,7 @@ export default function LeaderboardPage() {
           <div className="text-right shrink-0">
             <div className="text-[10px] sm:text-[11px] uppercase tracking-wider font-extrabold text-muted-foreground">Your Verified XP</div>
             <div className="text-base sm:text-lg font-mono font-black text-amber-400">
-              ⭐ {currentUserSummary.total_xp.toLocaleString()} XP
+              ⭐ {displayUserXp.toLocaleString()} XP
             </div>
           </div>
         </div>

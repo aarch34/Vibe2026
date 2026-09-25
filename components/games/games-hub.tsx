@@ -79,7 +79,7 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
           </h1>
         </div>
         <p className="text-xs text-muted-foreground">
-          Play ROCO Flappie or take the Rotaract Quiz — earn XP, set high scores, and climb the leaderboard!
+          Play ROCO Flappie, Sanjay Run, or take the Rotaract Quiz — earn XP, set high scores, and climb the leaderboard!
         </p>
       </div>
 

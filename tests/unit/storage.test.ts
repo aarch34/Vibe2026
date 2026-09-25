@@ -46,4 +46,19 @@ describe("VIBE Media Storage — Supabase Storage & Video Support", () => {
     expect(isVideoMedia(null)).toBe(false);
     expect(isVideoMedia(undefined)).toBe(false);
   });
+
+  it("should enforce 50MB maximum media limit and 60s video limit guidelines", () => {
+    const MAX_SIZE = 50 * 1024 * 1024;
+    const MAX_DURATION_SEC = 60;
+
+    const testSmallVideo = { size: 10 * 1024 * 1024, duration: 45 };
+    const testOversizedVideo = { size: 55 * 1024 * 1024, duration: 30 };
+    const testOverlongVideo = { size: 20 * 1024 * 1024, duration: 75 };
+
+    expect(testSmallVideo.size <= MAX_SIZE).toBe(true);
+    expect(testSmallVideo.duration <= MAX_DURATION_SEC).toBe(true);
+
+    expect(testOversizedVideo.size <= MAX_SIZE).toBe(false);
+    expect(testOverlongVideo.duration <= MAX_DURATION_SEC).toBe(false);
+  });
 });

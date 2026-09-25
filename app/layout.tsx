@@ -50,6 +50,8 @@ export const viewport: Viewport = {
   themeColor: "#000000",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -59,6 +61,7 @@ export default function RootLayout({
     <html lang="en" className={`${dmSans.variable} ${spaceMono.variable} dark font-sans`} suppressHydrationWarning>
       <body className="bg-background text-foreground min-h-screen antialiased selection:bg-primary selection:text-primary-foreground font-sans">
         <VibeAuthProvider>{children}</VibeAuthProvider>
+        <Toaster position="top-center" theme="dark" richColors />
       </body>
     </html>
   );

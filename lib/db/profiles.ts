@@ -140,7 +140,7 @@ export async function getAllDiscoverableProfiles(excludeProfileId?: string, limi
       const query = supabaseAdmin
         .from("profiles")
         .select("id, clerk_user_id, vibe_id, display_name, username, avatar_url, avatar_media_id, email, phone, club, rotaract_club, college, course_year, instagram_username, bio, interests, skills, hobbies, city, is_discoverable, xp, level_number, level_name, connections_count, posts_count, games_played_count, registration_id, profile_completed, created_at, updated_at")
-        .order("xp", { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(Math.max(100, limitCount));
 
       const { data: dbRows, error } = await query;
@@ -183,7 +183,11 @@ export async function getAllDiscoverableProfiles(excludeProfileId?: string, limi
     }
   }
 
-  const allSorted = Array.from(profileMap.values()).sort((a, b) => b.xp - a.xp);
+  const allSorted = Array.from(profileMap.values()).sort((a, b) => {
+    const tA = new Date(a.created_at || a.updated_at || 0).getTime();
+    const tB = new Date(b.created_at || b.updated_at || 0).getTime();
+    return tB - tA;
+  });
 
   if (!isTest) {
     discoverCache = { profiles: allSorted, timestamp: Date.now() };

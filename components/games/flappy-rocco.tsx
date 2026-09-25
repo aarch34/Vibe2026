@@ -63,8 +63,8 @@ export function FlappyRocco({
     gameState: "ready" as "ready" | "playing" | "gameover",
     birdY: 200,
     velocity: 0,
-    gravity: 0.26, // Gentle, floaty gravity (reduced from 0.32 for smoother control)
-    jump: -4.8,    // Smooth, gentle flap impulse (reduced from -5.5 for lower sensitivity)
+    gravity: 0.18, // Even more floaty gravity for easier gameplay
+    jump: -4.0,    // Softer flap impulse for much lower sensitivity
     pipes: [] as PipePair[],
     score: 0,
     frameCount: 0,

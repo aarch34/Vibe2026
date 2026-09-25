@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
       mimeType = "image/jpeg",
     } = body;
 
-    const allowedCategories = ["avatars", "experiences", "rewards", "sponsors", "banners"];
+    const allowedCategories = ["avatars", "posts", "experiences", "rewards", "sponsors", "banners"];
     if (!allowedCategories.includes(category)) {
       return NextResponse.json(
         { error: `Invalid category. Allowed: ${allowedCategories.join(", ")}` },
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Only administrators can upload banners, experiences, rewards, or sponsors
-    if (category !== "avatars") {
+    if (category !== "avatars" && category !== "posts") {
       const admin = await getAdminSession();
       if (!admin) {
         return NextResponse.json(

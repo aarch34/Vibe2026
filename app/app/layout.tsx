@@ -5,6 +5,7 @@ import { TopHeader } from "@/components/attendee/top-header";
 import { AttendeeBottomNav } from "@/components/attendee/bottom-nav";
 import { InstallPWA } from "@/components/ui/install-pwa";
 import { LiveStatsProvider } from "@/components/providers/live-stats-provider";
+import { RealtimeNotifier } from "@/components/social/realtime-notifier";
 
 export const dynamic = "force-dynamic";
 
@@ -44,6 +45,7 @@ export default async function AttendeeLayout({
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col selection:bg-pink-500 selection:text-white">
       <LiveStatsProvider initialXp={userXp} initialNotifications={notifications}>
+        <RealtimeNotifier currentProfileId={profile?.id} />
         <TopHeader
           profileId={profile?.id}
           vibeId={profile?.vibe_id || "VB2026-000"}

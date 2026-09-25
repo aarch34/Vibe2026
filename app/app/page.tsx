@@ -113,7 +113,7 @@ export default async function AttendeeHomePage() {
           </div>
           <div className="p-2.5 rounded-2xl bg-secondary/50 border border-border/60 text-center space-y-1">
             <span className="text-xl">🎮</span>
-            <div className="text-[11px] font-bold text-foreground">Play ROCO & Quiz</div>
+            <div className="text-[11px] font-bold text-foreground">Play Games</div>
             <div className="text-[10px] font-mono text-amber-400 font-extrabold">Up to +125 XP</div>
           </div>
           <div className="p-2.5 rounded-2xl bg-secondary/50 border border-border/60 text-center space-y-1">
@@ -132,7 +132,7 @@ export default async function AttendeeHomePage() {
           </div>
           <div>
             <h3 className="font-black text-sm text-foreground">Casual Games Arena</h3>
-            <p className="text-xs text-muted-foreground">Play ROCO Flappie & the Rotaract Quiz to earn XP!</p>
+            <p className="text-xs text-muted-foreground">Play ROCO Flappie, Sanjay Run & the Rotaract Quiz!</p>
           </div>
         </div>
         <Link

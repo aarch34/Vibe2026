@@ -30,12 +30,30 @@ export default function CreatePostPage() {
   const [caption, setCaption] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [isVideo, setIsVideo] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const checkVideoDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      const objUrl = URL.createObjectURL(file);
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(objUrl);
+        resolve(video.duration);
+      };
+      video.onerror = () => {
+        URL.revokeObjectURL(objUrl);
+        reject(new Error("Unable to read video duration"));
+      };
+      video.src = objUrl;
+    });
+  };
 
   // Clean up Object URL on unmount to avoid memory leaks
   useEffect(() => {
@@ -130,6 +148,21 @@ export default function CreatePostPage() {
     }
 
     if (isVid) {
+      // Strict 60 seconds duration limit
+      try {
+        const duration = await checkVideoDuration(file);
+        if (duration > 60.5) {
+          setFileError(
+            `Video duration exceeds the 60-second limit (${Math.round(duration)} seconds). Please trim or choose a video of 60 seconds or less.`
+          );
+          if (fileInputRef.current) fileInputRef.current.value = "";
+          return;
+        }
+        setVideoDuration(Math.round(duration));
+      } catch (err) {
+        console.warn("Could not read video duration:", err);
+      }
+
       setIsVideo(true);
       const videoObjectUrl = URL.createObjectURL(file);
       setMediaPreview(videoObjectUrl);
@@ -163,6 +196,7 @@ export default function CreatePostPage() {
     setImageUrl("");
     setSelectedFile(null);
     setIsVideo(false);
+    setVideoDuration(null);
     setFileError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -349,9 +383,9 @@ export default function CreatePostPage() {
                     playsInline
                     className="w-full max-h-72 object-contain mx-auto"
                   />
-                  <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1 backdrop-blur-sm">
+                  <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1 backdrop-blur-sm shadow">
                     <VideoIcon className="w-3 h-3" />
-                    <span>Video &bull; {fileSizeMb}MB / 50MB</span>
+                    <span>Video &bull; {videoDuration ? `${videoDuration}s (Max 60s)` : "Max 60s"} &bull; {fileSizeMb}MB / 50MB</span>
                   </div>
                 </div>
               ) : (

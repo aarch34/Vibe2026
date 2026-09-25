@@ -9,6 +9,7 @@ import {
   UserPlus,
   Send,
   Image as ImageIcon,
+  Video as VideoIcon,
   Sparkles,
   CheckCircle2,
   Trash2,
@@ -16,9 +17,11 @@ import {
   AlertCircle,
   Share2,
   Check,
+  Loader2,
 } from "lucide-react";
 import { Post, Profile } from "@/types/database";
 import { isVideoMedia } from "@/lib/utils";
+import { supabase } from "@/lib/db/supabase";
 
 interface VibeFeedProps {
   initialPosts: (Post & { author: Profile })[];
@@ -28,6 +31,7 @@ interface VibeFeedProps {
 
 const FEED_CACHE_KEY = "vibe_feed_posts_v1";
 const FEED_SYNC_KEY = "vibe_feed_last_sync_v1";
+const MAX_MEDIA_SIZE_BYTES = 50 * 1024 * 1024; // 50MB strictly enforced
 
 export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: VibeFeedProps) {
   const [posts, setPosts] = useState<(Post & { author: Profile })[]>(() => {
@@ -46,9 +50,13 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
   });
   const [newCaption, setNewCaption] = useState("");
   const [newImageUrl, setNewImageUrl] = useState("");
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isVideo, setIsVideo] = useState(false);
+  const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [uploadingStatus, setUploadingStatus] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [activeCommentPostId, setActiveCommentPostId] = useState<string | null>(null);
@@ -99,17 +107,45 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
     return () => { isMounted = false; };
   }, [currentProfile.id]);
 
+  // Clean up Object URL on unmount to avoid memory leaks
+  useEffect(() => {
+    return () => {
+      if (mediaPreview && mediaPreview.startsWith("blob:")) {
+        try {
+          URL.revokeObjectURL(mediaPreview);
+        } catch {}
+      }
+    };
+  }, [mediaPreview]);
+
   // Sync liked IDs when server refreshes
   useEffect(() => {
     if (initialLikedPostIds) setLikedPostIds(new Set(initialLikedPostIds));
   }, [initialLikedPostIds]);
 
-
   const fileInputRef = useRef<HTMLInputElement>(null);
   const captionInputRef = useRef<HTMLTextAreaElement>(null);
 
+  // Check video duration (max 60 seconds strictly enforced)
+  const checkVideoDuration = (file: File): Promise<number> => {
+    return new Promise((resolve, reject) => {
+      const video = document.createElement("video");
+      video.preload = "metadata";
+      const objUrl = URL.createObjectURL(file);
+      video.onloadedmetadata = () => {
+        URL.revokeObjectURL(objUrl);
+        resolve(video.duration);
+      };
+      video.onerror = () => {
+        URL.revokeObjectURL(objUrl);
+        reject(new Error("Unable to read video metadata"));
+      };
+      video.src = objUrl;
+    });
+  };
+
   // Client-side image compression
-  const compressImage = (file: File): Promise<string> => {
+  const compressImage = (file: File): Promise<{ dataUrl: string; file: File }> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -132,9 +168,27 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
           const ctx = canvas.getContext("2d");
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            resolve(canvas.toDataURL("image/jpeg", 0.85));
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  const compressedFile = new File(
+                    [blob],
+                    file.name.replace(/\.[^/.]+$/, ".jpg"),
+                    { type: "image/jpeg", lastModified: Date.now() }
+                  );
+                  resolve({
+                    dataUrl: canvas.toDataURL("image/jpeg", 0.85),
+                    file: compressedFile,
+                  });
+                } else {
+                  resolve({ dataUrl: e.target?.result as string, file });
+                }
+              },
+              "image/jpeg",
+              0.85
+            );
           } else {
-            resolve(e.target?.result as string);
+            resolve({ dataUrl: e.target?.result as string, file });
           }
         };
         img.onerror = reject;
@@ -147,31 +201,82 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     setFileError(null);
+    setStatusMessage(null);
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      setFileError("Only image files (JPEG, PNG, WebP, GIF) are allowed.");
+    const isVid = file.type.startsWith("video/") || /\.(mp4|webm|mov|m4v|ogg|3gp)$/i.test(file.name);
+    const isImg = file.type.startsWith("image/");
+
+    if (!isVid && !isImg) {
+      setFileError("Only photo files (JPEG, PNG, WebP, GIF) and video files (MP4, WebM, MOV) are allowed.");
       return;
     }
 
-    if (file.size > 15 * 1024 * 1024) {
-      setFileError("Image size exceeds 15MB limit. Please select a smaller photo.");
+    // Strict 50MB check for all uploads
+    if (file.size > MAX_MEDIA_SIZE_BYTES) {
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(1);
+      setFileError(
+        isVid
+          ? `Video size exceeds the 50MB limit (${sizeMb}MB). Videos must be 50MB or less.`
+          : `Photo size exceeds the 50MB limit (${sizeMb}MB). Photos must be 50MB or less.`
+      );
+      if (fileInputRef.current) fileInputRef.current.value = "";
       return;
     }
 
-    try {
-      const optimized = await compressImage(file);
-      setImagePreview(optimized);
-      setNewImageUrl(optimized);
-    } catch {
-      setFileError("Error processing image.");
+    if (isVid) {
+      // Strict 60 seconds duration limit for videos
+      try {
+        const duration = await checkVideoDuration(file);
+        if (duration > 60.5) {
+          setFileError(
+            `Video duration exceeds the 60-second limit (${Math.round(duration)} seconds). Please trim or choose a video of 60 seconds or less.`
+          );
+          if (fileInputRef.current) fileInputRef.current.value = "";
+          return;
+        }
+        setVideoDuration(Math.round(duration));
+      } catch (err) {
+        console.warn("Could not read video duration:", err);
+      }
+
+      setIsVideo(true);
+      const videoObjectUrl = URL.createObjectURL(file);
+      setMediaPreview(videoObjectUrl);
+      setSelectedFile(file);
+      setNewImageUrl("");
+    } else {
+      setIsVideo(false);
+      setVideoDuration(null);
+      try {
+        if (file.size > 2 * 1024 * 1024) {
+          const { dataUrl, file: compressedFile } = await compressImage(file);
+          setMediaPreview(dataUrl);
+          setSelectedFile(compressedFile);
+        } else {
+          const reader = new FileReader();
+          reader.onload = (re) => setMediaPreview(re.target?.result as string);
+          reader.readAsDataURL(file);
+          setSelectedFile(file);
+        }
+      } catch {
+        setFileError("Error processing image file. Please try another photo.");
+      }
     }
   };
 
-  const removeImage = () => {
-    setImagePreview(null);
+  const removeMedia = () => {
+    if (mediaPreview && mediaPreview.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(mediaPreview);
+      } catch {}
+    }
+    setMediaPreview(null);
     setNewImageUrl("");
+    setSelectedFile(null);
+    setIsVideo(false);
+    setVideoDuration(null);
     setFileError(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -181,17 +286,80 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
     setStatusMessage(null);
     setFileError(null);
 
-    if (!newCaption.trim() && !newImageUrl.trim()) {
-      setStatusMessage({ type: "error", text: "Please enter a caption or upload a photo." });
+    if (!newCaption.trim() && !mediaPreview && !newImageUrl.trim() && !selectedFile) {
+      setStatusMessage({ type: "error", text: "Please enter a caption or attach a photo/video." });
       return;
     }
 
     setIsPosting(true);
+    setUploadingStatus(isVideo ? "Uploading video to Supabase Storage..." : "Uploading photo to Supabase Storage...");
+
     try {
+      let finalMediaUrl: string | null = newImageUrl.trim() || null;
+
+      // Upload media directly to Supabase Pro Storage ('Vibe Bucket')
+      if (selectedFile) {
+        const ext = selectedFile.name.split(".").pop()?.toLowerCase() || (isVideo ? "mp4" : "jpg");
+        const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
+        const folder = isVideo ? "videos" : "photos";
+        const filePath = `posts/${currentProfile.id}/${folder}/${uniqueId}.${ext}`;
+
+        let uploadedUrl: string | null = null;
+
+        // 1. First try client-side upload directly to Supabase Storage
+        if (supabase) {
+          try {
+            const { data: supaData, error: supaErr } = await supabase.storage
+              .from("Vibe Bucket")
+              .upload(filePath, selectedFile, {
+                contentType: selectedFile.type || (isVideo ? "video/mp4" : "image/jpeg"),
+                upsert: true,
+              });
+
+            if (supaData && !supaErr) {
+              const { data: pubData } = supabase.storage
+                .from("Vibe Bucket")
+                .getPublicUrl(supaData.path);
+              if (pubData?.publicUrl) {
+                uploadedUrl = pubData.publicUrl;
+              }
+            }
+          } catch (cErr) {
+            console.warn("Direct client upload to Supabase storage failed, falling back to /api/media/upload:", cErr);
+          }
+        }
+
+        // 2. Fallback to /api/media/upload (which uses Supabase Admin client)
+        if (!uploadedUrl) {
+          const form = new FormData();
+          form.append("file", selectedFile);
+          form.append("category", "posts");
+
+          const upRes = await fetch("/api/media/upload", {
+            method: "POST",
+            body: form,
+          });
+
+          if (!upRes.ok) {
+            const errData = await upRes.json().catch(() => ({}));
+            throw new Error(errData.error || "Media upload to Supabase Storage failed.");
+          }
+
+          const upData = await upRes.json();
+          if (upData.url) {
+            uploadedUrl = upData.url;
+          }
+        }
+
+        finalMediaUrl = uploadedUrl;
+      }
+
+      setUploadingStatus("Publishing post...");
+
       const res = await fetch("/api/posts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ caption: newCaption.trim(), imageUrl: newImageUrl.trim() || null }),
+        body: JSON.stringify({ caption: newCaption.trim(), imageUrl: finalMediaUrl }),
       });
 
       if (res.ok) {
@@ -200,27 +368,26 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
           const author = data.post.author || currentProfile;
           setPosts((prev) => {
             const updated = [{ ...data.post, author }, ...prev].slice(0, 10);
-            // Update localStorage cache so next page load shows this post immediately
             try {
               localStorage.setItem(FEED_CACHE_KEY, JSON.stringify(updated));
-              // Clear the delta-sync timestamp so next full refresh gets all posts
               localStorage.removeItem(FEED_SYNC_KEY);
             } catch { /* ignore */ }
             return updated;
           });
           const bonusMsg = data.xpEarned > 0 ? ` +${data.xpEarned} XP Earned for your 1st post! ⭐` : "";
-          setStatusMessage({ type: "success", text: `Post published! 🎉${bonusMsg}` });
+          setStatusMessage({ type: "success", text: `Post published successfully! 🎉${bonusMsg}` });
         }
         setNewCaption("");
-        removeImage();
+        removeMedia();
       } else {
-        const errData = await res.json();
+        const errData = await res.json().catch(() => ({}));
         setStatusMessage({ type: "error", text: errData.error || "Couldn't publish your post. Please try again." });
       }
-    } catch {
-      setStatusMessage({ type: "error", text: "Network failure. Couldn't publish your post." });
+    } catch (err: any) {
+      setStatusMessage({ type: "error", text: err?.message || "Network failure. Couldn't publish your post." });
     } finally {
       setIsPosting(false);
+      setUploadingStatus(null);
     }
   };
 
@@ -417,21 +584,48 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
             <textarea
               ref={captionInputRef}
               rows={2}
-              placeholder="Share a photo or introduce yourself to District 3192..."
+              placeholder="Share a photo, video (≤60s), or introduce yourself to District 3192..."
               value={newCaption}
               onChange={(e) => setNewCaption(e.target.value)}
               className="w-full bg-secondary/50 border border-border/80 rounded-2xl p-3 text-sm focus:outline-none focus:border-pink-500 transition-all text-foreground resize-none leading-relaxed"
             />
 
-            {/* Image Preview Thumbnail */}
-            {imagePreview && (
-              <div className="relative rounded-2xl overflow-hidden border border-pink-500/40 bg-black/60 shadow-md">
-                <img src={imagePreview} alt="Upload preview" className="w-full max-h-60 object-contain mx-auto" />
+            {/* Media Preview (Photo or Video) */}
+            {mediaPreview && (
+              <div className="relative rounded-2xl overflow-hidden border border-pink-500/40 bg-black shadow-md">
+                {isVideo ? (
+                  <div className="relative bg-black flex items-center justify-center">
+                    <video
+                      src={mediaPreview}
+                      controls
+                      playsInline
+                      className="w-full max-h-64 object-contain mx-auto"
+                    />
+                    <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1.5 backdrop-blur-sm shadow z-10">
+                      <VideoIcon className="w-3.5 h-3.5" />
+                      <span>
+                        Video &bull; {videoDuration ? `${videoDuration}s (Max 60s)` : "Max 60s"}
+                        {selectedFile && ` &bull; ${(selectedFile.size / (1024 * 1024)).toFixed(1)}MB / 50MB`}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="relative bg-black flex items-center justify-center">
+                    <img src={mediaPreview} alt="Upload preview" className="w-full max-h-64 object-contain mx-auto" />
+                    {selectedFile && (
+                      <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-pink-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1.5 backdrop-blur-sm shadow z-10">
+                        <ImageIcon className="w-3.5 h-3.5" />
+                        <span>Photo &bull; {(selectedFile.size / (1024 * 1024)).toFixed(1)}MB</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <button
                   type="button"
-                  onClick={removeImage}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/70 hover:bg-destructive text-white transition-all shadow-md cursor-pointer"
-                  title="Remove image"
+                  onClick={removeMedia}
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 hover:bg-destructive text-white transition-all shadow-md cursor-pointer z-20"
+                  title="Remove media"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -449,26 +643,55 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/*"
+                accept="image/*,video/mp4,video/webm,video/quicktime,video/mov,video/x-m4v,video/ogg,video/3gpp"
                 onChange={handleFileChange}
                 className="hidden"
                 id="feed-file-upload"
               />
-              <label
-                htmlFor="feed-file-upload"
-                className="inline-flex items-center space-x-1.5 text-xs font-bold text-muted-foreground hover:text-pink-400 transition-colors cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-secondary/60"
-              >
-                <ImageIcon className="w-4 h-4 text-pink-400" />
-                <span>{imagePreview ? "Change Photo" : "Add Photo"}</span>
-              </label>
+
+              <div className="flex items-center space-x-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.accept = "image/*";
+                      fileInputRef.current.click();
+                    }
+                  }}
+                  className="inline-flex items-center space-x-1.5 text-xs font-bold text-muted-foreground hover:text-pink-400 transition-colors cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-secondary/60"
+                >
+                  <ImageIcon className="w-4 h-4 text-pink-400" />
+                  <span>Photo</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.accept = "video/mp4,video/webm,video/quicktime,video/mov,video/x-m4v,video/ogg,video/3gpp";
+                      fileInputRef.current.click();
+                    }
+                  }}
+                  className="inline-flex items-center space-x-1.5 text-xs font-bold text-muted-foreground hover:text-purple-400 transition-colors cursor-pointer px-2.5 py-1.5 rounded-lg hover:bg-secondary/60"
+                  title="Videos up to 60 seconds and 50MB"
+                >
+                  <VideoIcon className="w-4 h-4 text-purple-400" />
+                  <span>Video (≤60s, ≤50MB)</span>
+                </button>
+              </div>
 
               <button
                 onClick={handleCreatePost}
-                disabled={isPosting || (!newCaption.trim() && !newImageUrl.trim())}
+                disabled={isPosting || (!newCaption.trim() && !mediaPreview && !newImageUrl.trim() && !selectedFile)}
                 className="px-5 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center space-x-1.5 disabled:opacity-50 cursor-pointer"
               >
-                <span>{isPosting ? "POSTING..." : "SHARE POST"}</span>
-                <Send className="w-3.5 h-3.5" />
+                {isPosting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>
+                  {isPosting
+                    ? uploadingStatus || "POSTING..."
+                    : "SHARE POST"}
+                </span>
+                {!isPosting && <Send className="w-3.5 h-3.5" />}
               </button>
             </div>
           </div>
