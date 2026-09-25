@@ -4,6 +4,51 @@ import React, { useState, useEffect, useRef } from "react";
 import { Trophy, X, Play, RefreshCw, Sparkles } from "lucide-react";
 import confetti from "canvas-confetti";
 
+let sharedAudioCtx: any = null;
+
+function playSanjayBeep(type: "jump" | "hit" | "rocket") {
+  try {
+    if (typeof window !== "undefined" && !sharedAudioCtx) {
+      const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+      if (AudioCtx) sharedAudioCtx = new AudioCtx();
+    }
+    if (!sharedAudioCtx) return;
+    const ctx = sharedAudioCtx;
+    if (ctx.state === "suspended") {
+      ctx.resume();
+    }
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    if (type === "jump") {
+      osc.frequency.setValueAtTime(300, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(500, ctx.currentTime + 0.1);
+      gain.gain.setValueAtTime(0.12, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.1);
+    } else if (type === "rocket") {
+      osc.type = "square";
+      osc.frequency.setValueAtTime(150, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(800, ctx.currentTime + 0.3);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.3);
+    } else if (type === "hit") {
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(200, ctx.currentTime);
+      osc.frequency.linearRampToValueAtTime(50, ctx.currentTime + 0.2);
+      gain.gain.setValueAtTime(0.2, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.2);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.2);
+    }
+  } catch (_) {}
+}
+
 export interface SanjayRunProps {
   userBalance?: number;
   onScoreSubmitted?: (score: number, maxScore: number, xp: number) => void;
@@ -66,6 +111,7 @@ export function SanjayRun({
     if (p.onGround && !stateRef.current.ducking) {
       p.velocityY = p.jumpForce;
       p.onGround = false;
+      playSanjayBeep("jump");
     }
   }
 
@@ -158,6 +204,7 @@ export function SanjayRun({
       if (stateRef.current.gameState === "gameover") return;
       stateRef.current.gameState = "gameover";
       setGameState("gameover");
+      playSanjayBeep("hit");
 
       if (typeof window !== "undefined" && window.navigator && window.navigator.vibrate) {
         window.navigator.vibrate(200);
@@ -170,10 +217,10 @@ export function SanjayRun({
         return next;
       });
 
-      // Calculate XP properly based on score
-      const isMaster = finalScore >= 1000;
-      const isPro = finalScore >= 500;
-      const isQualified = finalScore >= 100;
+      // STRICT SKILL GATE: XP is ONLY awarded if they cross 500 metres!
+      const isMaster = finalScore >= 1500;
+      const isPro = finalScore >= 1000;
+      const isQualified = finalScore >= 500;
       
       let xpPayout = 0;
       if (isMaster) xpPayout = 25;
@@ -332,6 +379,7 @@ export function SanjayRun({
           if (type === "missile") {
             const missileY = Math.random() > 0.5 ? 335 : 370;
             st.obstacles.push({ type, x: canvas!.width + 20, y: missileY, width: 45, height: 14 });
+            playSanjayBeep("rocket");
           } else {
             const h = 42 + Math.random() * 24;
             let w = 31;
