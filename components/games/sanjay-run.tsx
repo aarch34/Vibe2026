@@ -171,9 +171,9 @@ export function SanjayRun({
       const isQualified = finalScore >= 100;
       
       let xpPayout = 0;
-      if (isMaster) xpPayout = 50;
-      else if (isPro) xpPayout = 25;
-      else if (isQualified) xpPayout = 10;
+      if (isMaster) xpPayout = 25;
+      else if (isPro) xpPayout = 10;
+      else if (isQualified) xpPayout = 5;
 
       if (xpPayout > 0) {
         confetti({ particleCount: xpPayout * 2, spread: 80, origin: { y: 0.6 } });
@@ -413,8 +413,16 @@ export function SanjayRun({
   }, []);
 
   return (
-    <div className="relative w-full max-w-[960px] mx-auto rounded-3xl overflow-hidden border-4 border-slate-800 shadow-2xl bg-black select-none">
-      
+    <div className="fixed inset-0 z-50 bg-black flex flex-col items-center justify-center select-none touch-none overflow-hidden">
+      {/* Rotate Device Prompt for Portrait */}
+      <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-900 text-white sm:hidden portrait:flex landscape:hidden">
+        <span className="text-6xl mb-4">🔄</span>
+        <h2 className="text-2xl font-black mb-2 text-yellow-400">ROTATE DEVICE</h2>
+        <p className="text-sm text-slate-300 px-8 text-center font-bold">Please rotate your phone to landscape mode to play Sanjay Run.</p>
+        <button onClick={onClose} className="mt-8 px-6 py-2 bg-slate-800 rounded-xl font-bold border-2 border-slate-700">Go Back</button>
+      </div>
+
+      <div className="relative w-full max-w-[960px] mx-auto sm:rounded-3xl overflow-hidden sm:border-4 border-slate-800 shadow-2xl bg-black select-none landscape:flex landscape:flex-col landscape:justify-center h-full sm:h-auto">
       {/* HUD */}
       <div className="absolute top-4 left-4 right-4 flex justify-between z-10 pointer-events-none">
         <div className="bg-white/90 backdrop-blur border-2 border-slate-800 px-3 py-1.5 rounded-lg shadow-lg flex items-center space-x-2">
@@ -430,7 +438,7 @@ export function SanjayRun({
         ref={canvasRef} 
         width={960}
         height={430}
-        className="block w-full h-auto aspect-[960/430] bg-sky-400 cursor-pointer touch-none"
+        className="block w-full h-auto aspect-[960/430] bg-sky-400 cursor-pointer touch-none landscape:max-h-screen landscape:object-contain"
         onPointerDown={(e) => {
           if ((e.target as HTMLElement).closest('button')) return;
           pointerStart.current = { x: e.clientX, y: e.clientY };
@@ -520,6 +528,7 @@ export function SanjayRun({
         </div>
       )}
 
+    </div>
     </div>
   );
 }

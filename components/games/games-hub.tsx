@@ -254,20 +254,20 @@ export function GamesHub({ currentProfile, initialSummary }: GamesHubProps) {
               <div className="flex items-center justify-between">
                 <div className="w-14 h-14 rounded-2xl overflow-hidden border-2 border-yellow-400 shadow-md bg-black/40 relative">
                   <Image
-                    src="/images/games/sanjay-sprite.png"
+                    src="/images/games/sanjay-logo.png"
                     alt="Sanjay Mascot"
                     fill
-                    className="object-cover object-left"
+                    className="object-cover"
                     priority
                   />
                 </div>
                 <span className="text-xs font-black text-yellow-400 bg-yellow-500/10 px-3 py-1 rounded-full border border-yellow-500/30">
-                  10–50 XP
+                  5–25 XP
                 </span>
               </div>
               <h3 className="text-xl font-black text-foreground">3. SANJAY RUN</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Run, jump, and duck over cacti and birds in this fast-paced infinite runner! Earn up to 50 XP based on distance.
+                Run, jump, and duck over cacti and birds in this fast-paced infinite runner! Earn up to 25 XP based on distance.
               </p>
 
               <div className="p-3 rounded-2xl bg-secondary/40 border border-border/60 text-[11px] font-mono space-y-1">
