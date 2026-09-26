@@ -9,18 +9,36 @@ export interface UploadProgressEvent {
 /**
  * Uploads a media file (video or image) to /api/media/upload with real-time XHR upload progress
  */
-export function uploadMediaWithProgress(
+export async function uploadMediaWithProgress(
   file: File,
   category = "posts",
   onProgress?: (progress: UploadProgressEvent) => void
 ): Promise<{ url: string; [key: string]: any }> {
-  return new Promise((resolve, reject) => {
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("category", category);
+  // 1. Get Presigned URL
+  const presignRes = await fetch("/api/media/upload-url", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      category,
+      fileName: file.name,
+      mimeType: file.type || "application/octet-stream",
+    }),
+  });
 
+  const presignData = await presignRes.json();
+  if (!presignRes.ok || !presignData.success || !presignData.data?.uploadUrl) {
+    throw new Error(presignData.error || "Failed to obtain upload URL");
+  }
+
+  const { uploadUrl, publicUrl, token } = presignData.data;
+  const isDirectUpload = uploadUrl.startsWith("http");
+
+  return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/media/upload", true);
+    
+    // For direct uploads (Supabase Signed URL), we PUT the file directly
+    // For fallback uploads (local dev), we POST FormData
+    xhr.open(isDirectUpload ? "PUT" : "POST", uploadUrl, true);
 
     if (xhr.upload && onProgress) {
       xhr.upload.onprogress = (event) => {
@@ -41,15 +59,20 @@ export function uploadMediaWithProgress(
 
     xhr.onload = () => {
       if (xhr.status >= 200 && xhr.status < 300) {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          if (data.url) {
-            resolve(data);
-          } else {
-            reject(new Error(data.error || "Media uploaded but URL was missing"));
+        if (isDirectUpload) {
+          // Direct Supabase uploads return empty JSON or no JSON, we already know the publicUrl
+          resolve({ url: publicUrl, success: true });
+        } else {
+          try {
+            const data = JSON.parse(xhr.responseText);
+            if (data.url) {
+              resolve(data);
+            } else {
+              reject(new Error(data.error || "Media uploaded but URL was missing"));
+            }
+          } catch {
+            reject(new Error("Invalid server response from media upload"));
           }
-        } catch {
-          reject(new Error("Invalid server response from media upload"));
         }
       } else {
         try {
@@ -69,6 +92,18 @@ export function uploadMediaWithProgress(
       reject(new Error("Upload timed out. Please check your network."));
     };
 
-    xhr.send(formData);
+    if (isDirectUpload) {
+      // Supabase storage signed URL requires the raw file and specific content type
+      xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+      if (token) {
+        xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+      }
+      xhr.send(file);
+    } else {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("category", category);
+      xhr.send(formData);
+    }
   });
 }

@@ -117,6 +117,25 @@ export async function createPresignedUploadUrl(
   const objectKey = `events/${eventSlug}/${category}/${uniqueId}.${extension}`;
   const publicUrl = getMediaPublicUrl(objectKey);
 
+  if (isUsingLiveSupabase() && supabaseAdmin) {
+    try {
+      const { data, error } = await supabaseAdmin.storage
+        .from(STORAGE_BUCKET)
+        .createSignedUploadUrl(objectKey);
+      
+      if (data) {
+        return {
+          uploadUrl: data.signedUrl,
+          objectKey,
+          publicUrl,
+          token: data.token,
+        };
+      }
+    } catch (err) {
+      console.warn("Failed to create signed upload URL:", err);
+    }
+  }
+
   return {
     uploadUrl: `/api/media/upload?key=${encodeURIComponent(objectKey)}`,
     objectKey,
