@@ -12,7 +12,9 @@ import {
   AlertCircle,
   Camera,
   Play,
+  UploadCloud,
 } from "lucide-react";
+import { uploadMediaWithProgress } from "@/lib/storage/upload-with-progress";
 
 const VIBE_TAGS = [
   "#VIBE2026",
@@ -34,6 +36,8 @@ export default function CreatePostPage() {
   const [isVideo, setIsVideo] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadStats, setUploadStats] = useState<{ loadedMb: string; totalMb: string } | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -217,33 +221,29 @@ export default function CreatePostPage() {
     }
 
     setIsSubmitting(true);
+    setUploadProgress(0);
+    setUploadStats(null);
     try {
       let finalMediaUrl = imageUrl.trim() || null;
 
-      // Upload directly to Supabase Storage 'Vibe Bucket'
+      // Upload directly to Supabase Storage with real-time byte progress
       if (selectedFile) {
         try {
-          const form = new FormData();
-          form.append("file", selectedFile);
-          form.append("category", "posts");
-
-          const upRes = await fetch("/api/media/upload", {
-            method: "POST",
-            body: form,
-          });
-
-          if (!upRes.ok) {
-            const errData = await upRes.json().catch(() => ({}));
-            throw new Error(errData.error || "Media upload failed. Please try again.");
-          }
-
-          const upData = await upRes.json();
-          if (upData.url) {
-            finalMediaUrl = upData.url;
-          }
+          const upData = await uploadMediaWithProgress(
+            selectedFile,
+            "posts",
+            (prog) => {
+              setUploadProgress(prog.percent);
+              setUploadStats({ loadedMb: prog.loadedMb, totalMb: prog.totalMb });
+            }
+          );
+          finalMediaUrl = upData.url;
+          setUploadProgress(100);
         } catch (uploadErr: any) {
           setErrorMsg(uploadErr.message || "Failed to upload your media file.");
           setIsSubmitting(false);
+          setUploadProgress(null);
+          setUploadStats(null);
           return;
         }
       }
@@ -265,6 +265,8 @@ export default function CreatePostPage() {
       setErrorMsg("Network error publishing post.");
     } finally {
       setIsSubmitting(false);
+      setUploadProgress(null);
+      setUploadStats(null);
     }
   };
 
@@ -370,7 +372,7 @@ export default function CreatePostPage() {
                 Choose Photo or Video from Gallery
               </span>
               <span className="text-[10px] text-muted-foreground">
-                Photos (JPEG, PNG, WebP) &bull; Videos (MP4, WebM, MOV up to 50MB)
+                Photos (JPEG, PNG, WebP) • Videos (MP4, WebM, MOV up to 50MB)
               </span>
             </label>
           ) : (
@@ -385,7 +387,7 @@ export default function CreatePostPage() {
                   />
                   <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1 backdrop-blur-sm shadow">
                     <VideoIcon className="w-3 h-3" />
-                    <span>Video &bull; {videoDuration ? `${videoDuration}s (Max 60s)` : "Max 60s"} &bull; {fileSizeMb}MB / 50MB</span>
+                    <span>Video • {videoDuration ? `${videoDuration}s (Max 60s)` : "Max 60s"} • {fileSizeMb}MB / 50MB</span>
                   </div>
                 </div>
               ) : (
@@ -398,7 +400,7 @@ export default function CreatePostPage() {
                   {fileSizeMb && (
                     <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-pink-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1 backdrop-blur-sm">
                       <ImageIcon className="w-3 h-3" />
-                      <span>Photo &bull; {fileSizeMb}MB</span>
+                      <span>Photo • {fileSizeMb}MB</span>
                     </div>
                   )}
                 </div>
@@ -407,11 +409,48 @@ export default function CreatePostPage() {
               <button
                 type="button"
                 onClick={removeMedia}
-                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 hover:bg-destructive text-white transition-all shadow-md cursor-pointer z-10"
+                disabled={isSubmitting}
+                className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 hover:bg-destructive text-white transition-all shadow-md cursor-pointer z-10 disabled:opacity-50"
                 title="Remove media"
               >
                 <X className="w-4 h-4" />
               </button>
+            </div>
+          )}
+
+          {/* Real-time Media Upload Progress Bar */}
+          {isSubmitting && uploadProgress !== null && (
+            <div className="p-4 rounded-2xl bg-secondary/80 border border-pink-500/40 shadow-xl space-y-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+              <div className="flex items-center justify-between text-xs font-mono font-bold">
+                <div className="flex items-center space-x-2 text-pink-400">
+                  <UploadCloud className="w-4 h-4 animate-bounce text-pink-400 shrink-0" />
+                  <span>
+                    {uploadProgress < 100
+                      ? isVideo
+                        ? "Uploading Video to Storage..."
+                        : "Uploading Photo..."
+                      : "Processing & Publishing..."}
+                  </span>
+                </div>
+                <div className="text-right">
+                  <span className="text-foreground font-black text-xs font-mono">
+                    {uploadProgress}%
+                  </span>
+                  {uploadStats && (
+                    <span className="text-muted-foreground text-[10px] ml-1.5 font-normal">
+                      ({uploadStats.loadedMb}MB / {uploadStats.totalMb}MB)
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Animated Gradient Progress Track */}
+              <div className="w-full h-3 bg-black/60 rounded-full overflow-hidden p-0.5 border border-pink-500/30 shadow-inner">
+                <div
+                  className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 rounded-full transition-all duration-150 ease-out shadow-[0_0_12px_rgba(236,72,153,0.7)]"
+                  style={{ width: `${Math.max(4, uploadProgress)}%` }}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -427,16 +466,39 @@ export default function CreatePostPage() {
         <button
           type="submit"
           disabled={isSubmitting || (!caption.trim() && !imageUrl.trim() && !selectedFile)}
-          className="w-full py-4 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 active:scale-[0.99] text-white font-black text-xs uppercase tracking-wider rounded-2xl transition-all shadow-xl flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer"
+          className="relative overflow-hidden w-full py-4 rounded-2xl font-black text-xs uppercase tracking-wider transition-all shadow-xl flex items-center justify-center space-x-2 disabled:opacity-50 cursor-pointer text-white border border-pink-500/30"
         >
-          <span>
-            {isSubmitting
-              ? isVideo
-                ? "UPLOADING VIDEO & POSTING..."
-                : "UPLOADING & POSTING..."
-              : "SHARE POST ON VIBE 🚀"}
-          </span>
-          <Send className="w-4 h-4" />
+          {/* Background: Progress fill during upload, gradient when idle */}
+          {isSubmitting && uploadProgress !== null ? (
+            <>
+              <div className="absolute inset-0 bg-secondary/90" />
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-500 transition-all duration-150 ease-out opacity-90"
+                style={{ width: `${Math.max(6, uploadProgress)}%` }}
+              />
+            </>
+          ) : (
+            <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 active:scale-[0.99]" />
+          )}
+
+          {/* Content */}
+          <div className="relative z-10 flex items-center space-x-2 drop-shadow">
+            {isSubmitting ? (
+              <>
+                <UploadCloud className="w-4 h-4 animate-bounce shrink-0" />
+                <span className="font-mono font-black">
+                  {uploadProgress !== null && uploadProgress < 100
+                    ? `UPLOADING ${uploadProgress}% ${uploadStats ? `(${uploadStats.loadedMb}MB / ${uploadStats.totalMb}MB)` : ""}`
+                    : "FINALIZING POST..."}
+                </span>
+              </>
+            ) : (
+              <>
+                <span>SHARE POST ON VIBE 🚀</span>
+                <Send className="w-4 h-4" />
+              </>
+            )}
+          </div>
         </button>
       </form>
     </div>

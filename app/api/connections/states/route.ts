@@ -25,12 +25,15 @@ export async function GET(req: Request) {
       .filter(Boolean)
       .slice(0, 50); // cap at 50 IDs
 
-    if (requestedIds.length === 0) {
-      return NextResponse.json({ success: true, states: {} });
-    }
-
     // Get the full connection map for current user (cached internally in social store)
     const fullMap = await socialStore.getUserConnectionMapAsync(session.profile.id);
+
+    if (requestedIds.length === 0) {
+      return NextResponse.json(
+        { success: true, states: fullMap },
+        { headers: { "Cache-Control": "private, no-cache" } }
+      );
+    }
 
     // Return only the states for the requested IDs
     const states: Record<string, "connected" | "pending" | "none"> = {};

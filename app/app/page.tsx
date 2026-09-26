@@ -24,6 +24,7 @@ export default async function AttendeeHomePage() {
 
   const posts = await socialStore.getPostsWithAuthors(10);
   const likedPostIds = await socialStore.getUserLikedPostIds(currentProfile.id);
+  const initialConnectionStates = await socialStore.getUserConnectionMapAsync(currentProfile.id);
   const suggestedPeople = (await getAllDiscoverableProfiles(currentProfile.id, 8)).slice(0, 4);
 
   return (
@@ -149,7 +150,12 @@ export default async function AttendeeHomePage() {
           <Flame className="w-5 h-5 text-pink-500" />
           <span>VIBE 2026 Feed</span>
         </h3>
-        <VibeFeed initialPosts={posts} initialLikedPostIds={likedPostIds} currentProfile={currentProfile} />
+        <VibeFeed
+          initialPosts={posts}
+          initialLikedPostIds={likedPostIds}
+          initialConnectionStates={initialConnectionStates}
+          currentProfile={currentProfile}
+        />
       </div>
     </div>
   );

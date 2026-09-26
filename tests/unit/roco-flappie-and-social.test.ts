@@ -97,5 +97,44 @@ describe("ROCO Flappie & Social Integrity Unit Tests", () => {
     const afterXp = mockDb.getProfile(profA.id)!.xp;
     expect(afterXp).toBe(initialXp + 50);
   });
+
+  it("should accurately reflect connection states (connected, pending, none) for post authors", async () => {
+    const profA = mockDb.getProfileByClerkId("clerk-a")!;
+    const profB = mockDb.getProfileByClerkId("clerk-b")!;
+    const profC = mockDb.createProfile({
+      clerk_id: "clerk-c",
+      display_name: "Charlie Connect",
+      email: "charlie@rotaract.org",
+      role: "attendee",
+      xp: 100,
+      level: 1,
+      college: "Global Tech",
+      rotaract_club: "RC Bangalore",
+      badge: "Delegator",
+      is_discoverable: true,
+      connections_count: 0,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    });
+
+    // 1. Initially no connection between A and C
+    let connMapA = await socialStore.getUserConnectionMapAsync(profA.id);
+    expect(connMapA[profC.id] || "none").toBe("none");
+
+    // 2. Pending request sent from A to C
+    await socialStore.sendConnectionRequest(profA.id, profC.id, profA.display_name, profA.rotaract_club);
+    connMapA = await socialStore.getUserConnectionMapAsync(profA.id);
+    expect(connMapA[profC.id]).toBe("pending");
+
+    // 3. Accepted connection between A and B
+    mockDb.connections.push({
+      id: "conn-ab",
+      user_id_1: profA.id,
+      user_id_2: profB.id,
+      connected_at: new Date().toISOString(),
+    });
+    connMapA = await socialStore.getUserConnectionMapAsync(profA.id);
+    expect(connMapA[profB.id]).toBe("connected");
+  });
 });
 

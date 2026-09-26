@@ -7,6 +7,8 @@ import {
   MessageSquare,
   Instagram,
   UserPlus,
+  UserCheck,
+  Clock,
   Send,
   Image as ImageIcon,
   Video as VideoIcon,
@@ -18,14 +20,18 @@ import {
   Share2,
   Check,
   Loader2,
+  UploadCloud,
 } from "lucide-react";
 import { Post, Profile } from "@/types/database";
 import { isVideoMedia } from "@/lib/utils";
 import { supabase } from "@/lib/db/supabase";
+import { InstagramFeedVideo } from "@/components/social/instagram-feed-video";
+import { uploadMediaWithProgress } from "@/lib/storage/upload-with-progress";
 
 interface VibeFeedProps {
   initialPosts: (Post & { author: Profile })[];
   initialLikedPostIds?: string[];
+  initialConnectionStates?: Record<string, "none" | "pending" | "connected">;
   currentProfile: Profile;
 }
 
@@ -33,7 +39,12 @@ const FEED_CACHE_KEY = "vibe_feed_posts_v1";
 const FEED_SYNC_KEY = "vibe_feed_last_sync_v1";
 const MAX_MEDIA_SIZE_BYTES = 50 * 1024 * 1024; // 50MB strictly enforced
 
-export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: VibeFeedProps) {
+export function VibeFeed({
+  initialPosts,
+  initialLikedPostIds,
+  initialConnectionStates,
+  currentProfile,
+}: VibeFeedProps) {
   const [posts, setPosts] = useState<(Post & { author: Profile })[]>(() => {
     // Prioritize server-provided posts, then fall back to localStorage cache (capped at 10 to keep database & client load light)
     if (initialPosts && initialPosts.length > 0) return initialPosts.slice(0, 10);
@@ -56,6 +67,8 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
   const [videoDuration, setVideoDuration] = useState<number | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [isPosting, setIsPosting] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [uploadStats, setUploadStats] = useState<{ loadedMb: string; totalMb: string } | null>(null);
   const [uploadingStatus, setUploadingStatus] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
@@ -66,9 +79,42 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(() => new Set(initialLikedPostIds || []));
   const [heartAnimPostId, setHeartAnimPostId] = useState<string | null>(null);
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null);
-  const [connectionStates, setConnectionStates] = useState<Record<string, "none" | "pending" | "connected">>({});
+  const [connectionStates, setConnectionStates] = useState<Record<string, "none" | "pending" | "connected">>(
+    () => initialConnectionStates || {}
+  );
   const [copiedPostId, setCopiedPostId] = useState<string | null>(null);
   const [xpFlyerPostId, setXpFlyerPostId] = useState<string | null>(null);
+  const lastPhotoTouchTimeRef = useRef<Record<string, number>>({});
+
+  // Synchronize when initialConnectionStates updates from parent
+  useEffect(() => {
+    if (initialConnectionStates && Object.keys(initialConnectionStates).length > 0) {
+      setConnectionStates((prev) => ({ ...initialConnectionStates, ...prev }));
+    }
+  }, [initialConnectionStates]);
+
+  // Dynamically synchronize connection status for post authors (feed cache, delta-sync, or updates)
+  useEffect(() => {
+    if (!currentProfile?.id) return;
+    const authorIds = Array.from(
+      new Set(
+        posts
+          .map((p) => p.author?.id || p.author_id)
+          .filter((id): id is string => Boolean(id) && id !== currentProfile.id)
+      )
+    );
+
+    if (authorIds.length === 0) return;
+
+    fetch(`/api/connections/states?ids=${encodeURIComponent(authorIds.join(","))}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.success && data.states) {
+          setConnectionStates((prev) => ({ ...prev, ...data.states }));
+        }
+      })
+      .catch(() => {});
+  }, [posts, currentProfile.id]);
 
   // On mount: delta-sync only new posts from server (0 egress if nothing changed)
   useEffect(() => {
@@ -292,69 +338,34 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
     }
 
     setIsPosting(true);
-    setUploadingStatus(isVideo ? "Uploading video to Supabase Storage..." : "Uploading photo to Supabase Storage...");
+    setUploadProgress(0);
+    setUploadStats(null);
+    setUploadingStatus(isVideo ? "Uploading video..." : "Uploading photo...");
 
     try {
       let finalMediaUrl: string | null = newImageUrl.trim() || null;
 
-      // Upload media directly to Supabase Pro Storage ('Vibe Bucket')
+      // Upload media directly to Supabase Storage with real-time byte progress
       if (selectedFile) {
-        const ext = selectedFile.name.split(".").pop()?.toLowerCase() || (isVideo ? "mp4" : "jpg");
-        const uniqueId = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}`;
-        const folder = isVideo ? "videos" : "photos";
-        const filePath = `posts/${currentProfile.id}/${folder}/${uniqueId}.${ext}`;
-
-        let uploadedUrl: string | null = null;
-
-        // 1. First try client-side upload directly to Supabase Storage
-        if (supabase) {
-          try {
-            const { data: supaData, error: supaErr } = await supabase.storage
-              .from("Vibe Bucket")
-              .upload(filePath, selectedFile, {
-                contentType: selectedFile.type || (isVideo ? "video/mp4" : "image/jpeg"),
-                upsert: true,
-              });
-
-            if (supaData && !supaErr) {
-              const { data: pubData } = supabase.storage
-                .from("Vibe Bucket")
-                .getPublicUrl(supaData.path);
-              if (pubData?.publicUrl) {
-                uploadedUrl = pubData.publicUrl;
-              }
-            }
-          } catch (cErr) {
-            console.warn("Direct client upload to Supabase storage failed, falling back to /api/media/upload:", cErr);
+        const upData = await uploadMediaWithProgress(
+          selectedFile,
+          "posts",
+          (prog) => {
+            setUploadProgress(prog.percent);
+            setUploadStats({ loadedMb: prog.loadedMb, totalMb: prog.totalMb });
+            setUploadingStatus(
+              isVideo
+                ? `Uploading video (${prog.percent}% • ${prog.loadedMb}MB / ${prog.totalMb}MB)...`
+                : `Uploading photo (${prog.percent}%)...`
+            );
           }
-        }
+        );
 
-        // 2. Fallback to /api/media/upload (which uses Supabase Admin client)
-        if (!uploadedUrl) {
-          const form = new FormData();
-          form.append("file", selectedFile);
-          form.append("category", "posts");
-
-          const upRes = await fetch("/api/media/upload", {
-            method: "POST",
-            body: form,
-          });
-
-          if (!upRes.ok) {
-            const errData = await upRes.json().catch(() => ({}));
-            throw new Error(errData.error || "Media upload to Supabase Storage failed.");
-          }
-
-          const upData = await upRes.json();
-          if (upData.url) {
-            uploadedUrl = upData.url;
-          }
-        }
-
-        finalMediaUrl = uploadedUrl;
+        finalMediaUrl = upData.url;
       }
 
-      setUploadingStatus("Publishing post...");
+      setUploadingStatus("Finalizing & publishing post...");
+      setUploadProgress(100);
 
       const res = await fetch("/api/posts", {
         method: "POST",
@@ -388,6 +399,8 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
     } finally {
       setIsPosting(false);
       setUploadingStatus(null);
+      setUploadProgress(null);
+      setUploadStats(null);
     }
   };
 
@@ -434,6 +447,17 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
 
     if (!likedPostIds.has(postId)) {
       handleLike(postId);
+    }
+  };
+
+  const handlePhotoTouchEnd = (postId: string) => {
+    const now = Date.now();
+    const last = lastPhotoTouchTimeRef.current[postId] || 0;
+    if (now - last > 40 && now - last < 380) {
+      lastPhotoTouchTimeRef.current[postId] = 0;
+      handleDoubleTapPhoto(postId);
+    } else {
+      lastPhotoTouchTimeRef.current[postId] = now;
     }
   };
 
@@ -526,6 +550,9 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
       if (data.success) {
         setStatusMessage({ type: "success", text: "Connection request sent! They will get an alert. 👋" });
       } else {
+        if (data.message && data.message.toLowerCase().includes("already connected")) {
+          setConnectionStates((prev) => ({ ...prev, [receiverId]: "connected" }));
+        }
         setStatusMessage({ type: "error", text: data.message || "Request already sent." });
       }
     } catch {
@@ -604,8 +631,8 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
                     <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-purple-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1.5 backdrop-blur-sm shadow z-10">
                       <VideoIcon className="w-3.5 h-3.5" />
                       <span>
-                        Video &bull; {videoDuration ? `${videoDuration}s (Max 60s)` : "Max 60s"}
-                        {selectedFile && ` &bull; ${(selectedFile.size / (1024 * 1024)).toFixed(1)}MB / 50MB`}
+                        Video • {videoDuration ? `${videoDuration}s (Max 60s)` : "Max 60s"}
+                        {selectedFile && ` • ${(selectedFile.size / (1024 * 1024)).toFixed(1)}MB / 50MB`}
                       </span>
                     </div>
                   </div>
@@ -615,7 +642,7 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
                     {selectedFile && (
                       <div className="absolute top-2 left-2 px-2.5 py-1 rounded-full bg-pink-600/90 text-white text-[10px] font-mono font-bold flex items-center space-x-1.5 backdrop-blur-sm shadow z-10">
                         <ImageIcon className="w-3.5 h-3.5" />
-                        <span>Photo &bull; {(selectedFile.size / (1024 * 1024)).toFixed(1)}MB</span>
+                        <span>Photo • {(selectedFile.size / (1024 * 1024)).toFixed(1)}MB</span>
                       </div>
                     )}
                   </div>
@@ -624,11 +651,48 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
                 <button
                   type="button"
                   onClick={removeMedia}
-                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 hover:bg-destructive text-white transition-all shadow-md cursor-pointer z-20"
+                  disabled={isPosting}
+                  className="absolute top-2 right-2 p-1.5 rounded-full bg-black/80 hover:bg-destructive text-white transition-all shadow-md cursor-pointer z-20 disabled:opacity-50"
                   title="Remove media"
                 >
                   <X className="w-4 h-4" />
                 </button>
+              </div>
+            )}
+
+            {/* Real-time Video/Media Upload Progress Bar */}
+            {isPosting && uploadProgress !== null && (
+              <div className="p-3.5 rounded-2xl bg-secondary/80 border border-pink-500/40 shadow-xl space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="flex items-center justify-between text-xs font-mono font-bold">
+                  <div className="flex items-center space-x-2 text-pink-400">
+                    <UploadCloud className="w-4 h-4 animate-bounce text-pink-400 shrink-0" />
+                    <span>
+                      {uploadProgress < 100
+                        ? isVideo
+                          ? "Uploading Video to Feed..."
+                          : "Uploading Photo..."
+                        : "Finalizing & Publishing Post..."}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-foreground font-black text-xs font-mono">
+                      {uploadProgress}%
+                    </span>
+                    {uploadStats && (
+                      <span className="text-muted-foreground text-[10px] ml-1.5 font-normal">
+                        ({uploadStats.loadedMb}MB / {uploadStats.totalMb}MB)
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Animated Gradient Progress Track */}
+                <div className="w-full h-3 bg-black/60 rounded-full overflow-hidden p-0.5 border border-pink-500/30 shadow-inner">
+                  <div
+                    className="h-full bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 rounded-full transition-all duration-150 ease-out shadow-[0_0_12px_rgba(236,72,153,0.7)]"
+                    style={{ width: `${Math.max(4, uploadProgress)}%` }}
+                  />
+                </div>
               </div>
             )}
 
@@ -683,15 +747,39 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
               <button
                 onClick={handleCreatePost}
                 disabled={isPosting || (!newCaption.trim() && !mediaPreview && !newImageUrl.trim() && !selectedFile)}
-                className="px-5 py-2 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center space-x-1.5 disabled:opacity-50 cursor-pointer"
+                className="relative overflow-hidden px-5 py-2.5 rounded-xl font-extrabold text-xs uppercase tracking-wider transition-all shadow-md flex items-center justify-center space-x-1.5 disabled:opacity-50 cursor-pointer min-w-[140px] text-white border border-pink-500/30"
               >
-                {isPosting && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
-                <span>
-                  {isPosting
-                    ? uploadingStatus || "POSTING..."
-                    : "SHARE POST"}
-                </span>
-                {!isPosting && <Send className="w-3.5 h-3.5" />}
+                {/* Background: Progress fill during upload, gradient when idle */}
+                {isPosting && uploadProgress !== null ? (
+                  <>
+                    <div className="absolute inset-0 bg-secondary/90" />
+                    <div
+                      className="absolute inset-0 bg-gradient-to-r from-pink-600 via-purple-600 to-cyan-500 transition-all duration-150 ease-out opacity-90"
+                      style={{ width: `${Math.max(6, uploadProgress)}%` }}
+                    />
+                  </>
+                ) : (
+                  <div className="absolute inset-0 bg-gradient-to-r from-pink-500 via-purple-500 to-cyan-400 hover:brightness-110" />
+                )}
+
+                {/* Content */}
+                <div className="relative z-10 flex items-center space-x-1.5 drop-shadow">
+                  {isPosting ? (
+                    <>
+                      <UploadCloud className="w-3.5 h-3.5 animate-bounce shrink-0" />
+                      <span className="font-mono font-black">
+                        {uploadProgress !== null && uploadProgress < 100
+                          ? `UPLOADING ${uploadProgress}%`
+                          : "FINALIZING..."}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span>SHARE POST</span>
+                      <Send className="w-3.5 h-3.5" />
+                    </>
+                  )}
+                </div>
               </button>
             </div>
           </div>
@@ -774,18 +862,32 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
                 {/* Right Header Actions: Connect, Instagram, Delete */}
                 <div className="flex items-center space-x-2 shrink-0">
                   {!isSelf && (
-                    <button
-                      onClick={() => handleConnect(author.id)}
-                      disabled={connState === "pending"}
-                      className={`px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider flex items-center space-x-1 transition-all cursor-pointer ${
-                        connState === "pending"
-                          ? "bg-secondary text-muted-foreground border border-border"
-                          : "bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                      }`}
-                    >
-                      <UserPlus className="w-3 h-3" />
-                      <span>{connState === "pending" ? "Sent" : "Connect"}</span>
-                    </button>
+                    connState === "connected" ? (
+                      <span
+                        className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider flex items-center space-x-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 select-none shadow-sm"
+                        title="Already Connected"
+                      >
+                        <UserCheck className="w-3 h-3 text-emerald-400" />
+                        <span>Connected</span>
+                      </span>
+                    ) : connState === "pending" ? (
+                      <span
+                        className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider flex items-center space-x-1 bg-secondary text-muted-foreground border border-border select-none"
+                        title="Connection Request Sent"
+                      >
+                        <Clock className="w-3 h-3 text-muted-foreground" />
+                        <span>Sent</span>
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => handleConnect(author.id)}
+                        className="px-3 py-1 rounded-full text-[11px] font-black uppercase tracking-wider flex items-center space-x-1 transition-all cursor-pointer bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 active:scale-95 shadow-sm"
+                        title="Send Connection Request"
+                      >
+                        <UserPlus className="w-3 h-3" />
+                        <span>Connect</span>
+                      </button>
+                    )
                   )}
 
                   {author.instagram_username && (
@@ -813,21 +915,22 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
                 </div>
               </div>
 
-              {/* Attached Photo or Video (with Instagram Double-Tap to Like) */}
+              {/* Attached Photo or Video (with Instagram Video Player & Double-Tap to Like) */}
               {post.image_url && (
-                <div
-                  className="relative overflow-hidden bg-black/90 flex items-center justify-center select-none group"
-                  onDoubleClick={() => handleDoubleTapPhoto(post.id)}
-                >
-                  {isVideoMedia(post.image_url) ? (
-                    <video
-                      src={post.image_url}
-                      controls
-                      playsInline
-                      preload="metadata"
-                      className="w-full max-h-[500px] object-contain bg-black"
-                    />
-                  ) : (
+                isVideoMedia(post.image_url) ? (
+                  <InstagramFeedVideo
+                    src={post.image_url}
+                    postId={post.id}
+                    onDoubleTap={() => handleDoubleTapPhoto(post.id)}
+                    isShowingHeartAnim={isShowingHeartAnim}
+                  />
+                ) : (
+                  <div
+                    className="relative overflow-hidden bg-black/90 flex items-center justify-center select-none group cursor-pointer"
+                    onDoubleClick={() => handleDoubleTapPhoto(post.id)}
+                    onTouchEnd={() => handlePhotoTouchEnd(post.id)}
+                    style={{ touchAction: "manipulation" }}
+                  >
                     <img
                       src={post.image_url}
                       alt="Post photo"
@@ -835,15 +938,15 @@ export function VibeFeed({ initialPosts, initialLikedPostIds, currentProfile }: 
                       decoding="async"
                       className="w-full max-h-[500px] object-cover transition-transform duration-300 group-hover:scale-[1.01]"
                     />
-                  )}
 
-                  {/* Double-Tap Heart Burst Animation */}
-                  {isShowingHeartAnim && (
-                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-in zoom-in-50 fade-in duration-200">
-                      <Heart className="w-24 h-24 text-pink-500 fill-pink-500 drop-shadow-[0_0_20px_rgba(236,72,153,0.8)] animate-bounce" />
-                    </div>
-                  )}
-                </div>
+                    {/* Double-Tap Heart Burst Animation */}
+                    {isShowingHeartAnim && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none animate-in zoom-in-50 fade-in duration-200">
+                        <Heart className="w-24 h-24 text-pink-500 fill-pink-500 drop-shadow-[0_0_20px_rgba(236,72,153,0.8)] animate-bounce" />
+                      </div>
+                    )}
+                  </div>
+                )
               )}
 
               {/* Interaction Bar & Engagement Stats */}

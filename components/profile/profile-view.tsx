@@ -38,6 +38,7 @@ import { Profile, Post, Level } from "@/types/database";
 import { calculateLevel } from "@/lib/db/mock-store";
 import { EditProfileModal } from "@/components/attendee/edit-profile-modal";
 import { useOptionalLiveStats } from "@/components/providers/live-stats-provider";
+import { InstagramFeedVideo } from "@/components/social/instagram-feed-video";
 
 interface ProfileViewProps {
   profile: Profile;
@@ -1178,11 +1179,11 @@ export function ProfileView({
             <div className="overflow-y-auto flex-1">
               {selectedPost.image_url ? (
                 isVideoMedia(selectedPost.image_url) ? (
-                  <video
+                  <InstagramFeedVideo
                     src={selectedPost.image_url}
-                    controls
-                    playsInline
-                    className="w-full object-contain max-h-96 bg-black"
+                    postId={selectedPost.id}
+                    autoPlayOnScroll={false}
+                    className="max-h-96"
                   />
                 ) : (
                   <img src={selectedPost.image_url} alt="Post image" className="w-full object-cover max-h-96" />
