@@ -134,15 +134,34 @@ export async function GET(req: Request) {
     } else {
       if (isUsingLiveSupabase() && supabaseAdmin) {
         try {
-          const { data: supaSessions } = await supabaseAdmin
-            .from("game_sessions")
-            .select("profile_id, score, played_at")
-            .eq("game_type", type);
+          let allSessions: any[] = [];
+          let hasMore = true;
+          let offset = 0;
+          const pageSize = 1000;
 
-          if (supaSessions && supaSessions.length > 0) {
+          while (hasMore) {
+            const { data: supaSessions } = await supabaseAdmin
+              .from("game_sessions")
+              .select("profile_id, score, played_at")
+              .eq("game_type", type)
+              .range(offset, offset + pageSize - 1);
+
+            if (supaSessions && supaSessions.length > 0) {
+              allSessions = allSessions.concat(supaSessions);
+              if (supaSessions.length < pageSize) {
+                hasMore = false;
+              } else {
+                offset += pageSize;
+              }
+            } else {
+              hasMore = false;
+            }
+          }
+
+          if (allSessions.length > 0) {
             const bestScoresMap = new Map<string, { highScore: number; gamesPlayed: number; playedAt: string }>();
 
-            supaSessions.forEach((gs: any) => {
+            allSessions.forEach((gs: any) => {
               const current = bestScoresMap.get(gs.profile_id) || { highScore: 0, gamesPlayed: 0, playedAt: gs.played_at };
               bestScoresMap.set(gs.profile_id, {
                 highScore: Math.max(current.highScore, gs.score),
