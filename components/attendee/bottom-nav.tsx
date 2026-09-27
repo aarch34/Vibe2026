@@ -10,7 +10,7 @@ const BOTTOM_NAV_ITEMS = [
   { label: "Home", href: "/app", icon: Home },
   { label: "Discover", href: "/app/discover", icon: Compass },
   { label: "Post", href: "/app/post", icon: PlusSquare, isPrimary: true },
-  { label: "Friends", href: "/app/friends", icon: Users },
+  { label: "Games", href: "/app/games", icon: Gamepad2 },
   { label: "Profile", href: "/app/profile", icon: User },
 ];
 
